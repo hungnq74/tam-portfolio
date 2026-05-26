@@ -1,0 +1,39 @@
+import type { Metadata } from "next"
+import { Inter, Noto_Serif } from "next/font/google"
+import { LenisProvider } from "@/components/LenisProvider"
+import "./globals.css"
+
+const serif = Noto_Serif({
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-serif",
+  display: "swap",
+})
+
+const sans = Inter({
+  subsets: ["latin", "vietnamese"],
+  variable: "--font-sans",
+  display: "swap",
+})
+
+export const metadata: Metadata = {
+  title: "Portfolio – Cổ tích Việt Nam cho dân sáng tạo",
+  description:
+    "A Vietnamese storybook-inspired portfolio for social planning and creative copywriting.",
+  openGraph: {
+    title: "Portfolio – Cổ tích Việt Nam cho dân sáng tạo",
+    description:
+      "A Vietnamese storybook-inspired portfolio for social planning and creative copywriting.",
+    type: "website",
+  },
+}
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="vi" className={`${serif.variable} ${sans.variable}`}>
+      <body>
+        <LenisProvider>{children}</LenisProvider>
+      </body>
+    </html>
+  )
+}
