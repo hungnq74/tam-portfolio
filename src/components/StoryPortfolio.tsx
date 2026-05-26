@@ -14,6 +14,7 @@ import {
 import {
   motion,
   type MotionValue,
+  useMotionValueEvent,
   useScroll,
   useSpring,
   useTransform,
@@ -349,8 +350,12 @@ export function StoryPortfolio() {
         />
 
         <main className="pb-24 lg:px-[5.5rem] lg:pb-0">
-          <CoverSection refSetter={setSectionRef("cover")} onNext={() => scrollTo("about")} />
-          <AboutSection refSetter={setSectionRef("about")} onNext={() => scrollTo("fields")} />
+          <CoverAboutTransition
+            coverRefSetter={setSectionRef("cover")}
+            aboutRefSetter={setSectionRef("about")}
+            onNext={() => scrollTo("about")}
+            onAboutNext={() => scrollTo("fields")}
+          />
           <FieldsSection
             refSetter={setSectionRef("fields")}
             selectedFieldId={selectedFieldId}
@@ -383,118 +388,374 @@ export function StoryPortfolio() {
   )
 }
 
-function CoverSection({
-  refSetter,
+function CoverAboutTransition({
+  coverRefSetter,
+  aboutRefSetter,
   onNext,
+  onAboutNext,
 }: {
-  refSetter: (node: HTMLElement | null) => void
+  coverRefSetter: (node: HTMLElement | null) => void
+  aboutRefSetter: (node: HTMLElement | null) => void
   onNext: () => void
+  onAboutNext: () => void
 }) {
   const reducedMotion = useMotionPreference()
+  const stageRef = useRef<HTMLElement | null>(null)
+  const [coverInteractive, setCoverInteractive] = useState(true)
+  const [aboutInteractive, setAboutInteractive] = useState(false)
+  const { scrollYProgress } = useScroll({
+    target: stageRef,
+    offset: ["start start", "end end"],
+  })
+  const stageProgress = useSpring(scrollYProgress, {
+    stiffness: 74,
+    damping: 28,
+    mass: 0.48,
+  })
+  const bookScale = useTransform(stageProgress, [0, 0.16, 0.82], [1, 0.965, 0.965])
+  const bookRadius = useTransform(stageProgress, [0, 0.16], ["0px", "14px"])
+  const bookShadow = useTransform(
+    stageProgress,
+    [0, 0.16, 0.82],
+    [
+      "0 0 0 rgba(48, 34, 18, 0)",
+      "0 24px 80px rgba(48, 34, 18, 0.24)",
+      "0 18px 60px rgba(48, 34, 18, 0.14)",
+    ],
+  )
+  const bookInteriorOpacity = useTransform(
+    stageProgress,
+    [0, 0.12, 0.68, 0.82],
+    [0, 0.96, 0.82, 0],
+  )
+  const leftX = useTransform(
+    stageProgress,
+    [0.12, 0.68, 0.82, 0.96],
+    ["0vw", "-40vw", "-58vw", "-64vw"],
+  )
+  const rightX = useTransform(
+    stageProgress,
+    [0.12, 0.68, 0.82, 0.96],
+    ["0vw", "40vw", "58vw", "64vw"],
+  )
+  const leftRotateY = useTransform(
+    stageProgress,
+    [0.12, 0.68, 0.82, 0.96],
+    ["0deg", "-24deg", "-18deg", "-12deg"],
+  )
+  const rightRotateY = useTransform(
+    stageProgress,
+    [0.12, 0.68, 0.82, 0.96],
+    ["0deg", "24deg", "18deg", "12deg"],
+  )
+  const panelOpacity = useTransform(stageProgress, [0, 0.68, 0.82, 0.96], [1, 1, 0.2, 0.06])
+  const panelShadow = useTransform(stageProgress, [0, 0.12, 0.68], [0, 0.12, 0.44])
+  const insideCoverOpacity = useTransform(
+    stageProgress,
+    [0.12, 0.5, 0.72, 0.86],
+    [0, 0.26, 0.36, 0.08],
+  )
+  const spineOpacity = useTransform(
+    stageProgress,
+    [0, 0.08, 0.28, 0.68, 0.8],
+    [0, 0.45, 1, 0.66, 0],
+  )
+  const controlsOpacity = useTransform(stageProgress, [0, 0.18, 0.36], [1, 0.75, 0])
+  const controlsY = useTransform(stageProgress, [0, 0.36], [0, 18])
+  const aboutOpacity = useTransform(stageProgress, [0.28, 0.66, 0.82], [0, 0.72, 1])
+  const aboutScale = useTransform(stageProgress, [0.28, 0.82], [0.96, 1])
+  const aboutY = useTransform(stageProgress, [0.28, 0.82], [34, 0])
+
+  useMotionValueEvent(scrollYProgress, "change", (latest) => {
+    if (reducedMotion) return
+
+    setCoverInteractive((current) => {
+      const next = latest < 0.42
+      return current === next ? current : next
+    })
+    setAboutInteractive((current) => {
+      const next = latest > 0.56
+      return current === next ? current : next
+    })
+  })
+
+  if (reducedMotion) {
+    return (
+      <div className="relative left-1/2 w-screen -translate-x-1/2">
+        <section
+          ref={coverRefSetter}
+          data-section-id="cover"
+          className="relative min-h-[var(--screen)] overflow-hidden bg-paper"
+        >
+          <StaticFullBleedCover onNext={onNext} />
+        </section>
+        <section
+          ref={aboutRefSetter}
+          data-section-id="about"
+          className="relative flex min-h-[var(--screen)] items-center px-4 pb-32 pt-20 sm:px-6 sm:py-20 lg:px-[8rem]"
+        >
+          <AboutContent onNext={onAboutNext} />
+        </section>
+      </div>
+    )
+  }
 
   return (
     <section
-      ref={refSetter}
-      data-section-id="cover"
-      className="relative flex min-h-[var(--screen)] flex-col items-center justify-center px-4 py-8 sm:px-6 lg:px-10"
+      ref={stageRef}
+      className="relative left-1/2 h-[220svh] w-screen -translate-x-1/2 overflow-clip bg-paper"
     >
-      <motion.div
-        className="mx-auto flex w-full max-w-6xl flex-col items-center"
-        initial={reducedMotion ? false : { opacity: 0, y: 18 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: reducedMotion ? 0 : 0.7, ease: REVEAL_EASE }}
-      >
-        <h1 className="sr-only">Portfolio – Cổ tích Việt Nam cho dân sáng tạo</h1>
-        <p className="sr-only">
-          Storytelling, strategy, creativity. Một cuốn portfolio được lật mở bằng nhịp cuộn.
-        </p>
-        <div className="story-frame relative aspect-[1672/941] w-full overflow-hidden rounded-[10px] bg-paper shadow-story">
+      <div
+        ref={coverRefSetter}
+        data-section-id="cover"
+        aria-hidden="true"
+        className="absolute left-0 top-0 h-[var(--screen)] w-px"
+      />
+      <div
+        ref={aboutRefSetter}
+        data-section-id="about"
+        aria-hidden="true"
+        className="absolute left-0 top-[var(--screen)] h-[var(--screen)] w-px"
+      />
+
+      <div className="sticky top-0 h-[var(--screen)] overflow-hidden [perspective:1600px]">
+        <motion.div
+          className={cn(
+            "absolute inset-0 z-10 flex items-center px-4 pb-24 pt-8 sm:px-6 sm:py-14 lg:px-[8rem]",
+            aboutInteractive ? "pointer-events-auto" : "pointer-events-none",
+          )}
+          style={{ opacity: aboutOpacity, scale: aboutScale, y: aboutY }}
+        >
+          <AboutContent onNext={onAboutNext} />
+        </motion.div>
+
+        <div
+          className={cn(
+            "absolute inset-0 z-20",
+            coverInteractive ? "pointer-events-auto" : "pointer-events-none",
+          )}
+          aria-hidden={!coverInteractive}
+        >
+          <h1 className="sr-only">Portfolio – Cổ tích Việt Nam cho dân sáng tạo</h1>
+          <p className="sr-only">
+            Storytelling, strategy, creativity. Một cuốn portfolio được lật mở bằng nhịp cuộn.
+          </p>
           <img
             src={COVER_IMAGE}
             alt="Bìa portfolio Cổ tích Việt Nam cho dân sáng tạo — Tâm Sắc Bén"
-            className="absolute inset-0 h-full w-full object-cover"
+            className="sr-only"
           />
-        </div>
-        <div className="mt-8 flex flex-col items-center">
-          <button
-            type="button"
-            onClick={onNext}
-            className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-paper/70 bg-moss text-paper shadow-story transition hover:-translate-y-1 hover:bg-ink focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper motion-reduce:hover:translate-y-0"
-            aria-label="Cuộn đến trang giới thiệu"
+          <motion.div
+            aria-hidden="true"
+            className="absolute inset-0 z-20 overflow-hidden [transform-style:preserve-3d]"
+            style={{ scale: bookScale, borderRadius: bookRadius, boxShadow: bookShadow }}
           >
-            <ArrowDown className="h-5 w-5" />
-          </button>
-          <span className="mt-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-ink/72">
-            Lật trang
-          </span>
+            <motion.div
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-0 bg-paper"
+              style={{ opacity: bookInteriorOpacity }}
+            />
+            <SplitCoverPanel
+              side="left"
+              x={leftX}
+              rotateY={leftRotateY}
+              opacity={panelOpacity}
+              shadowOpacity={panelShadow}
+              insideOpacity={insideCoverOpacity}
+            />
+            <SplitCoverPanel
+              side="right"
+              x={rightX}
+              rotateY={rightRotateY}
+              opacity={panelOpacity}
+              shadowOpacity={panelShadow}
+              insideOpacity={insideCoverOpacity}
+            />
+            <BookSpine opacity={spineOpacity} />
+          </motion.div>
+          <motion.div
+            className="absolute inset-x-0 bottom-24 z-40 flex flex-col items-center lg:bottom-10"
+            style={{
+              opacity: controlsOpacity,
+              y: controlsY,
+              pointerEvents: coverInteractive ? "auto" : "none",
+            }}
+          >
+            <button
+              type="button"
+              onClick={onNext}
+              className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-paper/70 bg-moss text-paper shadow-story transition hover:-translate-y-1 hover:bg-ink focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper motion-reduce:hover:translate-y-0"
+              aria-label="Cuộn đến trang giới thiệu"
+            >
+              <ArrowDown className="h-5 w-5" />
+            </button>
+            <span className="mt-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-paper drop-shadow-[0_2px_8px_rgba(38,52,40,0.55)]">
+              Lật trang
+            </span>
+          </motion.div>
         </div>
-      </motion.div>
+      </div>
     </section>
   )
 }
 
-function AboutSection({
-  refSetter,
+function StaticFullBleedCover({ onNext }: { onNext: () => void }) {
+  return (
+    <>
+      <h1 className="sr-only">Portfolio – Cổ tích Việt Nam cho dân sáng tạo</h1>
+      <p className="sr-only">
+        Storytelling, strategy, creativity. Một cuốn portfolio được lật mở bằng nhịp cuộn.
+      </p>
+      <img
+        src={COVER_IMAGE}
+        alt="Bìa portfolio Cổ tích Việt Nam cho dân sáng tạo — Tâm Sắc Bén"
+        className="absolute inset-0 h-full w-full object-cover"
+      />
+      <div className="absolute inset-x-0 bottom-24 z-10 flex flex-col items-center lg:bottom-10">
+        <button
+          type="button"
+          onClick={onNext}
+          className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-paper/70 bg-moss text-paper shadow-story transition hover:-translate-y-1 hover:bg-ink focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper motion-reduce:hover:translate-y-0"
+          aria-label="Cuộn đến trang giới thiệu"
+        >
+          <ArrowDown className="h-5 w-5" />
+        </button>
+        <span className="mt-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-paper drop-shadow-[0_2px_8px_rgba(38,52,40,0.55)]">
+          Lật trang
+        </span>
+      </div>
+    </>
+  )
+}
+
+function SplitCoverPanel({
+  side,
+  x,
+  rotateY,
+  opacity,
+  shadowOpacity,
+  insideOpacity,
+}: {
+  side: "left" | "right"
+  x: MotionValue<string>
+  rotateY: MotionValue<string>
+  opacity: MotionValue<number>
+  shadowOpacity: MotionValue<number>
+  insideOpacity: MotionValue<number>
+}) {
+  const left = side === "left"
+
+  return (
+    <motion.div
+      aria-hidden="true"
+      className={cn(
+        "absolute inset-y-0 w-1/2 overflow-hidden bg-paper will-change-transform [backface-visibility:hidden]",
+        left ? "left-0 origin-right" : "right-0 origin-left",
+      )}
+      style={{ x, rotateY, opacity }}
+    >
+      <img
+        src={COVER_IMAGE}
+        alt=""
+        className={cn(
+          "absolute inset-y-0 h-full w-screen max-w-none object-cover",
+          left ? "left-0" : "right-0",
+        )}
+        draggable={false}
+      />
+      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_20%,rgba(255,255,255,0.12),transparent_42%)]" />
+      <motion.div
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute inset-y-0 w-[56%]",
+          left
+            ? "right-0 bg-gradient-to-l from-[rgba(246,235,211,0.72)] via-[rgba(246,235,211,0.28)] to-transparent"
+            : "left-0 bg-gradient-to-r from-[rgba(246,235,211,0.72)] via-[rgba(246,235,211,0.28)] to-transparent",
+        )}
+        style={{ opacity: insideOpacity }}
+      />
+      <motion.div
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute inset-y-0 w-8",
+          left
+            ? "right-0 bg-gradient-to-l from-[rgba(255,249,234,0.7)] to-transparent"
+            : "left-0 bg-gradient-to-r from-[rgba(255,249,234,0.7)] to-transparent",
+        )}
+        style={{ opacity: insideOpacity }}
+      />
+      <motion.div
+        aria-hidden="true"
+        className={cn(
+          "pointer-events-none absolute inset-y-0 w-28",
+          left
+            ? "right-0 bg-gradient-to-l from-[rgba(45,31,19,0.32)] to-transparent"
+            : "left-0 bg-gradient-to-r from-[rgba(45,31,19,0.32)] to-transparent",
+        )}
+        style={{ opacity: shadowOpacity }}
+      />
+    </motion.div>
+  )
+}
+
+function BookSpine({ opacity }: { opacity: MotionValue<number> }) {
+  return (
+    <motion.div
+      aria-hidden="true"
+      className="pointer-events-none absolute inset-y-0 left-1/2 z-30 w-6 -translate-x-1/2 bg-[linear-gradient(90deg,rgba(76,48,29,0.24),rgba(255,248,232,0.72)_22%,rgba(126,89,55,0.36)_50%,rgba(255,248,232,0.72)_78%,rgba(76,48,29,0.24))] shadow-[inset_10px_0_20px_rgba(45,31,19,0.18),inset_-10px_0_20px_rgba(45,31,19,0.18),0_0_34px_rgba(45,31,19,0.22)] sm:w-7"
+      style={{ opacity }}
+    >
+      <span className="absolute inset-y-0 left-1/2 w-px -translate-x-1/2 bg-[linear-gradient(180deg,transparent,rgba(255,250,236,0.92)_18%,rgba(255,250,236,0.5)_50%,rgba(255,250,236,0.92)_82%,transparent)]" />
+      <span className="absolute inset-y-0 left-1/2 w-10 -translate-x-1/2 bg-[radial-gradient(ellipse_at_center,rgba(255,248,232,0.34),transparent_68%)]" />
+    </motion.div>
+  )
+}
+
+function AboutContent({
   onNext,
 }: {
-  refSetter: (node: HTMLElement | null) => void
   onNext: () => void
 }) {
   return (
-    <section
-      ref={refSetter}
-      data-section-id="about"
-      className="relative flex min-h-[var(--screen)] items-center px-4 pb-32 pt-20 sm:px-6 sm:py-20 lg:px-10"
-    >
-      <div className="mx-auto w-full max-w-6xl">
-        <OrnamentDivider label="01" />
-        <ScrollReveal preset="page-rise" amount={0.18}>
-          <StoryFrame className="grid gap-8 overflow-hidden p-5 sm:p-7 lg:grid-cols-[0.95fr_1.05fr] lg:p-9">
-            <ScrollReveal
-              preset="image-depth"
-              className="relative min-h-[330px] overflow-hidden rounded-[6px] border border-[rgba(116,63,36,0.24)] bg-paper-deep"
-            >
-              <DepthImage
-                src={AUTHOR.image}
-                alt="Minh họa tác giả đang viết"
-                imageClassName="h-full min-h-[330px] w-full object-cover"
-              />
-            </ScrollReveal>
+    <div className="mx-auto w-full max-w-6xl">
+      <OrnamentDivider label="01" />
+      <StoryFrame className="grid gap-5 overflow-hidden p-4 sm:gap-8 sm:p-7 lg:grid-cols-[0.95fr_1.05fr] lg:p-9">
+        <div className="relative h-48 overflow-hidden rounded-[6px] border border-[rgba(116,63,36,0.24)] bg-paper-deep sm:h-auto sm:min-h-[330px]">
+          <DepthImage
+            src={AUTHOR.image}
+            alt="Minh họa tác giả đang viết"
+            imageClassName="h-full w-full object-cover sm:min-h-[330px]"
+          />
+        </div>
 
-            <div className="flex flex-col justify-center px-1 py-2 sm:px-4">
-              <ScrollReveal preset="page-rise" delay={0.08}>
-                <span className="mb-5 inline-flex w-fit items-center gap-2 rounded-full bg-gold/15 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-clay">
-                  <PenLine className="h-4 w-4" />
-                  {AUTHOR.greeting}
-                </span>
-                <h2 className="font-serif text-[clamp(2.8rem,7vw,5.8rem)] font-semibold leading-[0.9] text-moss">
-                  Mình là {AUTHOR.name}
-                </h2>
-                <p className="mt-4 text-sm font-semibold uppercase tracking-[0.22em] text-clay">
-                  {AUTHOR.title}
-                </p>
-              </ScrollReveal>
-              <ScrollReveal preset="page-rise" delay={0.16}>
-                <p className="mt-7 max-w-xl text-base leading-8 text-ink/82 sm:text-lg">
-                  {AUTHOR.intro}
-                </p>
-                <p className="mt-4 max-w-xl text-sm leading-7 text-ink/68 sm:text-base">
-                  {AUTHOR.note}
-                </p>
-                <button
-                  type="button"
-                  onClick={onNext}
-                  className="mt-8 inline-flex w-fit items-center gap-2 rounded-full bg-clay px-5 py-3 text-sm font-bold uppercase tracking-[0.14em] text-paper transition hover:-translate-y-0.5 hover:bg-[#87331f] focus:outline-none focus:ring-2 focus:ring-moss focus:ring-offset-4 focus:ring-offset-paper motion-reduce:hover:translate-y-0"
-                >
-                  Tìm hiểu thêm
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              </ScrollReveal>
-            </div>
-          </StoryFrame>
-        </ScrollReveal>
-      </div>
-    </section>
+        <div className="flex flex-col justify-center px-1 py-1 sm:px-4 sm:py-2">
+          <span className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-gold/15 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-clay sm:mb-5">
+            <PenLine className="h-4 w-4" />
+            {AUTHOR.greeting}
+          </span>
+          <h2 className="font-serif text-[clamp(2.35rem,10vw,5.8rem)] font-semibold leading-[0.9] text-moss">
+            Mình là {AUTHOR.name}
+          </h2>
+          <p className="mt-4 text-sm font-semibold uppercase tracking-[0.22em] text-clay">
+            {AUTHOR.title}
+          </p>
+          <p className="mt-5 max-w-xl text-base leading-7 text-ink/82 sm:mt-7 sm:text-lg sm:leading-8">
+            {AUTHOR.intro}
+          </p>
+          <p className="mt-3 max-w-xl text-sm leading-7 text-ink/68 sm:mt-4 sm:text-base">
+            {AUTHOR.note}
+          </p>
+          <button
+            type="button"
+            onClick={onNext}
+            className="mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-clay px-5 py-3 text-sm font-bold uppercase tracking-[0.14em] text-paper transition hover:-translate-y-0.5 hover:bg-[#87331f] focus:outline-none focus:ring-2 focus:ring-moss focus:ring-offset-4 focus:ring-offset-paper motion-reduce:hover:translate-y-0 sm:mt-8"
+          >
+            Tìm hiểu thêm
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+      </StoryFrame>
+    </div>
   )
 }
 
