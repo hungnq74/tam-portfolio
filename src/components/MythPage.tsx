@@ -41,10 +41,10 @@ export function MythPage() {
             <h1 className="max-w-4xl font-serif text-[clamp(3rem,8vw,7rem)] font-semibold leading-[0.9] text-moss">
               {myth.title}
             </h1>
-            <p className="mt-7 max-w-2xl text-lg leading-8 text-ink/82 sm:text-xl sm:leading-9">
+            <p className="font-prose mt-7 max-w-2xl text-lg leading-8 text-ink/82 sm:text-xl sm:leading-9">
               {myth.lead}
             </p>
-            <p className="mt-5 max-w-2xl text-base leading-8 text-ink/68">
+            <p className="font-prose mt-5 max-w-2xl text-base leading-8 text-ink/68">
               {myth.intro}
             </p>
           </article>
@@ -76,7 +76,7 @@ export function MythPage() {
               <h2 className="mt-6 font-serif text-3xl font-semibold leading-tight text-moss">
                 {panel.title}
               </h2>
-              <p className="mt-4 text-sm leading-7 text-ink/72">{panel.body}</p>
+              <p className="font-prose mt-4 text-sm leading-7 text-ink/72">{panel.body}</p>
             </article>
           ))}
         </div>
@@ -85,7 +85,7 @@ export function MythPage() {
           <h2 className="font-serif text-[clamp(2.3rem,5vw,4.5rem)] font-semibold leading-none text-clay">
             {myth.closingTitle}
           </h2>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-ink/72">
+          <p className="font-prose mx-auto mt-5 max-w-2xl text-base leading-8 text-ink/72">
             {myth.closingBody}
           </p>
           <Link

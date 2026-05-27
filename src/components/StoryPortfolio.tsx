@@ -747,32 +747,42 @@ function AboutContent({
   author: Author
   onExplore: () => void
 }) {
+  const [headlinePrefix, ...headlineRest] = author.headline.split(author.name)
+  const headlineSuffix = headlineRest.join(author.name)
+  const lead = author.body[0]
+  const supportingParagraphs = author.body.slice(1)
+
   return (
     <div className="mx-auto w-full max-w-6xl">
       <OrnamentDivider label="01" />
-      <StoryFrame className="grid gap-5 overflow-hidden p-4 sm:gap-8 sm:p-7 lg:grid-cols-[0.82fr_1.18fr] lg:p-9">
-        <div className="relative h-[360px] overflow-hidden rounded-[6px] border border-[rgba(116,63,36,0.24)] bg-paper-deep sm:h-[500px] lg:h-auto lg:min-h-[520px]">
+      <StoryFrame className="grid gap-5 overflow-hidden p-4 sm:gap-8 sm:p-7 lg:grid-cols-[0.82fr_1.18fr] lg:p-7 xl:p-8">
+        <div className="relative h-[360px] overflow-hidden rounded-[6px] border border-[rgba(116,63,36,0.24)] bg-paper-deep sm:h-[500px] lg:h-[clamp(455px,66vh,520px)]">
           <DepthImage
             src={author.image}
             alt={author.imageAlt}
-            imageClassName="h-full w-full object-cover object-[center_32%] sm:min-h-[500px]"
+            imageClassName="h-full w-full object-cover object-[center_32%]"
           />
         </div>
 
         <div className="flex flex-col justify-center px-1 py-1 sm:px-4 sm:py-2">
-          <span className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-gold/15 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-clay sm:mb-5">
+          <span
+            aria-hidden="true"
+            className="mb-4 inline-flex h-10 w-10 items-center justify-center rounded-full bg-gold/15 text-clay sm:mb-5"
+          >
             <PenLine className="h-4 w-4" />
-            {author.greeting}
           </span>
-          <h2 className="font-serif text-[clamp(2.35rem,10vw,5.8rem)] font-semibold leading-[0.9] text-moss">
-            {author.headline}
-          </h2>
-          <p className="mt-4 text-sm font-semibold uppercase tracking-[0.22em] text-clay">
-            {author.role}
-          </p>
-          <div className="mt-5 max-w-xl space-y-3 text-sm leading-7 text-ink/76 sm:mt-7 sm:text-base sm:leading-8">
-            {author.body.map((paragraph, index) => (
-              <p key={paragraph} className={index === 0 ? "text-ink/86 sm:text-lg" : undefined}>
+          <div className="font-prose max-w-xl space-y-4 text-base leading-8 text-ink/76 sm:text-lg sm:leading-9">
+            <p className="text-ink/86">
+              {author.greeting}{" "}
+              {headlinePrefix}
+              <span className="font-serif text-[1.18em] font-semibold text-moss">
+                {author.name}
+              </span>
+              {headlineSuffix}
+              {lead ? ` - ${lead}` : null}
+            </p>
+            {supportingParagraphs.map((paragraph) => (
+              <p key={paragraph}>
                 {paragraph}
               </p>
             ))}
@@ -831,7 +841,7 @@ function FieldsSection({
           <h2 className="font-serif text-[clamp(2.3rem,5vw,4.6rem)] font-semibold text-clay">
             {ui.fields.heading}
           </h2>
-          <p className="mx-auto mt-3 max-w-xl text-balance text-sm leading-7 text-ink/72 sm:text-base">
+          <p className="font-prose mx-auto mt-3 max-w-xl text-balance text-sm leading-7 text-ink/72 sm:text-base">
             {ui.fields.body}
           </p>
         </ScrollReveal>
@@ -1078,7 +1088,7 @@ function DetailSection({
                     <MetaBlock label={ui.detail.scope} value={project.scope.join(", ")} />
                   </RevealGroup>
                   <ScrollReveal preset="page-rise" delay={0.14}>
-                    <p className="mt-7 text-base leading-8 text-ink/82 sm:text-lg">
+                    <p className="font-prose mt-7 text-base leading-8 text-ink/82 sm:text-lg">
                       {project.overview}
                     </p>
                   </ScrollReveal>
@@ -1151,7 +1161,7 @@ function LockedChapterPanel({
           <h2 className="mx-auto mt-3 max-w-2xl font-serif text-[clamp(2.4rem,6vw,4.8rem)] font-semibold leading-none text-moss">
             {title}
           </h2>
-          <p className="mx-auto mt-5 max-w-xl text-base leading-8 text-ink/72">
+          <p className="font-prose mx-auto mt-5 max-w-xl text-base leading-8 text-ink/72">
             {body}
           </p>
           <button
@@ -1584,7 +1594,7 @@ function FieldCard({
           <p className="mt-3 max-w-sm text-xs font-bold uppercase tracking-[0.18em] text-gold">
             ({field.subtitle})
           </p>
-          <p className="mt-5 max-w-sm text-base leading-7 text-paper/84">
+          <p className="font-prose mt-5 max-w-sm text-base leading-7 text-paper/84">
             {field.description}
           </p>
         </div>
@@ -1632,7 +1642,7 @@ function ProjectCard({
         <h3 className="mt-2 font-serif text-2xl font-semibold leading-tight text-moss">
           {project.title}
         </h3>
-        <p className="mt-2 text-sm leading-6 text-ink/72">{project.summary}</p>
+        <p className="font-prose mt-2 text-sm leading-6 text-ink/72">{project.summary}</p>
         <span className="mt-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-clay">
           {ui.projectCard.action}
           <ArrowRight className="h-4 w-4" />
@@ -1670,7 +1680,7 @@ function MetaBlock({ label, value }: { label: string; value: string }) {
       <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-clay">
         {label}
       </p>
-      <p className="mt-2 text-sm leading-6 text-ink/78">{value}</p>
+      <p className="font-prose mt-2 text-sm leading-6 text-ink/78">{value}</p>
     </div>
   )
 }
@@ -1679,7 +1689,7 @@ function CaseNote({ title, body }: { title: string; body: string }) {
   return (
     <div>
       <h3 className="font-serif text-2xl font-semibold text-clay">{title}</h3>
-      <p className="mt-2 text-sm leading-7 text-ink/72">{body}</p>
+      <p className="font-prose mt-2 text-sm leading-7 text-ink/72">{body}</p>
     </div>
   )
 }

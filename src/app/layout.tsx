@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Inter, Noto_Serif } from "next/font/google"
+import { Inter, Newsreader, Noto_Serif } from "next/font/google"
 import { LenisProvider } from "@/components/LenisProvider"
 import "./globals.css"
 
@@ -13,6 +13,13 @@ const serif = Noto_Serif({
 const sans = Inter({
   subsets: ["latin", "vietnamese"],
   variable: "--font-sans",
+  display: "swap",
+})
+
+const prose = Newsreader({
+  subsets: ["latin", "vietnamese"],
+  axes: ["opsz"],
+  variable: "--font-prose",
   display: "swap",
 })
 
@@ -30,7 +37,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${serif.variable} ${sans.variable}`}>
+    <html lang="en" className={`${serif.variable} ${sans.variable} ${prose.variable}`}>
       <body>
         <LenisProvider>{children}</LenisProvider>
       </body>
