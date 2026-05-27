@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
 } from "react"
+import Link from "next/link"
 import {
   motion,
   type MotionValue,
@@ -31,23 +32,22 @@ import {
   ScrollText,
 } from "lucide-react"
 import {
-  AUTHOR,
-  CHAPTERS,
-  FIELDS,
-  PROJECTS,
+  type Author,
+  type Chapter,
   type Field,
   type FieldId,
+  type PortfolioUi,
   type Project,
   type SectionId,
-  getField,
-  getProjectsByField,
+  getPortfolioContent,
 } from "@/data/portfolio"
 import { getLenis } from "@/components/LenisProvider"
+import { LocaleToggle } from "@/components/LocaleToggle"
+import { useLocale } from "@/hooks/useLocale"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
 import { cn } from "@/lib/utils"
 
 const COVER_IMAGE = "/assets/storybook/cover.png"
-const ALL_FILTER = "Tất cả"
 const REVEAL_EASE = [0.22, 1, 0.36, 1] as const
 const LOCKED_FIELD_GATE_SECTIONS = new Set<SectionId>(["gallery", "detail"])
 const EMPTY_LOCKED_SECTIONS = new Set<SectionId>()
@@ -86,6 +86,9 @@ function getKeyboardScrollDelta(event: KeyboardEvent) {
 }
 
 export function StoryPortfolio() {
+  const { locale, setLocale } = useLocale()
+  const content = useMemo(() => getPortfolioContent(locale), [locale])
+  const { author, chapters, fields, projects, ui } = content
   const sectionRefs = useRef<Record<SectionId, HTMLElement | null>>({
     cover: null,
     about: null,
@@ -103,29 +106,38 @@ export function StoryPortfolio() {
   })
   const [activeSection, setActiveSection] = useState<SectionId>("cover")
   const [selectedFieldId, setSelectedFieldId] = useState<FieldId | null>(null)
-  const [activeFilter, setActiveFilter] = useState(ALL_FILTER)
+  const [activeFilter, setActiveFilter] = useState(ui.allFilter)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [gateNudgeKey, setGateNudgeKey] = useState(0)
 
   const gateLocked = selectedFieldId === null
   const lockedSectionIds = gateLocked ? LOCKED_FIELD_GATE_SECTIONS : EMPTY_LOCKED_SECTIONS
-  const activeField = selectedFieldId ? getField(selectedFieldId) : null
+  const activeField = selectedFieldId
+    ? fields.find((field) => field.id === selectedFieldId) ?? fields[0]
+    : null
   const activeProjects = useMemo(
-    () => (selectedFieldId ? getProjectsByField(selectedFieldId) : []),
-    [selectedFieldId],
+    () =>
+      selectedFieldId
+        ? projects.filter((project) => project.fieldId === selectedFieldId)
+        : [],
+    [projects, selectedFieldId],
   )
   const filteredProjects = useMemo(() => {
-    if (activeFilter === ALL_FILTER) return activeProjects
+    if (activeFilter === ui.allFilter) return activeProjects
     return activeProjects.filter((project) => project.category === activeFilter)
-  }, [activeFilter, activeProjects])
+  }, [activeFilter, activeProjects, ui.allFilter])
   const selectedProject = selectedProjectId
-    ? PROJECTS.find((project) => project.id === selectedProjectId) ??
+    ? projects.find((project) => project.id === selectedProjectId) ??
       activeProjects[0] ??
       null
     : activeProjects[0] ?? null
   const selectedProjectField = selectedProject
-    ? getField(selectedProject.fieldId)
+    ? fields.find((field) => field.id === selectedProject.fieldId) ?? activeField
     : activeField
+
+  useEffect(() => {
+    setActiveFilter(ui.allFilter)
+  }, [ui.allFilter])
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -143,13 +155,13 @@ export function StoryPortfolio() {
       },
     )
 
-    CHAPTERS.forEach((chapter) => {
+    chapters.forEach((chapter) => {
       const node = sectionRefs.current[chapter.id]
       if (node) observer.observe(node)
     })
 
     return () => observer.disconnect()
-  }, [])
+  }, [chapters])
 
   const setSectionRef = (id: SectionId) => (node: HTMLElement | null) => {
     sectionRefs.current[id] = node
@@ -320,10 +332,11 @@ export function StoryPortfolio() {
   }, [gateLocked, getGateLimit, nudgeGate, setScrollPosition])
 
   const selectField = (fieldId: FieldId) => {
-    const firstProject = getProjectsByField(fieldId)[0]
+    const firstProject = projects.find((project) => project.fieldId === fieldId)
+    if (!firstProject) return
 
     setSelectedFieldId(fieldId)
-    setActiveFilter(ALL_FILTER)
+    setActiveFilter(ui.allFilter)
     setSelectedProjectId(firstProject.id)
     window.setTimeout(() => scrollTo("gallery", { force: true }), 90)
   }
@@ -336,13 +349,23 @@ export function StoryPortfolio() {
   return (
     <MotionPreferenceContext.Provider value={reducedMotion}>
       <div className="story-texture min-h-screen overflow-x-clip">
+        <LocaleToggle
+          locale={locale}
+          ariaLabel={ui.languageToggleAria}
+          onLocaleChange={setLocale}
+          className="fixed left-4 top-4 z-[60]"
+        />
         <ProgressRail
+          chapters={chapters}
+          ui={ui}
           activeSection={activeSection}
           lockedSectionIds={lockedSectionIds}
           onJump={scrollTo}
           progress={reducedMotion ? scrollYProgress : smoothProgress}
         />
         <MobileChapterBar
+          chapters={chapters}
+          ui={ui}
           activeSection={activeSection}
           lockedSectionIds={lockedSectionIds}
           onJump={scrollTo}
@@ -351,12 +374,16 @@ export function StoryPortfolio() {
 
         <main className="pb-24 lg:px-[5.5rem] lg:pb-0">
           <CoverAboutTransition
+            author={author}
+            ui={ui}
             coverRefSetter={setSectionRef("cover")}
             aboutRefSetter={setSectionRef("about")}
             onNext={() => scrollTo("about")}
             onAboutNext={() => scrollTo("fields")}
           />
           <FieldsSection
+            fields={fields}
+            ui={ui}
             refSetter={setSectionRef("fields")}
             selectedFieldId={selectedFieldId}
             gateLocked={gateLocked}
@@ -364,6 +391,7 @@ export function StoryPortfolio() {
             onSelectField={selectField}
           />
           <GallerySection
+            ui={ui}
             refSetter={setSectionRef("gallery")}
             activeField={activeField}
             activeFilter={activeFilter}
@@ -375,6 +403,7 @@ export function StoryPortfolio() {
             onSelectProject={selectProject}
           />
           <DetailSection
+            ui={ui}
             refSetter={setSectionRef("detail")}
             field={selectedProjectField}
             project={selectedProject}
@@ -389,11 +418,15 @@ export function StoryPortfolio() {
 }
 
 function CoverAboutTransition({
+  author,
+  ui,
   coverRefSetter,
   aboutRefSetter,
   onNext,
   onAboutNext,
 }: {
+  author: Author
+  ui: PortfolioUi
   coverRefSetter: (node: HTMLElement | null) => void
   aboutRefSetter: (node: HTMLElement | null) => void
   onNext: () => void
@@ -487,14 +520,14 @@ function CoverAboutTransition({
           data-section-id="cover"
           className="relative min-h-[var(--screen)] overflow-hidden bg-paper"
         >
-          <StaticFullBleedCover onNext={onNext} />
+          <StaticFullBleedCover ui={ui} onNext={onNext} />
         </section>
         <section
           ref={aboutRefSetter}
           data-section-id="about"
           className="relative flex min-h-[var(--screen)] items-center px-4 pb-32 pt-20 sm:px-6 sm:py-20 lg:px-[8rem]"
         >
-          <AboutContent onNext={onAboutNext} />
+          <AboutContent author={author} onExplore={onAboutNext} />
         </section>
       </div>
     )
@@ -526,7 +559,7 @@ function CoverAboutTransition({
           )}
           style={{ opacity: aboutOpacity, scale: aboutScale, y: aboutY }}
         >
-          <AboutContent onNext={onAboutNext} />
+          <AboutContent author={author} onExplore={onAboutNext} />
         </motion.div>
 
         <div
@@ -536,13 +569,11 @@ function CoverAboutTransition({
           )}
           aria-hidden={!coverInteractive}
         >
-          <h1 className="sr-only">Portfolio – Cổ tích Việt Nam cho dân sáng tạo</h1>
-          <p className="sr-only">
-            Storytelling, strategy, creativity. Một cuốn portfolio được lật mở bằng nhịp cuộn.
-          </p>
+          <h1 className="sr-only">{ui.cover.title}</h1>
+          <p className="sr-only">{ui.cover.description}</p>
           <img
             src={COVER_IMAGE}
-            alt="Bìa portfolio Cổ tích Việt Nam cho dân sáng tạo — Tâm Sắc Bén"
+            alt={ui.cover.imageAlt}
             className="sr-only"
           />
           <motion.div
@@ -585,12 +616,12 @@ function CoverAboutTransition({
               type="button"
               onClick={onNext}
               className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-paper/70 bg-moss text-paper shadow-story transition hover:-translate-y-1 hover:bg-ink focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper motion-reduce:hover:translate-y-0"
-              aria-label="Cuộn đến trang giới thiệu"
+              aria-label={ui.cover.nextAria}
             >
               <ArrowDown className="h-5 w-5" />
             </button>
             <span className="mt-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-paper drop-shadow-[0_2px_8px_rgba(38,52,40,0.55)]">
-              Lật trang
+              {ui.cover.nextLabel}
             </span>
           </motion.div>
         </div>
@@ -599,16 +630,14 @@ function CoverAboutTransition({
   )
 }
 
-function StaticFullBleedCover({ onNext }: { onNext: () => void }) {
+function StaticFullBleedCover({ ui, onNext }: { ui: PortfolioUi; onNext: () => void }) {
   return (
     <>
-      <h1 className="sr-only">Portfolio – Cổ tích Việt Nam cho dân sáng tạo</h1>
-      <p className="sr-only">
-        Storytelling, strategy, creativity. Một cuốn portfolio được lật mở bằng nhịp cuộn.
-      </p>
+      <h1 className="sr-only">{ui.cover.title}</h1>
+      <p className="sr-only">{ui.cover.description}</p>
       <img
         src={COVER_IMAGE}
-        alt="Bìa portfolio Cổ tích Việt Nam cho dân sáng tạo — Tâm Sắc Bén"
+        alt={ui.cover.imageAlt}
         className="absolute inset-0 h-full w-full object-cover"
       />
       <div className="absolute inset-x-0 bottom-24 z-10 flex flex-col items-center lg:bottom-10">
@@ -616,12 +645,12 @@ function StaticFullBleedCover({ onNext }: { onNext: () => void }) {
           type="button"
           onClick={onNext}
           className="inline-flex h-14 w-14 items-center justify-center rounded-full border border-paper/70 bg-moss text-paper shadow-story transition hover:-translate-y-1 hover:bg-ink focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper motion-reduce:hover:translate-y-0"
-          aria-label="Cuộn đến trang giới thiệu"
+          aria-label={ui.cover.nextAria}
         >
           <ArrowDown className="h-5 w-5" />
         </button>
         <span className="mt-3 text-[10px] font-semibold uppercase tracking-[0.24em] text-paper drop-shadow-[0_2px_8px_rgba(38,52,40,0.55)]">
-          Lật trang
+          {ui.cover.nextLabel}
         </span>
       </div>
     </>
@@ -712,47 +741,59 @@ function BookSpine({ opacity }: { opacity: MotionValue<number> }) {
 }
 
 function AboutContent({
-  onNext,
+  author,
+  onExplore,
 }: {
-  onNext: () => void
+  author: Author
+  onExplore: () => void
 }) {
   return (
     <div className="mx-auto w-full max-w-6xl">
       <OrnamentDivider label="01" />
-      <StoryFrame className="grid gap-5 overflow-hidden p-4 sm:gap-8 sm:p-7 lg:grid-cols-[0.95fr_1.05fr] lg:p-9">
-        <div className="relative h-48 overflow-hidden rounded-[6px] border border-[rgba(116,63,36,0.24)] bg-paper-deep sm:h-auto sm:min-h-[330px]">
+      <StoryFrame className="grid gap-5 overflow-hidden p-4 sm:gap-8 sm:p-7 lg:grid-cols-[0.82fr_1.18fr] lg:p-9">
+        <div className="relative h-[360px] overflow-hidden rounded-[6px] border border-[rgba(116,63,36,0.24)] bg-paper-deep sm:h-[500px] lg:h-auto lg:min-h-[520px]">
           <DepthImage
-            src={AUTHOR.image}
-            alt="Minh họa tác giả đang viết"
-            imageClassName="h-full w-full object-cover sm:min-h-[330px]"
+            src={author.image}
+            alt={author.imageAlt}
+            imageClassName="h-full w-full object-cover object-[center_32%] sm:min-h-[500px]"
           />
         </div>
 
         <div className="flex flex-col justify-center px-1 py-1 sm:px-4 sm:py-2">
           <span className="mb-4 inline-flex w-fit items-center gap-2 rounded-full bg-gold/15 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.2em] text-clay sm:mb-5">
             <PenLine className="h-4 w-4" />
-            {AUTHOR.greeting}
+            {author.greeting}
           </span>
           <h2 className="font-serif text-[clamp(2.35rem,10vw,5.8rem)] font-semibold leading-[0.9] text-moss">
-            Mình là {AUTHOR.name}
+            {author.headline}
           </h2>
           <p className="mt-4 text-sm font-semibold uppercase tracking-[0.22em] text-clay">
-            {AUTHOR.title}
+            {author.role}
           </p>
-          <p className="mt-5 max-w-xl text-base leading-7 text-ink/82 sm:mt-7 sm:text-lg sm:leading-8">
-            {AUTHOR.intro}
-          </p>
-          <p className="mt-3 max-w-xl text-sm leading-7 text-ink/68 sm:mt-4 sm:text-base">
-            {AUTHOR.note}
-          </p>
-          <button
-            type="button"
-            onClick={onNext}
-            className="mt-5 inline-flex w-fit items-center gap-2 rounded-full bg-clay px-5 py-3 text-sm font-bold uppercase tracking-[0.14em] text-paper transition hover:-translate-y-0.5 hover:bg-[#87331f] focus:outline-none focus:ring-2 focus:ring-moss focus:ring-offset-4 focus:ring-offset-paper motion-reduce:hover:translate-y-0 sm:mt-8"
-          >
-            Tìm hiểu thêm
-            <ArrowRight className="h-4 w-4" />
-          </button>
+          <div className="mt-5 max-w-xl space-y-3 text-sm leading-7 text-ink/76 sm:mt-7 sm:text-base sm:leading-8">
+            {author.body.map((paragraph, index) => (
+              <p key={paragraph} className={index === 0 ? "text-ink/86 sm:text-lg" : undefined}>
+                {paragraph}
+              </p>
+            ))}
+          </div>
+          <div className="mt-6 flex flex-col gap-3 sm:mt-8 sm:flex-row sm:flex-wrap">
+            <button
+              type="button"
+              onClick={onExplore}
+              className="inline-flex w-fit items-center gap-2 rounded-full bg-clay px-5 py-3 text-sm font-bold uppercase tracking-[0.14em] text-paper transition hover:-translate-y-0.5 hover:bg-[#87331f] focus:outline-none focus:ring-2 focus:ring-moss focus:ring-offset-4 focus:ring-offset-paper motion-reduce:hover:translate-y-0"
+            >
+              {author.ctas.explore}
+              <ArrowRight className="h-4 w-4" />
+            </button>
+            <Link
+              href="/myth"
+              className="inline-flex w-fit items-center gap-2 rounded-full border border-[rgba(116,63,36,0.28)] bg-paper/45 px-5 py-3 text-sm font-bold uppercase tracking-[0.14em] text-moss transition hover:-translate-y-0.5 hover:border-clay hover:bg-gold/18 focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper motion-reduce:hover:translate-y-0"
+            >
+              {author.ctas.myth}
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
         </div>
       </StoryFrame>
     </div>
@@ -760,12 +801,16 @@ function AboutContent({
 }
 
 function FieldsSection({
+  fields,
+  ui,
   refSetter,
   selectedFieldId,
   gateLocked,
   gateNudgeKey,
   onSelectField,
 }: {
+  fields: Field[]
+  ui: PortfolioUi
   refSetter: (node: HTMLElement | null) => void
   selectedFieldId: FieldId | null
   gateLocked: boolean
@@ -784,15 +829,15 @@ function FieldsSection({
         <OrnamentDivider label="02" />
         <ScrollReveal preset="page-rise" className="mb-8 text-center">
           <h2 className="font-serif text-[clamp(2.3rem,5vw,4.6rem)] font-semibold text-clay">
-            Lĩnh vực hoạt động
+            {ui.fields.heading}
           </h2>
           <p className="mx-auto mt-3 max-w-xl text-balance text-sm leading-7 text-ink/72 sm:text-base">
-            Mỗi nhánh là một trang truyện riêng, cùng đi về một cách kể thương hiệu rõ ràng và có cảm xúc.
+            {ui.fields.body}
           </p>
         </ScrollReveal>
 
         <RevealGroup className="grid gap-5 lg:grid-cols-2" preset="card-cascade" stagger={0.12}>
-          {FIELDS.map((field) => (
+          {fields.map((field) => (
             <FieldCard
               key={field.id}
               field={field}
@@ -817,9 +862,7 @@ function FieldsSection({
             transition={{ duration: 0.45, ease: REVEAL_EASE }}
           >
             <Feather className="h-4 w-4" />
-            {gateLocked
-              ? "Chọn một lĩnh vực để mở trang dự án"
-              : "Cuộn tiếp hoặc chọn lĩnh vực khác"}
+            {gateLocked ? ui.fields.lockedPrompt : ui.fields.unlockedPrompt}
           </motion.div>
         </ScrollReveal>
       </div>
@@ -828,6 +871,7 @@ function FieldsSection({
 }
 
 function GallerySection({
+  ui,
   refSetter,
   activeField,
   activeFilter,
@@ -838,6 +882,7 @@ function GallerySection({
   onChooseField,
   onSelectProject,
 }: {
+  ui: PortfolioUi
   refSetter: (node: HTMLElement | null) => void
   activeField: Field | null
   activeFilter: string
@@ -856,17 +901,17 @@ function GallerySection({
         className="relative flex min-h-[var(--screen)] items-center px-4 pb-32 pt-20 sm:px-6 sm:py-20 lg:px-10"
       >
         <LockedChapterPanel
-          eyebrow="Trang lĩnh vực"
-          title="Chọn một lĩnh vực trước"
-          body="Danh mục dự án sẽ mở ra sau khi bạn chọn Social Planner hoặc Creative Copywriter."
-          actionLabel="Quay lại Lĩnh vực"
+          eyebrow={ui.gallery.lockedEyebrow}
+          title={ui.gallery.lockedTitle}
+          body={ui.gallery.lockedBody}
+          actionLabel={ui.gallery.lockedAction}
           onAction={onChooseField}
         />
       </section>
     )
   }
 
-  const filters = [ALL_FILTER, ...activeField.filters]
+  const filters = [ui.allFilter, ...activeField.filters]
 
   return (
     <section
@@ -894,10 +939,10 @@ function GallerySection({
                   className="mb-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-gold transition hover:text-paper focus:outline-none focus:ring-2 focus:ring-gold"
                 >
                   <ArrowLeft className="h-4 w-4" />
-                  Quay lại
+                  {ui.gallery.back}
                 </button>
                 <p className="text-xs font-bold uppercase tracking-[0.24em] text-gold">
-                  Trang lĩnh vực
+                  {ui.gallery.eyebrow}
                 </p>
                 <h2 className="mt-2 font-serif text-[clamp(2.4rem,5vw,5rem)] font-semibold leading-none">
                   {activeField.title}
@@ -931,6 +976,7 @@ function GallerySection({
               {filteredProjects.map((project) => (
                 <ProjectCard
                   key={project.id}
+                  ui={ui}
                   field={activeField}
                   project={project}
                   active={project.id === selectedProjectId}
@@ -946,6 +992,7 @@ function GallerySection({
 }
 
 function DetailSection({
+  ui,
   refSetter,
   field,
   project,
@@ -953,6 +1000,7 @@ function DetailSection({
   onChooseField,
   onTop,
 }: {
+  ui: PortfolioUi
   refSetter: (node: HTMLElement | null) => void
   field: Field | null
   project: Project | null
@@ -968,10 +1016,10 @@ function DetailSection({
         className="relative flex min-h-[var(--screen)] items-center px-4 pb-32 pt-20 sm:px-6 sm:py-20 lg:px-10"
       >
         <LockedChapterPanel
-          eyebrow="Chi tiết dự án"
-          title="Chưa có dự án được chọn"
-          body="Trang chi tiết sẽ mở sau khi bạn chọn một lĩnh vực và một dự án cụ thể."
-          actionLabel="Quay lại Lĩnh vực"
+          eyebrow={ui.detail.lockedEyebrow}
+          title={ui.detail.lockedTitle}
+          body={ui.detail.lockedBody}
+          actionLabel={ui.detail.lockedAction}
           onAction={onChooseField}
         />
       </section>
@@ -997,13 +1045,13 @@ function DetailSection({
                 className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-clay transition hover:text-moss focus:outline-none focus:ring-2 focus:ring-clay"
               >
                 <ArrowLeft className="h-4 w-4" />
-                Quay lại
+                {ui.detail.back}
               </button>
               <button
                 type="button"
                 onClick={onTop}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(116,63,36,0.28)] text-moss transition hover:bg-moss hover:text-paper focus:outline-none focus:ring-2 focus:ring-clay"
-                aria-label="Quay về bìa"
+                aria-label={ui.detail.topAria}
               >
                 <ChevronUp className="h-4 w-4" />
               </button>
@@ -1025,9 +1073,9 @@ function DetailSection({
                     preset="card-cascade"
                     stagger={0.065}
                   >
-                    <MetaBlock label="Client" value={project.client} />
-                    <MetaBlock label="Year" value={project.year} />
-                    <MetaBlock label="Scope" value={project.scope.join(", ")} />
+                    <MetaBlock label={ui.detail.client} value={project.client} />
+                    <MetaBlock label={ui.detail.year} value={project.year} />
+                    <MetaBlock label={ui.detail.scope} value={project.scope.join(", ")} />
                   </RevealGroup>
                   <ScrollReveal preset="page-rise" delay={0.14}>
                     <p className="mt-7 text-base leading-8 text-ink/82 sm:text-lg">
@@ -1037,8 +1085,8 @@ function DetailSection({
                 </div>
 
                 <RevealGroup className="mt-8 grid gap-5 sm:grid-cols-2" stagger={0.08}>
-                  <CaseNote title="Objective" body={project.objective} />
-                  <CaseNote title="Solution" body={project.solution} />
+                  <CaseNote title={ui.detail.objective} body={project.objective} />
+                  <CaseNote title={ui.detail.solution} body={project.solution} />
                 </RevealGroup>
               </article>
 
@@ -1058,7 +1106,7 @@ function DetailSection({
                 >
                   <p className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-clay">
                     <Layers3 className="h-4 w-4" />
-                    Kết quả
+                    {ui.detail.results}
                   </p>
                   <ul className="grid gap-3 text-sm leading-6 text-ink/78 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
                     {project.results.map((result) => (
@@ -1121,11 +1169,15 @@ function LockedChapterPanel({
 }
 
 function ProgressRail({
+  chapters,
+  ui,
   activeSection,
   lockedSectionIds,
   onJump,
   progress,
 }: {
+  chapters: Chapter[]
+  ui: PortfolioUi
   activeSection: SectionId
   lockedSectionIds: ReadonlySet<SectionId>
   onJump: (section: SectionId) => void
@@ -1134,7 +1186,7 @@ function ProgressRail({
   return (
     <nav
       className="fixed right-6 top-1/2 z-40 hidden -translate-y-1/2 lg:block"
-      aria-label="Điều hướng chương"
+      aria-label={ui.progress.aria}
     >
       <div className="relative flex flex-col items-end gap-2 rounded-full border border-[rgba(116,63,36,0.18)] bg-paper/76 px-2 py-3 shadow-story backdrop-blur-xl">
         <span
@@ -1146,7 +1198,7 @@ function ProgressRail({
             style={{ scaleY: progress }}
           />
         </span>
-        {CHAPTERS.map((chapter) => {
+        {chapters.map((chapter) => {
           const active = chapter.id === activeSection
           const locked = lockedSectionIds.has(chapter.id)
 
@@ -1161,8 +1213,8 @@ function ProgressRail({
               )}
               aria-label={
                 locked
-                  ? `${chapter.title} đang khóa. Chọn lĩnh vực trước.`
-                  : `Đến ${chapter.title}`
+                  ? `${chapter.title} ${ui.progress.lockedAria}`
+                  : `${ui.progress.goToPrefix} ${chapter.title}`
               }
               data-locked={locked || undefined}
               aria-current={active ? "step" : undefined}
@@ -1175,7 +1227,7 @@ function ProgressRail({
                 )}
               >
                 {chapter.number} · {chapter.title}
-                {locked ? " · Chọn lĩnh vực trước" : ""}
+                {locked ? ` · ${ui.progress.lockedHint}` : ""}
               </span>
               <span
                 className={cn(
@@ -1207,17 +1259,21 @@ function ProgressRail({
 }
 
 function MobileChapterBar({
+  chapters,
+  ui,
   activeSection,
   lockedSectionIds,
   onJump,
   progress,
 }: {
+  chapters: Chapter[]
+  ui: PortfolioUi
   activeSection: SectionId
   lockedSectionIds: ReadonlySet<SectionId>
   onJump: (section: SectionId) => void
   progress: MotionValue<number>
 }) {
-  const activeChapter = CHAPTERS.find((chapter) => chapter.id === activeSection) ?? CHAPTERS[0]
+  const activeChapter = chapters.find((chapter) => chapter.id === activeSection) ?? chapters[0]
 
   return (
     <nav className="fixed inset-x-3 bottom-3 z-50 overflow-hidden rounded-full border border-[rgba(116,63,36,0.22)] bg-paper/88 px-3 py-2 shadow-story backdrop-blur-xl lg:hidden">
@@ -1231,7 +1287,7 @@ function MobileChapterBar({
           {activeChapter.number}
         </span>
         <div className="flex flex-1 items-center justify-center gap-2">
-          {CHAPTERS.map((chapter) => {
+          {chapters.map((chapter) => {
             const active = chapter.id === activeSection
             const locked = lockedSectionIds.has(chapter.id)
 
@@ -1247,8 +1303,8 @@ function MobileChapterBar({
                 )}
                 aria-label={
                   locked
-                    ? `${chapter.title} đang khóa. Chọn lĩnh vực trước.`
-                    : `Đến ${chapter.title}`
+                    ? `${chapter.title} ${ui.progress.lockedAria}`
+                    : `${ui.progress.goToPrefix} ${chapter.title}`
                 }
                 data-locked={locked || undefined}
                 aria-current={active ? "step" : undefined}
@@ -1498,7 +1554,7 @@ function FieldCard({
       onClick={onSelect}
       aria-pressed={active}
       className={cn(
-        "group story-frame relative min-h-[360px] overflow-hidden rounded-[10px] text-left shadow-story transition duration-300 focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper motion-reduce:hover:translate-y-0",
+        "group story-frame relative min-h-[360px] w-full overflow-hidden rounded-[10px] text-left shadow-story transition duration-300 focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper motion-reduce:hover:translate-y-0",
         active
           ? "scale-[1.01] ring-1 ring-gold/55"
           : "hover:-translate-y-1",
@@ -1506,7 +1562,7 @@ function FieldCard({
     >
       <img
         src={field.image}
-        alt={`Minh họa ${field.title}`}
+        alt={field.imageAlt}
         className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105 motion-reduce:group-hover:scale-100"
       />
       <div
@@ -1525,12 +1581,14 @@ function FieldCard({
           <h3 className="mt-7 max-w-[9ch] font-serif text-[clamp(2.3rem,5vw,4.2rem)] font-semibold leading-none">
             {field.title}
           </h3>
+          <p className="mt-3 max-w-sm text-xs font-bold uppercase tracking-[0.18em] text-gold">
+            ({field.subtitle})
+          </p>
           <p className="mt-5 max-w-sm text-base leading-7 text-paper/84">
             {field.description}
           </p>
         </div>
-        <div className="flex items-center justify-between gap-4">
-          <p className="max-w-md text-sm leading-6 text-paper/70">{field.body}</p>
+        <div className="flex items-center justify-end gap-4">
           <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-gold/70 text-gold transition group-hover:translate-x-1 group-hover:bg-gold group-hover:text-moss">
             <ArrowRight className="h-4 w-4" />
           </span>
@@ -1541,11 +1599,13 @@ function FieldCard({
 }
 
 function ProjectCard({
+  ui,
   field,
   project,
   active,
   onSelect,
 }: {
+  ui: PortfolioUi
   field: Field
   project: Project
   active: boolean
@@ -1574,7 +1634,7 @@ function ProjectCard({
         </h3>
         <p className="mt-2 text-sm leading-6 text-ink/72">{project.summary}</p>
         <span className="mt-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-clay">
-          Xem dự án
+          {ui.projectCard.action}
           <ArrowRight className="h-4 w-4" />
         </span>
       </div>

@@ -17,20 +17,20 @@ const sans = Inter({
 })
 
 export const metadata: Metadata = {
-  title: "Portfolio – Cổ tích Việt Nam cho dân sáng tạo",
+  title: "Minh Tam Portfolio",
   description:
-    "A Vietnamese storybook-inspired portfolio for social planning and creative copywriting.",
+    "A bilingual Vietnamese storybook-inspired portfolio for social planning and creative copywriting.",
   openGraph: {
-    title: "Portfolio – Cổ tích Việt Nam cho dân sáng tạo",
+    title: "Minh Tam Portfolio",
     description:
-      "A Vietnamese storybook-inspired portfolio for social planning and creative copywriting.",
+      "A bilingual Vietnamese storybook-inspired portfolio for social planning and creative copywriting.",
     type: "website",
   },
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="vi" className={`${serif.variable} ${sans.variable}`}>
+    <html lang="en" className={`${serif.variable} ${sans.variable}`}>
       <body>
         <LenisProvider>{children}</LenisProvider>
       </body>
