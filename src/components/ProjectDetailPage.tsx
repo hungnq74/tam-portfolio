@@ -182,10 +182,7 @@ function MediaProjectPage({
               tabIndex={0}
               onKeyDown={onCarouselKeyDown}
             >
-              <div className="mx-auto mb-4 flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
-                <p className="text-xs font-bold uppercase tracking-[0.22em] text-clay">
-                  {ui.detail.proposal}
-                </p>
+              <div className="mx-auto mb-4 flex w-full max-w-7xl flex-wrap items-center justify-end gap-3 px-4 sm:px-6 lg:px-10">
                 <p
                   className="text-xs font-bold uppercase tracking-[0.16em] text-ink/58"
                   aria-live="polite"
@@ -224,26 +221,43 @@ function MediaProjectPage({
               </div>
 
               {pageCount > 1 ? (
-                <div className="mt-5 flex items-center justify-center gap-2">
-                  {Array.from({ length: pageCount }, (_, pageIndex) => {
-                    const pageStart = pageIndex * slidesPerPage
-                    const pageSize = Math.min(slidesPerPage, slides.length - pageStart)
-                    const pageLabel = getSlideRangeLabel(pageStart, pageSize, slides.length)
+                <div className="mt-5 overflow-x-auto overscroll-x-contain pb-2">
+                  <div className="flex w-max min-w-full justify-start gap-2 px-1 sm:justify-center sm:gap-3">
+                    {slides.map((slide, index) => {
+                      const thumbnailPageIndex = Math.floor(index / slidesPerPage)
+                      const isVisible =
+                        index >= visibleSlideStart && index < visibleSlideStart + visibleSlides.length
 
-                    return (
-                      <button
-                        key={pageLabel}
-                        type="button"
-                        onClick={() => setActivePageIndex(pageIndex)}
-                        className={cn(
-                          "h-2.5 rounded-full transition focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper",
-                          pageIndex === activePageIndex ? "w-8 bg-clay" : "w-2.5 bg-ink/24 hover:bg-clay/65",
-                        )}
-                        aria-label={`${ui.detail.showProposalSlide} ${pageLabel}`}
-                        aria-current={pageIndex === activePageIndex ? "true" : undefined}
-                      />
-                    )
-                  })}
+                      return (
+                        <button
+                          key={slide.src}
+                          type="button"
+                          onClick={() => setActivePageIndex(thumbnailPageIndex)}
+                          className={cn(
+                            "group relative h-14 w-24 shrink-0 overflow-hidden rounded-[5px] border bg-paper shadow-[0_10px_26px_rgba(45,32,21,0.12)] transition focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper sm:h-16 sm:w-28 lg:h-20 lg:w-36",
+                            isVisible
+                              ? "border-clay opacity-100 ring-2 ring-clay ring-offset-2 ring-offset-paper"
+                              : "border-ink/16 opacity-60 hover:border-clay/65 hover:opacity-100",
+                          )}
+                          aria-label={`${ui.detail.showProposalSlide} ${index + 1}`}
+                          aria-pressed={isVisible}
+                        >
+                          <img
+                            src={slide.src}
+                            alt=""
+                            width={slide.width}
+                            height={slide.height}
+                            loading="lazy"
+                            decoding="async"
+                            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                          />
+                          <span className="absolute bottom-1 right-1 rounded-[3px] bg-ink/72 px-1.5 py-0.5 text-[10px] font-bold leading-none text-paper">
+                            {index + 1}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
               ) : null}
             </div>
