@@ -4,6 +4,7 @@ import {
   type CSSProperties,
   type KeyboardEvent,
   useCallback,
+  useEffect,
   useMemo,
   useState,
 } from "react"
@@ -23,6 +24,11 @@ import {
 import { LocaleToggle } from "@/components/LocaleToggle"
 import { useLocale } from "@/hooks/useLocale"
 import { cn } from "@/lib/utils"
+
+const MEDIA_RAIL_CLASS =
+  "relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 sm:w-[calc(100vw-3rem)] lg:w-[min(calc(100vw-6rem),1440px)]"
+const CAROUSEL_RAIL_CLASS =
+  "relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 sm:w-[calc(100vw-3rem)] lg:w-[min(calc(100vw-10rem),1440px)] xl:w-[min(calc(100vw-18rem),1440px)]"
 
 export function ProjectDetailPage({ projectId }: { projectId: string }) {
   const { locale, setLocale } = useLocale()
@@ -77,6 +83,31 @@ function ProjectChrome({
   )
 }
 
+function useSlidesPerPage() {
+  const [slidesPerPage, setSlidesPerPage] = useState(1)
+
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 1024px)")
+    const syncSlidesPerPage = () => setSlidesPerPage(query.matches ? 2 : 1)
+
+    syncSlidesPerPage()
+    query.addEventListener("change", syncSlidesPerPage)
+
+    return () => query.removeEventListener("change", syncSlidesPerPage)
+  }, [])
+
+  return slidesPerPage
+}
+
+function getSlideRangeLabel(startIndex: number, visibleCount: number, totalSlides: number) {
+  const firstSlide = startIndex + 1
+  const lastSlide = Math.min(startIndex + visibleCount, totalSlides)
+
+  return firstSlide === lastSlide
+    ? `${firstSlide} / ${totalSlides}`
+    : `${firstSlide}-${lastSlide} / ${totalSlides}`
+}
+
 function MediaProjectPage({
   ui,
   project,
@@ -86,23 +117,31 @@ function MediaProjectPage({
 }) {
   const media = project.media
   const slides = media?.proposalSlides ?? []
-  const [activeSlideIndex, setActiveSlideIndex] = useState(0)
-  const activeSlide = slides[activeSlideIndex]
+  const slidesPerPage = useSlidesPerPage()
+  const [activePageIndex, setActivePageIndex] = useState(0)
+  const pageCount = Math.max(1, Math.ceil(slides.length / slidesPerPage))
+  const visibleSlideStart = activePageIndex * slidesPerPage
+  const visibleSlides = slides.slice(visibleSlideStart, visibleSlideStart + slidesPerPage)
+  const slideRangeLabel = getSlideRangeLabel(visibleSlideStart, visibleSlides.length, slides.length)
 
-  const goToSlide = useCallback(
+  useEffect(() => {
+    setActivePageIndex((pageIndex) => Math.min(pageIndex, pageCount - 1))
+  }, [pageCount])
+
+  const goToPage = useCallback(
     (direction: number) => {
-      if (slides.length <= 1) return
+      if (pageCount <= 1) return
 
-      setActiveSlideIndex((index) => (index + direction + slides.length) % slides.length)
+      setActivePageIndex((index) => (index + direction + pageCount) % pageCount)
     },
-    [slides.length],
+    [pageCount],
   )
 
   const onCarouselKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return
 
     event.preventDefault()
-    goToSlide(event.key === "ArrowLeft" ? -1 : 1)
+    goToPage(event.key === "ArrowLeft" ? -1 : 1)
   }
 
   if (!media) return null
@@ -116,25 +155,27 @@ function MediaProjectPage({
           <ProjectMediaImage
             asset={media.cover}
             eager
-            className="relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 overflow-hidden bg-ink sm:w-[calc(100vw-3rem)] lg:w-[min(calc(100vw-6rem),1440px)]"
+            className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-ink"
             imageClassName="h-full w-full object-contain"
           />
 
-          <p className="font-prose mx-auto max-w-4xl border-l-4 border-clay bg-paper/72 px-5 py-4 text-base leading-7 text-ink/82 shadow-[0_14px_36px_rgba(45,32,21,0.1)] sm:px-6 sm:py-5 sm:text-lg">
-            {project.overview}
-          </p>
+          <div className={cn(MEDIA_RAIL_CLASS, "border-l-4 border-clay bg-paper/72 px-5 py-4 shadow-[0_14px_36px_rgba(45,32,21,0.1)] sm:px-6 sm:py-5")}>
+            <p className="font-prose mx-auto max-w-4xl text-base leading-7 text-ink/82 sm:text-lg">
+              {project.overview}
+            </p>
+          </div>
 
           {media.summary ? (
             <ProjectMediaImage
               asset={media.summary}
-              className="relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 overflow-hidden bg-paper sm:w-[calc(100vw-3rem)] lg:w-[min(calc(100vw-6rem),1440px)]"
+              className={cn(MEDIA_RAIL_CLASS, "overflow-hidden bg-paper")}
               imageClassName="h-full w-full object-contain"
             />
           ) : null}
 
-          {activeSlide ? (
+          {slides.length > 0 ? (
             <div
-              className="relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 focus:outline-none sm:w-[calc(100vw-3rem)] lg:w-[min(calc(100vw-10rem),1440px)] xl:w-[min(calc(100vw-18rem),1440px)]"
+              className={cn(CAROUSEL_RAIL_CLASS, "focus:outline-none")}
               role="region"
               aria-label={`${project.title} ${ui.detail.proposalCarousel}`}
               aria-roledescription="carousel"
@@ -145,45 +186,64 @@ function MediaProjectPage({
                 <p className="text-xs font-bold uppercase tracking-[0.22em] text-clay">
                   {ui.detail.proposal}
                 </p>
-                <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink/58">
-                  {activeSlideIndex + 1} / {slides.length}
+                <p
+                  className="text-xs font-bold uppercase tracking-[0.16em] text-ink/58"
+                  aria-live="polite"
+                >
+                  {slideRangeLabel}
                 </p>
               </div>
 
               <div className="relative">
-                <ProjectMediaImage
-                  asset={activeSlide}
-                  className="flex w-full items-center justify-center overflow-hidden bg-paper"
-                  imageClassName="h-full w-full object-contain"
-                />
+                <div className="grid items-center gap-4 lg:grid-cols-2">
+                  {visibleSlides.map((slide) => (
+                    <ProjectMediaImage
+                      key={slide.src}
+                      asset={slide}
+                      className={cn(
+                        "flex w-full items-center justify-center overflow-hidden bg-paper",
+                        visibleSlides.length === 1 && slidesPerPage === 2
+                          ? "lg:col-span-2 lg:mx-auto lg:max-w-[calc(50%_-_0.5rem)]"
+                          : null,
+                      )}
+                      imageClassName="h-full w-full object-contain"
+                    />
+                  ))}
+                </div>
 
-                {slides.length > 1 ? (
+                {pageCount > 1 ? (
                   <div className="mt-4 flex items-center justify-center gap-3 xl:pointer-events-none xl:absolute xl:inset-y-0 xl:-left-16 xl:-right-16 xl:mt-0 xl:justify-between">
-                    <CarouselButton label={ui.detail.previousSlide} onClick={() => goToSlide(-1)}>
+                    <CarouselButton label={ui.detail.previousSlide} onClick={() => goToPage(-1)}>
                       <ArrowLeft className="h-4 w-4" />
                     </CarouselButton>
-                    <CarouselButton label={ui.detail.nextSlide} onClick={() => goToSlide(1)}>
+                    <CarouselButton label={ui.detail.nextSlide} onClick={() => goToPage(1)}>
                       <ArrowRight className="h-4 w-4" />
                     </CarouselButton>
                   </div>
                 ) : null}
               </div>
 
-              {slides.length > 1 ? (
+              {pageCount > 1 ? (
                 <div className="mt-5 flex items-center justify-center gap-2">
-                  {slides.map((slide, index) => (
-                    <button
-                      key={slide.src}
-                      type="button"
-                      onClick={() => setActiveSlideIndex(index)}
-                      className={cn(
-                        "h-2.5 rounded-full transition focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper",
-                        index === activeSlideIndex ? "w-8 bg-clay" : "w-2.5 bg-ink/24 hover:bg-clay/65",
-                      )}
-                      aria-label={`${ui.detail.showProposalSlide} ${index + 1}`}
-                      aria-current={index === activeSlideIndex ? "true" : undefined}
-                    />
-                  ))}
+                  {Array.from({ length: pageCount }, (_, pageIndex) => {
+                    const pageStart = pageIndex * slidesPerPage
+                    const pageSize = Math.min(slidesPerPage, slides.length - pageStart)
+                    const pageLabel = getSlideRangeLabel(pageStart, pageSize, slides.length)
+
+                    return (
+                      <button
+                        key={pageLabel}
+                        type="button"
+                        onClick={() => setActivePageIndex(pageIndex)}
+                        className={cn(
+                          "h-2.5 rounded-full transition focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper",
+                          pageIndex === activePageIndex ? "w-8 bg-clay" : "w-2.5 bg-ink/24 hover:bg-clay/65",
+                        )}
+                        aria-label={`${ui.detail.showProposalSlide} ${pageLabel}`}
+                        aria-current={pageIndex === activePageIndex ? "true" : undefined}
+                      />
+                    )
+                  })}
                 </div>
               ) : null}
             </div>
