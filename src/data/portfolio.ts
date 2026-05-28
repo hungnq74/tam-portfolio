@@ -26,6 +26,23 @@ export interface Author {
   }
 }
 
+export interface ProjectMediaAsset {
+  src: string
+  alt: string
+  width: number
+  height: number
+  focalPoint?: {
+    x: number
+    y: number
+  }
+}
+
+export interface ProjectMedia {
+  cover: ProjectMediaAsset
+  summary?: ProjectMediaAsset
+  proposalSlides?: ProjectMediaAsset[]
+}
+
 export interface Project {
   id: string
   fieldId: FieldId
@@ -44,6 +61,7 @@ export interface Project {
     col: 0 | 1 | 2
     row: 0 | 1
   }
+  media?: ProjectMedia
 }
 
 export interface Field {
@@ -97,6 +115,11 @@ export interface PortfolioUi {
     objective: string
     solution: string
     results: string
+    proposal: string
+    proposalCarousel: string
+    previousSlide: string
+    nextSlide: string
+    showProposalSlide: string
   }
   projectCard: {
     action: string
@@ -149,6 +172,37 @@ const SHARED_FIELD_ASSETS = {
     image: "/assets/storybook/copywriter-field.png",
     sheetImage: "/assets/storybook/copywriter-projects.png",
   },
+}
+
+const AXE_CONTEXT =
+  "Context: Make AXE Vietnam the top #1 brand discussed by Gen Z on social media and distribute 2M product samples."
+
+const AXE_PDF_PAGE_COUNT = 15
+const AXE_PDF_PAGE_SIZE = {
+  width: 1600,
+  height: 900,
+}
+
+const AXE_PROJECT_MEDIA: ProjectMedia = {
+  cover: {
+    src: "/assets/projects/axe/cover.png",
+    alt: "AXE generated project cover artwork",
+    width: AXE_PDF_PAGE_SIZE.width,
+    height: AXE_PDF_PAGE_SIZE.height,
+    focalPoint: { x: 54, y: 50 },
+  },
+  summary: {
+    src: "/assets/projects/axe/summary.png",
+    alt: "AXE executive summary page from the proposal PDF",
+    width: AXE_PDF_PAGE_SIZE.width,
+    height: AXE_PDF_PAGE_SIZE.height,
+  },
+  proposalSlides: Array.from({ length: AXE_PDF_PAGE_COUNT }, (_, index) => ({
+    src: `/assets/projects/axe/proposal-${String(index + 1).padStart(2, "0")}.png`,
+    alt: `AXE full proposal page ${index + 1}`,
+    width: AXE_PDF_PAGE_SIZE.width,
+    height: AXE_PDF_PAGE_SIZE.height,
+  })),
 }
 
 export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
@@ -373,22 +427,23 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         thumbnail: { col: 0, row: 0 },
       },
       {
-        id: "product-campaign",
+        id: "axe",
         fieldId: "creative-copywriter",
-        title: "Product Campaign",
+        title: "AXE",
         eyebrow: "Project",
         category: "Campaign",
-        summary: "Big idea and copy for a furniture product launch.",
-        client: "Still Chair",
+        summary: "A bold proposal-style campaign detail built around attraction, confidence, and visual storytelling.",
+        client: "AXE",
         year: "2024",
-        scope: ["Big Idea", "Tagline", "Ad Copy"],
-        overview:
-          "A campaign that turned a chair into a symbol of pause in the middle of a busy day.",
+        scope: ["Big Idea", "Campaign Proposal", "Creative Copy"],
+        overview: AXE_CONTEXT,
         objective:
-          "Create an emotional launch message while still making the product benefit clear.",
-        solution: "Write copy around the idea of sitting down to hear yourself more clearly.",
-        results: ["3 tagline directions", "10 ad copy samples", "1 key message system"],
+          "Make the case page feel closer to a finished proposal deck than a text article.",
+        solution:
+          "Use a large cover image, a standalone summary page, and an upload-ready carousel for the full proposal.",
+        results: ["Image-led detail page", "Upload-ready media structure", "Carousel proposal flow"],
         thumbnail: { col: 1, row: 0 },
+        media: AXE_PROJECT_MEDIA,
       },
       {
         id: "tvc-script",
@@ -507,6 +562,11 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         objective: "Objective",
         solution: "Solution",
         results: "Results",
+        proposal: "Full proposal",
+        proposalCarousel: "proposal carousel",
+        previousSlide: "Previous slide",
+        nextSlide: "Next slide",
+        showProposalSlide: "Show proposal slide",
       },
       projectCard: {
         action: "View project",
@@ -740,22 +800,23 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         thumbnail: { col: 0, row: 0 },
       },
       {
-        id: "product-campaign",
+        id: "axe",
         fieldId: "creative-copywriter",
-        title: "Product Campaign",
+        title: "AXE",
         eyebrow: "Dự án",
         category: "Campaign",
-        summary: "Big idea và copy cho chiến dịch ra mắt sản phẩm nội thất.",
-        client: "Still Chair",
+        summary: "Một case campaign đậm chất proposal, tập trung vào attraction, confidence và visual storytelling.",
+        client: "AXE",
         year: "2024",
-        scope: ["Big Idea", "Tagline", "Ad Copy"],
-        overview:
-          "Chiến dịch biến chiếc ghế thành biểu tượng của khoảng nghỉ giữa ngày bận rộn.",
+        scope: ["Big Idea", "Campaign Proposal", "Creative Copy"],
+        overview: AXE_CONTEXT,
         objective:
-          "Tạo thông điệp ra mắt có tính cảm xúc nhưng vẫn làm nổi bật lợi ích sản phẩm.",
-        solution: "Viết bộ copy xoay quanh ý niệm ngồi xuống để nghe mình rõ hơn.",
-        results: ["3 hướng tagline", "10 mẫu ad copy", "1 key message system"],
+          "Làm cho trang case study có cảm giác như một proposal deck hoàn chỉnh thay vì bài viết nhiều chữ.",
+        solution:
+          "Dùng cover lớn, một trang summary riêng và carousel sẵn sàng nhận ảnh upload cho full proposal.",
+        results: ["Trang detail thiên về hình ảnh", "Cấu trúc media sẵn sàng upload", "Carousel proposal"],
         thumbnail: { col: 1, row: 0 },
+        media: AXE_PROJECT_MEDIA,
       },
       {
         id: "tvc-script",
@@ -874,6 +935,11 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         objective: "Objective",
         solution: "Solution",
         results: "Kết quả",
+        proposal: "Proposal đầy đủ",
+        proposalCarousel: "carousel proposal",
+        previousSlide: "Slide trước",
+        nextSlide: "Slide tiếp theo",
+        showProposalSlide: "Xem proposal slide",
       },
       projectCard: {
         action: "Xem dự án",
@@ -957,4 +1023,12 @@ export function isLocale(value: string | null): value is Locale {
 
 export function getPortfolioContent(locale: Locale) {
   return PORTFOLIO_CONTENT[locale]
+}
+
+export function getPortfolioProjectIds() {
+  return PORTFOLIO_CONTENT[DEFAULT_LOCALE].projects.map((project) => project.id)
+}
+
+export function getPortfolioProject(locale: Locale, projectId: string) {
+  return PORTFOLIO_CONTENT[locale].projects.find((project) => project.id === projectId)
 }

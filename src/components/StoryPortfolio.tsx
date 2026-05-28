@@ -38,6 +38,7 @@ import {
   type FieldId,
   type PortfolioUi,
   type Project,
+  type ProjectMediaAsset,
   type SectionId,
   getPortfolioContent,
 } from "@/data/portfolio"
@@ -85,10 +86,18 @@ function getKeyboardScrollDelta(event: KeyboardEvent) {
   return null
 }
 
+function getProjectHref(projectId: string) {
+  return `/work/${projectId}`
+}
+
 export function StoryPortfolio() {
   const { locale, setLocale } = useLocale()
   const content = useMemo(() => getPortfolioContent(locale), [locale])
-  const { author, chapters, fields, projects, ui } = content
+  const { author, chapters: contentChapters, fields, projects, ui } = content
+  const chapters = useMemo(
+    () => contentChapters.filter((chapter) => chapter.id !== "detail"),
+    [contentChapters],
+  )
   const sectionRefs = useRef<Record<SectionId, HTMLElement | null>>({
     cover: null,
     about: null,
@@ -131,9 +140,6 @@ export function StoryPortfolio() {
       activeProjects[0] ??
       null
     : activeProjects[0] ?? null
-  const selectedProjectField = selectedProject
-    ? fields.find((field) => field.id === selectedProject.fieldId) ?? activeField
-    : activeField
 
   useEffect(() => {
     setActiveFilter(ui.allFilter)
@@ -341,11 +347,6 @@ export function StoryPortfolio() {
     window.setTimeout(() => scrollTo("gallery", { force: true }), 90)
   }
 
-  const selectProject = (project: Project) => {
-    setSelectedProjectId(project.id)
-    window.setTimeout(() => scrollTo("detail", { force: true }), 80)
-  }
-
   return (
     <MotionPreferenceContext.Provider value={reducedMotion}>
       <div className="story-texture min-h-screen overflow-x-clip">
@@ -400,16 +401,6 @@ export function StoryPortfolio() {
             onBack={() => scrollTo("fields")}
             onFilter={setActiveFilter}
             onChooseField={() => scrollTo("fields", { immediate: true })}
-            onSelectProject={selectProject}
-          />
-          <DetailSection
-            ui={ui}
-            refSetter={setSectionRef("detail")}
-            field={selectedProjectField}
-            project={selectedProject}
-            onBack={() => scrollTo("gallery")}
-            onChooseField={() => scrollTo("fields", { immediate: true })}
-            onTop={() => scrollTo("cover")}
           />
         </main>
       </div>
@@ -890,7 +881,6 @@ function GallerySection({
   onBack,
   onFilter,
   onChooseField,
-  onSelectProject,
 }: {
   ui: PortfolioUi
   refSetter: (node: HTMLElement | null) => void
@@ -901,7 +891,6 @@ function GallerySection({
   onBack: () => void
   onFilter: (filter: string) => void
   onChooseField: () => void
-  onSelectProject: (project: Project) => void
 }) {
   if (!activeField) {
     return (
@@ -927,7 +916,7 @@ function GallerySection({
     <section
       ref={refSetter}
       data-section-id="gallery"
-      className="relative flex min-h-[var(--screen)] items-center px-4 pb-32 pt-20 sm:px-6 sm:py-20 lg:px-10"
+      className="relative min-h-[var(--screen)] px-4 pb-32 pt-20 sm:px-6 sm:py-20 lg:px-10"
     >
       <ScrollReveal
         preset="page-rise"
@@ -979,7 +968,8 @@ function GallerySection({
 
             <RevealGroup
               key={`${activeField.id}-${activeFilter}`}
-              className="grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+              className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3"
+              itemClassName="h-full"
               preset="card-cascade"
               stagger={0.055}
             >
@@ -990,7 +980,7 @@ function GallerySection({
                   field={activeField}
                   project={project}
                   active={project.id === selectedProjectId}
-                  onSelect={() => onSelectProject(project)}
+                  href={getProjectHref(project.id)}
                 />
               ))}
             </RevealGroup>
@@ -1033,6 +1023,18 @@ function DetailSection({
           onAction={onChooseField}
         />
       </section>
+    )
+  }
+
+  if (project.media) {
+    return (
+      <MediaProjectDetailSection
+        ui={ui}
+        refSetter={refSetter}
+        project={project}
+        onBack={onBack}
+        onTop={onTop}
+      />
     )
   }
 
@@ -1132,6 +1134,222 @@ function DetailSection({
         </ScrollReveal>
       </div>
     </section>
+  )
+}
+
+function MediaProjectDetailSection({
+  ui,
+  refSetter,
+  project,
+  onBack,
+  onTop,
+}: {
+  ui: PortfolioUi
+  refSetter: (node: HTMLElement | null) => void
+  project: Project
+  onBack: () => void
+  onTop: () => void
+}) {
+  const media = project.media
+  const slides = media?.proposalSlides ?? []
+  const [activeSlideIndex, setActiveSlideIndex] = useState(0)
+  const activeSlide = slides[activeSlideIndex]
+
+  useEffect(() => {
+    setActiveSlideIndex(0)
+  }, [project.id])
+
+  const goToSlide = useCallback(
+    (direction: number) => {
+      if (slides.length <= 1) return
+
+      setActiveSlideIndex((index) => (index + direction + slides.length) % slides.length)
+    },
+    [slides.length],
+  )
+
+  const onCarouselKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (isTypingTarget(event.target)) return
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return
+
+    event.preventDefault()
+    goToSlide(event.key === "ArrowLeft" ? -1 : 1)
+  }
+
+  if (!media) return null
+
+  return (
+    <section
+      ref={refSetter}
+      data-section-id="detail"
+      className="relative min-h-[var(--screen)] px-4 pb-32 pt-20 sm:px-6 sm:py-20 lg:px-10"
+    >
+      <div className="mx-auto w-full max-w-7xl">
+        <ScrollReveal
+          preset="page-rise"
+          className="mb-5 flex flex-wrap items-center justify-between gap-4"
+        >
+          <button
+            type="button"
+            onClick={onBack}
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-clay transition hover:text-moss focus:outline-none focus:ring-2 focus:ring-clay"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            {ui.detail.back}
+          </button>
+          <button
+            type="button"
+            onClick={onTop}
+            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(116,63,36,0.28)] bg-paper/70 text-moss transition hover:bg-moss hover:text-paper focus:outline-none focus:ring-2 focus:ring-clay"
+            aria-label={ui.detail.topAria}
+          >
+            <ChevronUp className="h-4 w-4" />
+          </button>
+        </ScrollReveal>
+
+        <article className="space-y-10 sm:space-y-14">
+          <ScrollReveal key={`${project.id}-cover`} preset="image-depth" amount={0.14}>
+            <ProjectMediaImage
+              asset={media.cover}
+              eager
+              className="relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 overflow-hidden bg-ink sm:w-[calc(100vw-3rem)] lg:w-[min(calc(100vw-6rem),1440px)]"
+              imageClassName="h-full w-full object-contain"
+            />
+          </ScrollReveal>
+
+          <ScrollReveal preset="page-rise" amount={0.16}>
+            <p className="font-prose mx-auto max-w-4xl border-l-4 border-clay bg-paper/72 px-5 py-4 text-base leading-7 text-ink/82 shadow-[0_14px_36px_rgba(45,32,21,0.1)] sm:px-6 sm:py-5 sm:text-lg">
+              {project.overview}
+            </p>
+          </ScrollReveal>
+
+          {media.summary ? (
+            <ScrollReveal preset="page-rise" amount={0.12}>
+              <ProjectMediaImage
+                asset={media.summary}
+                className="relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 overflow-hidden bg-paper sm:w-[calc(100vw-3rem)] lg:w-[min(calc(100vw-6rem),1440px)]"
+                imageClassName="h-full w-full object-contain"
+              />
+            </ScrollReveal>
+          ) : null}
+
+          {activeSlide ? (
+            <ScrollReveal preset="page-rise" amount={0.12}>
+              <div
+                className="relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 focus:outline-none sm:w-[calc(100vw-3rem)] lg:w-[min(calc(100vw-10rem),1440px)] xl:w-[min(calc(100vw-18rem),1440px)]"
+                role="region"
+                aria-label={`${project.title} ${ui.detail.proposalCarousel}`}
+                aria-roledescription="carousel"
+                tabIndex={0}
+                onKeyDown={onCarouselKeyDown}
+                data-scroll-gate-ignore
+              >
+                <div className="mx-auto mb-4 flex w-full max-w-7xl flex-wrap items-center justify-between gap-3 px-4 sm:px-6 lg:px-10">
+                  <p className="text-xs font-bold uppercase tracking-[0.22em] text-clay">
+                    {ui.detail.proposal}
+                  </p>
+                  <p className="text-xs font-bold uppercase tracking-[0.16em] text-ink/58">
+                    {activeSlideIndex + 1} / {slides.length}
+                  </p>
+                </div>
+
+                <div className="relative">
+                  <ProjectMediaImage
+                    asset={activeSlide}
+                    className="flex w-full items-center justify-center overflow-hidden bg-paper"
+                    imageClassName="h-full w-full object-contain"
+                  />
+
+                  {slides.length > 1 ? (
+                    <div className="mt-4 flex items-center justify-center gap-3 xl:pointer-events-none xl:absolute xl:inset-y-0 xl:-left-16 xl:-right-16 xl:mt-0 xl:justify-between">
+                      <CarouselButton label={ui.detail.previousSlide} onClick={() => goToSlide(-1)}>
+                        <ArrowLeft className="h-4 w-4" />
+                      </CarouselButton>
+                      <CarouselButton label={ui.detail.nextSlide} onClick={() => goToSlide(1)}>
+                        <ArrowRight className="h-4 w-4" />
+                      </CarouselButton>
+                    </div>
+                  ) : null}
+                </div>
+
+                {slides.length > 1 ? (
+                  <div className="mt-5 flex items-center justify-center gap-2">
+                    {slides.map((slide, index) => (
+                      <button
+                        key={slide.src}
+                        type="button"
+                        onClick={() => setActiveSlideIndex(index)}
+                        className={cn(
+                          "h-2.5 rounded-full transition focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper",
+                          index === activeSlideIndex ? "w-8 bg-clay" : "w-2.5 bg-ink/24 hover:bg-clay/65",
+                        )}
+                        aria-label={`${ui.detail.showProposalSlide} ${index + 1}`}
+                        aria-current={index === activeSlideIndex ? "true" : undefined}
+                      />
+                    ))}
+                  </div>
+                ) : null}
+              </div>
+            </ScrollReveal>
+          ) : null}
+        </article>
+      </div>
+    </section>
+  )
+}
+
+function ProjectMediaImage({
+  asset,
+  className,
+  imageClassName,
+  eager = false,
+  preserveAspect = true,
+}: {
+  asset: ProjectMediaAsset
+  className?: string
+  imageClassName?: string
+  eager?: boolean
+  preserveAspect?: boolean
+}) {
+  const style = preserveAspect
+    ? ({
+        aspectRatio: `${asset.width} / ${asset.height}`,
+      } satisfies CSSProperties)
+    : undefined
+
+  return (
+    <figure className={className} style={style}>
+      <img
+        src={asset.src}
+        alt={asset.alt}
+        width={asset.width}
+        height={asset.height}
+        loading={eager ? "eager" : "lazy"}
+        decoding="async"
+        className={cn("block", imageClassName)}
+      />
+    </figure>
+  )
+}
+
+function CarouselButton({
+  label,
+  onClick,
+  children,
+}: {
+  label: string
+  onClick: () => void
+  children: React.ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="pointer-events-auto inline-flex h-10 w-10 items-center justify-center rounded-full border border-paper/80 bg-ink/70 text-paper shadow-story backdrop-blur transition hover:bg-clay focus:outline-none focus:ring-2 focus:ring-gold sm:h-12 sm:w-12"
+      aria-label={label}
+    >
+      {children}
+    </button>
   )
 }
 
@@ -1418,18 +1636,20 @@ function ScrollReveal({
 function RevealGroup({
   children,
   className,
+  itemClassName,
   preset = "page-rise",
   stagger = 0.08,
 }: {
   children: React.ReactNode
   className?: string
+  itemClassName?: string
   preset?: RevealPreset
   stagger?: number
 }) {
   return (
     <div className={className}>
       {Children.toArray(children).map((child, index) => (
-        <ScrollReveal key={index} preset={preset} delay={index * stagger}>
+        <ScrollReveal key={index} preset={preset} delay={index * stagger} className={itemClassName}>
           {child}
         </ScrollReveal>
       ))}
@@ -1613,42 +1833,59 @@ function ProjectCard({
   field,
   project,
   active,
-  onSelect,
+  href,
 }: {
   ui: PortfolioUi
   field: Field
   project: Project
   active: boolean
-  onSelect: () => void
+  href: string
 }) {
+  const coverFocalPoint = project.media?.cover.focalPoint ?? { x: 50, y: 50 }
+
   return (
-    <button
-      type="button"
-      onClick={onSelect}
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
       className={cn(
-        "group overflow-hidden rounded-[8px] border bg-paper text-left text-ink shadow-[0_18px_45px_rgba(20,28,20,0.18)] transition duration-300 focus:outline-none focus:ring-2 focus:ring-gold motion-reduce:hover:translate-y-0",
+        "group flex h-[25rem] w-full flex-col overflow-hidden rounded-[8px] border bg-paper text-left text-ink shadow-[0_18px_45px_rgba(20,28,20,0.18)] transition duration-300 focus:outline-none focus:ring-2 focus:ring-gold motion-reduce:hover:translate-y-0",
         active
           ? "border-gold shadow-[0_22px_55px_rgba(176,108,51,0.24)]"
           : "border-paper/35 hover:-translate-y-1 hover:border-gold/70",
       )}
     >
-      <div className="relative aspect-[16/10] overflow-hidden bg-paper-deep">
-        <ThumbnailArt field={field} project={project} className="absolute inset-0 transition duration-500 group-hover:scale-105 motion-reduce:group-hover:scale-100" />
+      <div className={cn("relative aspect-[16/10] overflow-hidden", project.media?.cover ? "bg-[#5bae31]" : "bg-paper-deep")}>
+        {project.media?.cover ? (
+          <img
+            src={project.media.cover.src}
+            alt={project.media.cover.alt}
+            width={project.media.cover.width}
+            height={project.media.cover.height}
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-105 motion-reduce:group-hover:scale-100"
+            style={{ objectPosition: `${coverFocalPoint.x}% ${coverFocalPoint.y}%` }}
+          />
+        ) : (
+          <ThumbnailArt field={field} project={project} className="absolute inset-0 transition duration-500 group-hover:scale-105 motion-reduce:group-hover:scale-100" />
+        )}
       </div>
-      <div className="p-5">
-        <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-clay">
+      <div className="flex min-h-0 flex-1 flex-col p-5">
+        <p className="shrink-0 text-[10px] font-bold uppercase tracking-[0.2em] text-clay">
           {project.eyebrow}
         </p>
-        <h3 className="mt-2 font-serif text-2xl font-semibold leading-tight text-moss">
+        <h3 className="mt-2 shrink-0 overflow-hidden font-serif text-2xl font-semibold leading-tight text-moss [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
           {project.title}
         </h3>
-        <p className="font-prose mt-2 text-sm leading-6 text-ink/72">{project.summary}</p>
-        <span className="mt-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-clay">
+        <p className="font-prose mt-2 shrink-0 overflow-hidden text-sm leading-6 text-ink/72 [display:-webkit-box] [-webkit-box-orient:vertical] [-webkit-line-clamp:2]">
+          {project.summary}
+        </p>
+        <span className="mt-auto inline-flex shrink-0 items-center gap-2 pt-5 text-xs font-bold uppercase tracking-[0.16em] text-clay">
           {ui.projectCard.action}
           <ArrowRight className="h-4 w-4" />
         </span>
       </div>
-    </button>
+    </Link>
   )
 }
 
