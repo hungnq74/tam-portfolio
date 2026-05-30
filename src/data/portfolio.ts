@@ -140,6 +140,8 @@ export interface PortfolioContent {
   ui: PortfolioUi
 }
 
+export type PortfolioContentByLocale = Record<Locale, PortfolioContent>
+
 export interface MythContent {
   eyebrow: string
   title: string
@@ -1023,6 +1025,32 @@ export function isLocale(value: string | null): value is Locale {
 
 export function getPortfolioContent(locale: Locale) {
   return PORTFOLIO_CONTENT[locale]
+}
+
+export function createPortfolioContentByLocale(
+  projectsByLocale: Record<Locale, Project[]>,
+): PortfolioContentByLocale {
+  return {
+    en: {
+      ...PORTFOLIO_CONTENT.en,
+      projects: projectsByLocale.en,
+    },
+    vi: {
+      ...PORTFOLIO_CONTENT.vi,
+      projects: projectsByLocale.vi,
+    },
+  }
+}
+
+export function getStaticProjectsByLocale(): Record<Locale, Project[]> {
+  return {
+    en: PORTFOLIO_CONTENT.en.projects,
+    vi: PORTFOLIO_CONTENT.vi.projects,
+  }
+}
+
+export function getStaticPortfolioContentByLocale(): PortfolioContentByLocale {
+  return createPortfolioContentByLocale(getStaticProjectsByLocale())
 }
 
 export function getPortfolioProjectIds() {

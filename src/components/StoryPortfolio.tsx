@@ -36,11 +36,11 @@ import {
   type Chapter,
   type Field,
   type FieldId,
+  type PortfolioContentByLocale,
   type PortfolioUi,
   type Project,
   type ProjectMediaAsset,
   type SectionId,
-  getPortfolioContent,
 } from "@/data/portfolio"
 import { getLenis } from "@/components/LenisProvider"
 import { LocaleToggle } from "@/components/LocaleToggle"
@@ -90,9 +90,13 @@ function getProjectHref(projectId: string) {
   return `/work/${projectId}`
 }
 
-export function StoryPortfolio() {
+export function StoryPortfolio({
+  contentByLocale,
+}: {
+  contentByLocale: PortfolioContentByLocale
+}) {
   const { locale, setLocale } = useLocale()
-  const content = useMemo(() => getPortfolioContent(locale), [locale])
+  const content = useMemo(() => contentByLocale[locale], [contentByLocale, locale])
   const { author, chapters: contentChapters, fields, projects, ui } = content
   const chapters = useMemo(
     () => contentChapters.filter((chapter) => chapter.id !== "detail"),

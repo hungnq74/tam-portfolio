@@ -179,6 +179,231 @@
     border-right-width: 1px;
     border-bottom-width: 1px;
   }
+
+  .admin-input {
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid rgb(203 213 225);
+    background: rgb(255 255 255);
+    padding: 0.72rem 0.85rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+    color: rgb(15 23 42);
+    outline: none;
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease,
+      background-color 150ms ease;
+  }
+
+  .admin-input:focus {
+    border-color: rgb(15 23 42);
+    background: rgb(255 255 255);
+    box-shadow: 0 0 0 3px rgb(15 23 42 / 0.08);
+  }
+
+  .admin-input:disabled {
+    cursor: not-allowed;
+    background: rgb(248 250 252);
+    color: rgb(100 116 139);
+  }
+
+  .admin-app {
+    min-height: 100vh;
+    overflow-x: clip;
+    background:
+      linear-gradient(180deg, rgb(248 250 252), rgb(241 245 249));
+    color: rgb(15 23 42);
+    font-family: var(--font-sans), system-ui, sans-serif;
+  }
+
+  .admin-container {
+    margin-inline: auto;
+    width: min(calc(100vw - 2rem), 1180px);
+    padding-block: 48px 80px;
+  }
+
+  .admin-card {
+    border: 1px solid rgb(226 232 240);
+    border-radius: 8px;
+    background: rgb(255 255 255);
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+  }
+
+  .admin-card-soft {
+    border: 1px solid rgb(226 232 240);
+    border-radius: 8px;
+    background: rgb(248 250 252);
+  }
+
+  .admin-label {
+    margin-bottom: 0.45rem;
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 650;
+    letter-spacing: 0;
+    color: rgb(71 85 105);
+  }
+
+  .admin-button {
+    display: inline-flex;
+    min-height: 2.35rem;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 6px;
+    padding: 0.58rem 0.85rem;
+    font-size: 0.875rem;
+    font-weight: 650;
+    line-height: 1;
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease,
+      color 150ms ease,
+      box-shadow 150ms ease;
+  }
+
+  .admin-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgb(15 23 42 / 0.12);
+  }
+
+  .admin-button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .admin-button-primary {
+    border: 1px solid rgb(15 23 42);
+    background: rgb(15 23 42);
+    color: rgb(255 255 255);
+  }
+
+  .admin-button-primary:hover:not(:disabled) {
+    background: rgb(30 41 59);
+  }
+
+  .admin-button-secondary {
+    border: 1px solid rgb(203 213 225);
+    background: rgb(255 255 255);
+    color: rgb(15 23 42);
+  }
+
+  .admin-button-secondary:hover:not(:disabled) {
+    border-color: rgb(148 163 184);
+    background: rgb(248 250 252);
+  }
+
+  .admin-button-danger {
+    border: 1px solid rgb(254 202 202);
+    background: rgb(255 255 255);
+    color: rgb(185 28 28);
+  }
+
+  .admin-button-danger:hover:not(:disabled) {
+    border-color: rgb(248 113 113);
+    background: rgb(254 242 242);
+  }
+
+  .admin-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    border-radius: 999px;
+    border: 1px solid rgb(226 232 240);
+    background: rgb(248 250 252);
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: rgb(71 85 105);
+  }
+
+  .admin-notice {
+    border-radius: 8px;
+    border: 1px solid rgb(226 232 240);
+    padding: 0.85rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 550;
+    line-height: 1.55;
+  }
+
+  .admin-notice-error {
+    border-color: rgb(253 230 138);
+    background: rgb(255 251 235);
+    color: rgb(146 64 14);
+  }
+
+  .admin-notice-success {
+    border-color: rgb(191 219 254);
+    background: rgb(239 246 255);
+    color: rgb(29 78 216);
+  }
+
+  .admin-notice-warn {
+    border-color: rgb(253 230 138);
+    background: rgb(255 251 235);
+    color: rgb(146 64 14);
+  }
+
+  .admin-tabs {
+    display: flex;
+    gap: 0.35rem;
+    overflow-x: auto;
+    border-bottom: 1px solid rgb(226 232 240);
+    padding-inline: 0.35rem;
+  }
+
+  .admin-tab {
+    margin-bottom: -1px;
+    min-width: max-content;
+    border-bottom: 2px solid transparent;
+    padding: 0.8rem 0.7rem;
+    font-size: 0.875rem;
+    font-weight: 650;
+    color: rgb(100 116 139);
+    transition:
+      border-color 150ms ease,
+      color 150ms ease;
+  }
+
+  .admin-tab:hover {
+    color: rgb(15 23 42);
+  }
+
+  .admin-tab-active {
+    border-bottom-color: rgb(15 23 42);
+    color: rgb(15 23 42);
+  }
+
+  .admin-section-title {
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: 0;
+    color: rgb(15 23 42);
+  }
+
+  .admin-section-subtitle {
+    margin-top: 0.25rem;
+    font-size: 0.875rem;
+    line-height: 1.55;
+    color: rgb(100 116 139);
+  }
+
+  .admin-upload {
+    display: block;
+    border: 1px dashed rgb(148 163 184);
+    border-radius: 8px;
+    background: rgb(248 250 252);
+    padding: 1rem;
+    transition:
+      background-color 150ms ease,
+      border-color 150ms ease;
+  }
+
+  .admin-upload:hover {
+    border-color: rgb(71 85 105);
+    background: rgb(241 245 249);
+  }
 }
 
 @layer utilities {

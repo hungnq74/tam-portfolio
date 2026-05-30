@@ -16,10 +16,10 @@ import {
 } from "lucide-react"
 import {
   type Field,
+  type PortfolioContentByLocale,
   type PortfolioUi,
   type Project,
   type ProjectMediaAsset,
-  getPortfolioContent,
 } from "@/data/portfolio"
 import { LocaleToggle } from "@/components/LocaleToggle"
 import { useLocale } from "@/hooks/useLocale"
@@ -30,9 +30,15 @@ const MEDIA_RAIL_CLASS =
 const CAROUSEL_RAIL_CLASS =
   "relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 sm:w-[calc(100vw-3rem)] lg:w-[min(calc(100vw-10rem),1440px)] xl:w-[min(calc(100vw-18rem),1440px)]"
 
-export function ProjectDetailPage({ projectId }: { projectId: string }) {
+export function ProjectDetailPage({
+  projectId,
+  contentByLocale,
+}: {
+  projectId: string
+  contentByLocale: PortfolioContentByLocale
+}) {
   const { locale, setLocale } = useLocale()
-  const content = useMemo(() => getPortfolioContent(locale), [locale])
+  const content = useMemo(() => contentByLocale[locale], [contentByLocale, locale])
   const { fields, projects, ui } = content
   const project = projects.find((item) => item.id === projectId) ?? null
   const field = project

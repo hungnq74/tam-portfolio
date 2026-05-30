@@ -1,11 +1,8 @@
 import type { Metadata } from "next"
 import { notFound } from "next/navigation"
 import { ProjectDetailPage } from "@/components/ProjectDetailPage"
-import {
-  DEFAULT_LOCALE,
-  getPortfolioProject,
-  getPortfolioProjectIds,
-} from "@/data/portfolio"
+import { DEFAULT_LOCALE } from "@/data/portfolio"
+import { readPortfolioSnapshot } from "@/lib/portfolio-manifest"
 
 type ProjectPageProps = {
   params: Promise<{
@@ -13,13 +10,14 @@ type ProjectPageProps = {
   }>
 }
 
-export function generateStaticParams() {
-  return getPortfolioProjectIds().map((projectId) => ({ projectId }))
-}
+export const dynamic = "force-dynamic"
 
 export async function generateMetadata({ params }: ProjectPageProps): Promise<Metadata> {
   const { projectId } = await params
-  const project = getPortfolioProject(DEFAULT_LOCALE, projectId)
+  const { contentByLocale } = await readPortfolioSnapshot()
+  const project = contentByLocale[DEFAULT_LOCALE].projects.find(
+    (project) => project.id === projectId,
+  )
 
   if (!project) {
     return {
@@ -40,10 +38,11 @@ export async function generateMetadata({ params }: ProjectPageProps): Promise<Me
 
 export default async function ProjectPage({ params }: ProjectPageProps) {
   const { projectId } = await params
+  const { contentByLocale } = await readPortfolioSnapshot()
 
-  if (!getPortfolioProject(DEFAULT_LOCALE, projectId)) {
+  if (!contentByLocale[DEFAULT_LOCALE].projects.some((project) => project.id === projectId)) {
     notFound()
   }
 
-  return <ProjectDetailPage projectId={projectId} />
+  return <ProjectDetailPage contentByLocale={contentByLocale} projectId={projectId} />
 }
