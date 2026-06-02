@@ -744,6 +744,7 @@ function AboutContent({
 }) {
   const [headlinePrefix, ...headlineRest] = author.headline.split(author.name)
   const headlineSuffix = headlineRest.join(author.name)
+  const openingParagraphs = author.opening ?? []
   const lead = author.body[0]
   const supportingParagraphs = author.body.slice(1)
 
@@ -767,6 +768,11 @@ function AboutContent({
             <PenLine className="h-4 w-4" />
           </span>
           <div className="font-prose max-w-xl space-y-4 text-base leading-8 text-ink/76 sm:text-lg sm:leading-9">
+            {openingParagraphs.map((paragraph) => (
+              <p key={paragraph}>
+                {paragraph}
+              </p>
+            ))}
             <p className="text-ink/86">
               {author.greeting}{" "}
               {headlinePrefix}
@@ -1788,7 +1794,7 @@ function FieldCard({
       onClick={onSelect}
       aria-pressed={active}
       className={cn(
-        "group story-frame relative min-h-[360px] w-full overflow-hidden rounded-[10px] text-left shadow-story transition duration-300 focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper motion-reduce:hover:translate-y-0",
+        "group story-frame relative min-h-[360px] w-full overflow-hidden rounded-[10px] text-left shadow-story transition duration-300 focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper sm:aspect-[4/3] motion-reduce:hover:translate-y-0",
         active
           ? "scale-[1.01] ring-1 ring-gold/55"
           : "hover:-translate-y-1",
@@ -1803,16 +1809,17 @@ function FieldCard({
         className={cn(
           "absolute inset-0",
           clay
-            ? "bg-[linear-gradient(90deg,rgba(126,45,30,0.86),rgba(126,45,30,0.28)_52%,rgba(246,235,211,0.18))]"
-            : "bg-[linear-gradient(90deg,rgba(22,55,38,0.9),rgba(22,55,38,0.34)_54%,rgba(246,235,211,0.14))]",
+            ? "bg-[linear-gradient(90deg,rgba(105,37,25,0.91),rgba(126,45,30,0.48)_48%,rgba(246,235,211,0.08))]"
+            : "bg-[linear-gradient(90deg,rgba(16,48,33,0.93),rgba(22,55,38,0.44)_50%,rgba(246,235,211,0.08))]",
         )}
       />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_78%_18%,rgba(246,235,211,0.16),transparent_32%),linear-gradient(180deg,rgba(32,24,16,0.04),rgba(32,24,16,0.28))]" />
       <div className="relative z-10 flex min-h-[360px] flex-col justify-between p-6 text-paper sm:p-8">
         <div>
           <span className="inline-flex h-12 w-12 items-center justify-center rounded-full border border-gold/70 bg-paper/10 text-gold">
             {clay ? <ScrollText className="h-5 w-5" /> : <Feather className="h-5 w-5" />}
           </span>
-          <h3 className="mt-7 max-w-[9ch] font-serif text-[clamp(2.3rem,5vw,4.2rem)] font-semibold leading-none">
+          <h3 className="mt-7 max-w-[12ch] font-serif text-[clamp(2.35rem,4.25vw,3.9rem)] font-semibold leading-none">
             {field.title}
           </h3>
           <p className="mt-3 max-w-sm text-xs font-bold uppercase tracking-[0.18em] text-gold">

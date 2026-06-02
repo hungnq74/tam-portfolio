@@ -15,6 +15,7 @@ export interface Chapter {
 export interface Author {
   name: string
   role: string
+  opening?: string[]
   greeting: string
   headline: string
   body: string[]
@@ -247,13 +248,16 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
       },
     ],
     author: {
-      name: "Minh Tam",
+      name: "Minh Tâm",
       role: "Social Planner & Creative Copywriter",
-      greeting: "Hiiiiii,",
-      headline: "I am Minh Tam",
+      opening: [
+        "Once upon a day, there is a girl who believes that creativity can make changes to the world.",
+      ],
+      greeting: "Yes, it’s meeee -",
+      headline: "Minh Tâm",
       body: [
-        "probably the most unique character you’ll ever come across, with a strong passion for creative works.",
-        "Unlike Tam (The Story of Tam and Cam), who needed the help of a fairy godmother to find her happiness, I carry a sense of responsibility, a thirst for knowledge, and a dedicated work ethic to conquer my career goals, which is my true well-being.",
+        "probably the most distinctive character you’ve met.",
+        "Unlike Tấm (The Story of Tấm Cám), who needed the help of a fairy godmother to find her happiness, I carry a sense of responsibility, a thirst for knowledge, a curious mind and a dedicated work ethic to conquer my career goals, which is my true well-being.",
         "Let's read my story and get to know me better!",
       ],
       image: "/assets/storybook/minh-tam.jpg",
@@ -266,30 +270,30 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
     fields: [
       {
         id: "social-planner",
-        title: "The Thinking",
+        title: "Thinking in Systems",
         subtitle: "Strategic Planning",
         shortTitle: "Thinking",
         description:
-          "Where ideas begin - through insight, structure, and intentional direction.",
+          "Look beyond the surface. Break down what drives decisions and shapes behavior.",
         body:
-          "Where ideas begin - through insight, structure, and intentional direction.",
-        image: SHARED_FIELD_ASSETS.social.image,
-        imageAlt: "Illustration for The Thinking projects",
+          "Look beyond the surface. Break down what drives decisions and shapes behavior.",
+        image: "/assets/storybook/thinking-systems-field.png",
+        imageAlt: "",
         sheetImage: SHARED_FIELD_ASSETS.social.sheetImage,
         accent: "clay",
         filters: ["Strategy", "Campaign", "Content Plan"],
       },
       {
         id: "creative-copywriter",
-        title: "The Making",
+        title: "Writing with Intent",
         subtitle: "Creative Content",
-        shortTitle: "Making",
+        shortTitle: "Writing",
         description:
-          "Where ideas come alive - crafted into stories, visuals, and meaningful experiences.",
+          "Choose words that carry meaning. Make every line do something.",
         body:
-          "Where ideas come alive - crafted into stories, visuals, and meaningful experiences.",
-        image: SHARED_FIELD_ASSETS.copywriter.image,
-        imageAlt: "Illustration for The Making projects",
+          "Choose words that carry meaning. Make every line do something.",
+        image: "/assets/storybook/writing-intent-field.png",
+        imageAlt: "",
         sheetImage: SHARED_FIELD_ASSETS.copywriter.sheetImage,
         accent: "moss",
         filters: ["Brand Story", "Campaign", "Content"],
@@ -535,9 +539,9 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         nextLabel: "Turn page",
       },
       fields: {
-        heading: "Fields of Craft",
+        heading: "How Tâm Outgrows Tấm",
         body:
-          "Each path opens a different story page, all leading toward clear, emotional brand storytelling.",
+          "No magic. No shortcuts. Just curiosity, logic, and a slightly mischievous way of seeing the world.",
         lockedPrompt: "Choose a field to open the project page",
         unlockedPrompt: "Scroll on or choose another field",
       },
