@@ -148,10 +148,38 @@ export interface MythContent {
   title: string
   lead: string
   intro: string
+  image?: string
   panels: Array<{
     title: string
     body: string
   }>
+  truth?: {
+    greeting: string
+    beliefPrefix: string
+    beliefQuote: string
+    paragraphs: string[]
+    timelineTitle: string
+    versions: Array<{
+      title: string
+      italic: string
+      description: string
+      work?: Array<{
+        company: string
+        role?: string
+        dates?: string
+        roles?: Array<{
+          title: string
+          dates: string
+        }>
+      }>
+    }>
+    contact?: {
+      title: string
+      body: string
+      email: string
+      phone: string
+    }
+  }
   closingTitle: string
   closingBody: string
   portfolioLabel: string
@@ -962,12 +990,13 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
 
 export const MYTH_CONTENT: Record<Locale, MythContent> = {
   en: {
-    eyebrow: "Unfold My Myth",
-    title: "The Story Behind Minh Tam",
+    eyebrow: "Unfold My Truth",
+    title: "Unfold My Truth",
     lead:
-      "Every fairytale has a strange little beginning. Mine starts with curiosity, creative work, and the decision to build happiness through the career I care about.",
+      "THE WORLD MAKES MORE SENSE THAN IT SEEMS.",
     intro:
-      "I do not wait for a fairy godmother to hand me a better chapter. I collect questions, sharpen my craft, and keep showing up with a sense of responsibility for the people and brands that trust me.",
+      "A deeper introduction to Minh Tâm and the many versions of her creative journey.",
+    image: "/assets/storybook/minh-tam-truth.jpg",
     panels: [
       {
         title: "Responsibility",
@@ -985,11 +1014,86 @@ export const MYTH_CONTENT: Record<Locale, MythContent> = {
           "Creative work feels magical only after very human effort: drafts, edits, research, listening, and the patience to make the message clear enough to travel.",
       },
     ],
+    truth: {
+      greeting: "Hiii,",
+      beliefPrefix:
+        "I’m Minh Tâm - who always believe that",
+      beliefQuote: "THE WORLD MAKES MORE SENSE THAN IT SEEMS.",
+      paragraphs: [
+        "As a true Gen Z with a strong passion for creative work, I’m always curious about what lies beneath the surface: the insight behind a campaign, the thinking behind a product, and the reason why something works (or unfortunately doesn’t).",
+        "With over 3 years of experience across different roles in Marketing, I’ve had the chance to work in various types of marketing environments - from in-house teams to agencies and freelance projects. During the journey, my scope of work moves from planning to execution, from making ideas happen to understanding why they should.",
+        "To me, creativity doesn’t just make things look better but makes the world more meaningful, and somehow, make more sense in its own way. If we’re on the same page, why don't we write the next chapter of Tâm Sắc Bén together?",
+      ],
+      timelineTitle: "GET TO KNOW TÂM IN MANY VERSIONS",
+      versions: [
+        {
+          title: "2019 | The Curious One",
+          italic:
+            "Start noticing the spark of creating something that people actually care about.",
+          description:
+            "While still in school, I had a chance to join the prom communication team. At first, it was just about writing posts, coming up with ideas, making things look nice. But somewhere in between deadlines and random brainstorms, I realized I genuinely enjoyed doing this.",
+        },
+        {
+          title: "2020 | The Committed One",
+          italic:
+            "Turn curiosity into something worth taking seriously.",
+          description:
+            "I chose to study Marketing at University of Economics Ho Chi Minh City (UEH) - not by chance, but because I wanted to understand what I had started to enjoy. Here I started learning how to think behind the work and eventually graduated with distinction.",
+        },
+        {
+          title: "2022 - Present | The Driven One",
+          italic:
+            "Step into the creative world I’ve always desired and finally bring what's in my mind to life.",
+          description: "",
+          work: [
+            {
+              company: "Shopee",
+              role: "Campus Ambassador",
+              dates: "Dec 2021 - Aug 2022",
+            },
+            {
+              company: "AND Agency",
+              role: "Account Intern",
+              dates: "Nov 2022 - Jan 2023",
+            },
+            {
+              company: "GSI Group",
+              role: "Junior Marketing Executive",
+              dates: "May 2023 - Jun 2024",
+            },
+            {
+              company: "WeShare",
+              role: "Marketing Acting Lead",
+              dates: "Apr 2024 - Feb 2025 (Contract)",
+            },
+            {
+              company: "Brandy Agency",
+              roles: [
+                {
+                  title: "Content",
+                  dates: "Aug 2024 - Sep 2025",
+                },
+                {
+                  title: "Social Planner",
+                  dates: "Oct 2025 - Present",
+                },
+              ],
+            },
+          ],
+        },
+      ],
+      contact: {
+        title: "CONTACT",
+        body: "Seems like I’ve caught your attention. Let’s meet in real life.",
+        email: "ttmtam76@gmail.com",
+        phone: "(+84)934064685",
+      },
+    },
     closingTitle: "That is my well-being",
     closingBody:
       "Career goals are not only milestones to chase. For me, they are a way to become more capable, more useful, and more honest in the stories I help bring to life.",
     portfolioLabel: "Back to Portfolio",
-    imageAlt: "Minh Tam smiling among large green leaves",
+    imageAlt: "Minh Tâm presenting her marketing work",
   },
   vi: {
     eyebrow: "Mở câu chuyện của mình",
