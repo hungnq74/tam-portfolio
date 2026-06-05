@@ -1,19 +1,34 @@
 "use client"
 
 import Link from "next/link"
-import { ArrowLeft, ArrowRight, BookOpen, Feather, Mail, Phone, Sparkles } from "lucide-react"
+import { useState } from "react"
+import { ArrowLeft, ArrowRight, BookOpen, Check, Copy, Feather, Mail, Phone, Sparkles } from "lucide-react"
 import { LocaleToggle } from "@/components/LocaleToggle"
 import { getPortfolioContent, MYTH_CONTENT } from "@/data/portfolio"
 import { useLocale } from "@/hooks/useLocale"
 
 export function MythPage() {
   const { locale, setLocale } = useLocale()
+  const [copiedContact, setCopiedContact] = useState<"email" | "phone" | null>(null)
   const portfolio = getPortfolioContent(locale)
   const myth = MYTH_CONTENT[locale]
   const truth = myth.truth
 
+  async function copyContact(target: "email" | "phone", value: string) {
+    try {
+      await navigator.clipboard.writeText(value)
+      setCopiedContact(target)
+      window.setTimeout(() => {
+        setCopiedContact((current) => (current === target ? null : current))
+      }, 1400)
+    } catch {
+      setCopiedContact(null)
+    }
+  }
+
   if (truth) {
     const [beliefName, beliefRest] = truth.beliefPrefix.split(" - ")
+    const contact = truth.contact
 
     return (
       <main className="story-texture min-h-screen overflow-x-clip px-4 pb-24 pt-24 sm:px-6 lg:px-[5.5rem]">
@@ -183,31 +198,61 @@ export function MythPage() {
             </div>
           </section>
 
-          {truth.contact ? (
+          {contact ? (
             <section className="mt-16 border-y border-[rgba(116,63,36,0.22)] py-10 sm:mt-20 sm:py-12">
               <div className="grid gap-7 lg:grid-cols-[0.68fr_1.32fr] lg:gap-14">
                 <h2 className="font-serif text-[clamp(2.2rem,4vw,4.1rem)] font-semibold leading-none text-clay">
-                  {truth.contact.title}
+                  {contact.title}
                 </h2>
                 <div className="max-w-[43rem]">
                   <p className="font-prose text-xl italic leading-9 text-moss sm:text-2xl sm:leading-10">
-                    {truth.contact.body}
+                    {contact.body}
                   </p>
                   <div className="mt-7 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
-                    <a
-                      href={`mailto:${truth.contact.email}`}
-                      className="inline-flex items-center gap-2 rounded-full border border-gold/45 bg-paper/70 px-4 py-2 text-sm font-bold tracking-[0.04em] text-ink transition hover:-translate-y-0.5 hover:bg-gold/16 hover:text-clay focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper"
-                    >
-                      <Mail className="h-4 w-4 text-clay" />
-                      {truth.contact.email}
-                    </a>
-                    <a
-                      href={`tel:${truth.contact.phone.replace(/[^\d+]/g, "")}`}
-                      className="inline-flex items-center gap-2 rounded-full border border-gold/45 bg-paper/70 px-4 py-2 text-sm font-bold tracking-[0.04em] text-ink transition hover:-translate-y-0.5 hover:bg-gold/16 hover:text-clay focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper"
-                    >
-                      <Phone className="h-4 w-4 text-clay" />
-                      {truth.contact.phone}
-                    </a>
+                    <div className="inline-flex w-fit items-center gap-1.5">
+                      <a
+                        href={`mailto:${contact.email}`}
+                        className="inline-flex items-center gap-2 rounded-full border border-gold/45 bg-paper/70 px-4 py-2 text-sm font-bold tracking-[0.04em] text-ink transition hover:-translate-y-0.5 hover:bg-gold/16 hover:text-clay focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper"
+                      >
+                        <Mail className="h-4 w-4 text-clay" />
+                        {contact.email}
+                      </a>
+                      <button
+                        type="button"
+                        aria-label="Copy email address"
+                        title="Copy email address"
+                        onClick={() => void copyContact("email", contact.email)}
+                        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold/45 bg-paper/70 text-clay transition hover:-translate-y-0.5 hover:bg-gold/16 hover:text-moss focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper"
+                      >
+                        {copiedContact === "email" ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
+                    <div className="inline-flex w-fit items-center gap-1.5">
+                      <a
+                        href={`tel:${contact.phone.replace(/[^\d+]/g, "")}`}
+                        className="inline-flex items-center gap-2 rounded-full border border-gold/45 bg-paper/70 px-4 py-2 text-sm font-bold tracking-[0.04em] text-ink transition hover:-translate-y-0.5 hover:bg-gold/16 hover:text-clay focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper"
+                      >
+                        <Phone className="h-4 w-4 text-clay" />
+                        {contact.phone}
+                      </a>
+                      <button
+                        type="button"
+                        aria-label="Copy phone number"
+                        title="Copy phone number"
+                        onClick={() => void copyContact("phone", contact.phone)}
+                        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-gold/45 bg-paper/70 text-clay transition hover:-translate-y-0.5 hover:bg-gold/16 hover:text-moss focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper"
+                      >
+                        {copiedContact === "phone" ? (
+                          <Check className="h-4 w-4" />
+                        ) : (
+                          <Copy className="h-4 w-4" />
+                        )}
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
