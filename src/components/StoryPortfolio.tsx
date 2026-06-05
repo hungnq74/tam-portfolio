@@ -746,6 +746,7 @@ function AboutContent({
   const headlineSuffix = headlineRest.join(author.name)
   const openingParagraphs = author.opening ?? []
   const lead = author.body[0]
+  const leadNoWrapPhrase = "you’ve met."
   const supportingParagraphs = author.body.slice(1)
 
   return (
@@ -780,7 +781,20 @@ function AboutContent({
                 {author.name}
               </span>
               {headlineSuffix}
-              {lead ? ` - ${lead}` : null}
+              {lead ? (
+                <>
+                  {" - "}
+                  {lead.includes(leadNoWrapPhrase) ? (
+                    <>
+                      {lead.split(leadNoWrapPhrase)[0]}
+                      <span className="whitespace-nowrap">{leadNoWrapPhrase}</span>
+                      {lead.split(leadNoWrapPhrase)[1]}
+                    </>
+                  ) : (
+                    lead
+                  )}
+                </>
+              ) : null}
             </p>
             {supportingParagraphs.map((paragraph) => (
               <p key={paragraph}>
