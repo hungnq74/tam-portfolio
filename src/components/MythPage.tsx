@@ -46,10 +46,10 @@ export function MythPage() {
             <p className="font-prose text-base leading-7 text-ink/74 sm:text-lg sm:leading-8">
               {truth.greeting}
             </p>
-            <h1 className="mt-4 max-w-[58rem] break-words font-serif text-[clamp(2.35rem,9.5vw,5.45rem)] font-semibold leading-[1] text-moss text-balance sm:text-[clamp(2.75rem,5vw,5.45rem)]">
-              <span className="block sm:inline">{beliefName}</span>
+            <h1 className="font-prose mt-2 max-w-[58rem] break-words text-base leading-7 text-ink/74 text-balance sm:text-lg sm:leading-8">
+              <span>{beliefName}</span>
               {beliefRest ? (
-                <span className="block sm:inline"> - {beliefRest}</span>
+                <span> - {beliefRest}</span>
               ) : null}
             </h1>
             <blockquote className="mt-6 max-w-[55rem] border-l-2 border-gold/60 py-1 pl-5 sm:pl-7">
@@ -57,15 +57,21 @@ export function MythPage() {
                 “{truth.beliefQuote}”
               </p>
             </blockquote>
-            <div className="font-prose mt-9 grid min-w-0 max-w-[61rem] gap-x-10 gap-y-6 text-base leading-8 text-ink/76 md:grid-cols-2 lg:text-lg lg:leading-9">
-              {truth.paragraphs.map((paragraph, index) => (
-                <p
-                  key={paragraph}
-                  className={index === truth.paragraphs.length - 1 ? "min-w-0 md:col-span-2" : "min-w-0"}
-                >
-                  {paragraph}
-                </p>
-              ))}
+            <div className="font-prose mt-9 max-w-[55rem] space-y-6 text-base leading-8 text-ink/76 lg:text-lg lg:leading-9">
+              {truth.paragraphs.map((paragraph) => {
+                const emphasis = "why don't we write the next chapter of Tâm Sắc Bén together?"
+                const [beforeEmphasis, afterEmphasis] = paragraph.split(emphasis)
+
+                return (
+                  <p key={paragraph}>
+                    {beforeEmphasis}
+                    {paragraph.includes(emphasis) ? (
+                      <strong className="font-bold italic text-moss">{emphasis}</strong>
+                    ) : null}
+                    {afterEmphasis}
+                  </p>
+                )
+              })}
             </div>
           </article>
 
@@ -104,71 +110,76 @@ export function MythPage() {
             </div>
 
             <div className="border-t border-[rgba(116,63,36,0.22)]">
-              {truth.versions.map((version) => (
-                <article
-                  key={version.title}
-                  className="grid gap-5 border-b border-[rgba(116,63,36,0.18)] py-8 lg:grid-cols-[0.56fr_1.44fr] lg:gap-14 lg:py-10"
-                >
-                  <h3 className="break-words font-serif text-[clamp(1.75rem,7vw,2.75rem)] font-semibold leading-[1.06] text-moss sm:text-[clamp(1.9rem,2.8vw,3.05rem)]">
-                    {version.title}
-                  </h3>
-                  <div>
-                    <p className="font-prose text-base italic leading-8 text-clay sm:text-lg sm:leading-9">
-                      {version.italic}
-                    </p>
-                    {version.description ? (
-                      <p className="font-prose mt-4 max-w-[43rem] text-[0.98rem] leading-7 text-ink/74 sm:text-base sm:leading-8">
-                        {version.description}
+              {truth.versions.map((version) => {
+                const [year, title = ""] = version.title.split(" | ")
+
+                return (
+                  <article
+                    key={version.title}
+                    className="grid gap-5 border-b border-[rgba(116,63,36,0.18)] py-8 lg:grid-cols-[0.56fr_1.44fr] lg:gap-14 lg:py-10"
+                  >
+                    <h3 className="flex flex-col gap-1 break-words font-serif text-[clamp(1.28rem,5.2vw,2.1rem)] font-semibold leading-[1.12] text-moss sm:text-[clamp(1.55rem,2.1vw,2.3rem)]">
+                      <span>{year}</span>
+                      <span className="whitespace-nowrap">{title}</span>
+                    </h3>
+                    <div>
+                      <p className="font-prose text-base italic leading-8 text-clay sm:text-lg sm:leading-9">
+                        {version.italic}
                       </p>
-                    ) : null}
-                    {version.work ? (
-                      <div className="mt-7 max-w-[43rem] border-t border-[rgba(116,63,36,0.18)]">
-                        {version.work.map((item) => (
-                          <div
-                            key={item.company}
-                            className="border-b border-[rgba(116,63,36,0.14)] py-4"
-                          >
-                            <div className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-end">
-                              <div>
-                                <p className="text-sm font-bold uppercase tracking-[0.08em] text-ink">
-                                  {item.company}
-                                </p>
-                                {item.role ? (
-                                  <p className="font-prose mt-1 text-sm leading-6 text-ink/68">
-                                    {item.role}
+                      {version.description ? (
+                        <p className="font-prose mt-4 max-w-[43rem] text-[0.98rem] leading-7 text-ink/74 sm:text-base sm:leading-8">
+                          {version.description}
+                        </p>
+                      ) : null}
+                      {version.work ? (
+                        <div className="mt-7 max-w-[43rem] border-t border-[rgba(116,63,36,0.18)]">
+                          {version.work.map((item) => (
+                            <div
+                              key={item.company}
+                              className="border-b border-[rgba(116,63,36,0.14)] py-4"
+                            >
+                              <div className="grid gap-2 sm:grid-cols-[1fr_auto] sm:items-end">
+                                <div>
+                                  <p className="text-sm font-bold uppercase tracking-[0.08em] text-ink">
+                                    {item.company}
+                                  </p>
+                                  {item.role ? (
+                                    <p className="font-prose mt-1 text-sm leading-6 text-ink/68">
+                                      {item.role}
+                                    </p>
+                                  ) : null}
+                                </div>
+                                {item.dates ? (
+                                  <p className="font-prose text-sm leading-6 text-ink/64 sm:text-right">
+                                    {item.dates}
                                   </p>
                                 ) : null}
                               </div>
-                              {item.dates ? (
-                                <p className="font-prose text-sm leading-6 text-ink/64 sm:text-right">
-                                  {item.dates}
-                                </p>
+                              {item.roles ? (
+                                <div className="mt-3 space-y-2">
+                                  {item.roles.map((role) => (
+                                    <div
+                                      key={`${item.company}-${role.title}`}
+                                      className="grid gap-1 sm:grid-cols-[1fr_auto]"
+                                    >
+                                      <p className="font-prose text-sm leading-6 text-ink/72">
+                                        {role.title}
+                                      </p>
+                                      <p className="font-prose text-sm leading-6 text-ink/64 sm:text-right">
+                                        {role.dates}
+                                      </p>
+                                    </div>
+                                  ))}
+                                </div>
                               ) : null}
                             </div>
-                            {item.roles ? (
-                              <div className="mt-3 space-y-2">
-                                {item.roles.map((role) => (
-                                  <div
-                                    key={`${item.company}-${role.title}`}
-                                    className="grid gap-1 sm:grid-cols-[1fr_auto]"
-                                  >
-                                    <p className="font-prose text-sm leading-6 text-ink/72">
-                                      {role.title}
-                                    </p>
-                                    <p className="font-prose text-sm leading-6 text-ink/64 sm:text-right">
-                                      {role.dates}
-                                    </p>
-                                  </div>
-                                ))}
-                              </div>
-                            ) : null}
-                          </div>
-                        ))}
-                      </div>
-                    ) : null}
-                  </div>
-                </article>
-              ))}
+                          ))}
+                        </div>
+                      ) : null}
+                    </div>
+                  </article>
+                )
+              })}
             </div>
           </section>
 
