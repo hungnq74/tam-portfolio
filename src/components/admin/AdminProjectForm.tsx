@@ -797,12 +797,17 @@ function MediaPreview({ media }: { media?: ProjectMedia }) {
           Cover preview
         </div>
       )}
-      <div className="mt-4 grid gap-3 text-sm text-slate-600 md:grid-cols-3">
+      <div className="mt-4 grid gap-3 text-sm text-slate-600 md:grid-cols-5">
         <PreviewStat label="Cover" value={media?.cover ? "Ready" : "Missing"} />
         <PreviewStat label="Summary" value={media?.summary ? "Ready" : "Missing"} />
+        <PreviewStat label="Website" value={media?.websitePreview ? "Ready" : "Missing"} />
         <PreviewStat
           label="Slides"
           value={String(media?.proposalSlides?.length ?? 0)}
+        />
+        <PreviewStat
+          label="Posts"
+          value={String(media?.contentPosts?.length ?? 0)}
         />
       </div>
     </div>

@@ -36,6 +36,7 @@ import {
   type Chapter,
   type Field,
   type FieldId,
+  type FieldScopeCard,
   type PortfolioContentByLocale,
   type PortfolioUi,
   type Project,
@@ -51,12 +52,19 @@ import { cn } from "@/lib/utils"
 const COVER_IMAGE = "/assets/storybook/cover.png"
 const REVEAL_EASE = [0.22, 1, 0.36, 1] as const
 const LOCKED_FIELD_GATE_SECTIONS = new Set<SectionId>(["gallery", "detail"])
+const LOCKED_SCOPE_GATE_SECTIONS = new Set<SectionId>(["detail"])
 const EMPTY_LOCKED_SECTIONS = new Set<SectionId>()
+const CHOICE_ADVANCE_BYPASS_MS = 1100
 
 type RevealPreset = "page-rise" | "ink-line" | "image-depth" | "card-cascade"
 type ScrollToOptions = {
   force?: boolean
   immediate?: boolean
+}
+type ChoiceGate = {
+  id: "field" | "scope"
+  sectionId: SectionId
+  limit: number
 }
 
 const MotionPreferenceContext = createContext(false)
@@ -110,6 +118,8 @@ export function StoryPortfolio({
     detail: null,
   })
   const touchStartYRef = useRef<number | null>(null)
+  const choiceAdvanceUntilRef = useRef(0)
+  const routeSelectionKeyRef = useRef<string | null>(null)
   const reducedMotion = useReducedMotion()
   const { scrollYProgress } = useScroll()
   const smoothProgress = useSpring(scrollYProgress, {
@@ -121,10 +131,9 @@ export function StoryPortfolio({
   const [selectedFieldId, setSelectedFieldId] = useState<FieldId | null>(null)
   const [activeFilter, setActiveFilter] = useState(ui.allFilter)
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
+  const [fieldGateLocked, setFieldGateLocked] = useState(true)
   const [gateNudgeKey, setGateNudgeKey] = useState(0)
 
-  const gateLocked = selectedFieldId === null
-  const lockedSectionIds = gateLocked ? LOCKED_FIELD_GATE_SECTIONS : EMPTY_LOCKED_SECTIONS
   const activeField = selectedFieldId
     ? fields.find((field) => field.id === selectedFieldId) ?? fields[0]
     : null
@@ -139,11 +148,22 @@ export function StoryPortfolio({
     if (activeFilter === ui.allFilter) return activeProjects
     return activeProjects.filter((project) => project.category === activeFilter)
   }, [activeFilter, activeProjects, ui.allFilter])
+  const isScopeHubVisible = Boolean(
+    activeField?.scopeCards?.length && activeFilter === ui.allFilter,
+  )
+  const scopeGateLocked = isScopeHubVisible
+  const lockedSectionIds = fieldGateLocked
+    ? LOCKED_FIELD_GATE_SECTIONS
+    : scopeGateLocked
+      ? LOCKED_SCOPE_GATE_SECTIONS
+      : EMPTY_LOCKED_SECTIONS
   const selectedProject = selectedProjectId
     ? projects.find((project) => project.id === selectedProjectId) ??
       activeProjects[0] ??
       null
-    : activeProjects[0] ?? null
+    : isScopeHubVisible
+      ? null
+      : activeProjects[0] ?? null
 
   useEffect(() => {
     setActiveFilter(ui.allFilter)
@@ -181,7 +201,15 @@ export function StoryPortfolio({
     setGateNudgeKey((key) => key + 1)
   }, [])
 
-  const getGateLimit = useCallback(() => {
+  const startChoiceAdvance = useCallback(() => {
+    choiceAdvanceUntilRef.current = Date.now() + CHOICE_ADVANCE_BYPASS_MS
+  }, [])
+
+  const isChoiceAdvanceInFlight = useCallback(() => {
+    return Date.now() < choiceAdvanceUntilRef.current
+  }, [])
+
+  const getFieldGateLimit = useCallback(() => {
     const fields = sectionRefs.current.fields
     if (!fields) return null
 
@@ -193,6 +221,30 @@ export function StoryPortfolio({
 
     return Math.max(fieldsTop, nextTop - window.innerHeight + 1)
   }, [])
+
+  const getScopeGateLimit = useCallback(() => {
+    const gallery = sectionRefs.current.gallery
+    if (!gallery) return null
+
+    const galleryTop = gallery.getBoundingClientRect().top + window.scrollY
+    const galleryBottom = galleryTop + gallery.offsetHeight
+
+    return Math.max(galleryTop, galleryBottom - window.innerHeight + 1)
+  }, [])
+
+  const getActiveChoiceGate = useCallback((): ChoiceGate | null => {
+    if (fieldGateLocked) {
+      const limit = getFieldGateLimit()
+      return limit === null ? null : { id: "field", sectionId: "fields", limit }
+    }
+
+    if (scopeGateLocked) {
+      const limit = getScopeGateLimit()
+      return limit === null ? null : { id: "scope", sectionId: "gallery", limit }
+    }
+
+    return null
+  }, [fieldGateLocked, getFieldGateLimit, getScopeGateLimit, scopeGateLocked])
 
   const setScrollPosition = useCallback((top: number) => {
     const lenis = getLenis()
@@ -214,11 +266,26 @@ export function StoryPortfolio({
     [nudgeGate, setScrollPosition],
   )
 
+  const jumpToScopeGate = useCallback(() => {
+    const node = sectionRefs.current.gallery
+    if (!node) return
+
+    setActiveSection("gallery")
+    setScrollPosition(node.getBoundingClientRect().top + window.scrollY)
+  }, [setScrollPosition])
+
   const scrollTo = useCallback(
     (id: SectionId, options: ScrollToOptions = {}) => {
-      if (gateLocked && LOCKED_FIELD_GATE_SECTIONS.has(id) && !options.force) {
-        jumpToFieldsGate()
-        return
+      if (!options.force) {
+        if (fieldGateLocked && LOCKED_FIELD_GATE_SECTIONS.has(id)) {
+          jumpToFieldsGate()
+          return
+        }
+
+        if (scopeGateLocked && LOCKED_SCOPE_GATE_SECTIONS.has(id)) {
+          jumpToScopeGate()
+          return
+        }
       }
 
       const node = sectionRefs.current[id]
@@ -241,11 +308,11 @@ export function StoryPortfolio({
         behavior: reducedMotion || options.immediate ? "auto" : "smooth",
       })
     },
-    [gateLocked, jumpToFieldsGate, reducedMotion],
+    [fieldGateLocked, jumpToFieldsGate, jumpToScopeGate, reducedMotion, scopeGateLocked],
   )
 
   useEffect(() => {
-    if (!gateLocked) return
+    if (!fieldGateLocked && !scopeGateLocked) return
 
     let frameId: number | undefined
     let didNudgeGate = false
@@ -254,11 +321,11 @@ export function StoryPortfolio({
       return target instanceof HTMLElement && Boolean(target.closest("[data-scroll-gate-ignore]"))
     }
 
-    const clampToGateLimit = (gateLimit: number, shouldNudge = false) => {
-      setActiveSection("fields")
-      setScrollPosition(gateLimit)
+    const clampToGateLimit = (gate: ChoiceGate, shouldNudge = false) => {
+      setActiveSection(gate.sectionId)
+      setScrollPosition(gate.limit)
 
-      if (shouldNudge && !didNudgeGate) {
+      if (gate.id === "field" && shouldNudge && !didNudgeGate) {
         nudgeGate()
         didNudgeGate = true
       }
@@ -266,12 +333,13 @@ export function StoryPortfolio({
 
     const blockDownwardIntent = (deltaY: number, event?: Event) => {
       if (deltaY <= 0) return false
+      if (isChoiceAdvanceInFlight()) return false
 
-      const gateLimit = getGateLimit()
-      if (gateLimit === null || window.scrollY + deltaY < gateLimit) return false
+      const gate = getActiveChoiceGate()
+      if (!gate || window.scrollY + deltaY < gate.limit) return false
 
       if (event?.cancelable) event.preventDefault()
-      clampToGateLimit(gateLimit, true)
+      clampToGateLimit(gate, true)
       return true
     }
 
@@ -304,10 +372,12 @@ export function StoryPortfolio({
     }
 
     const clampPastGate = () => {
-      const gateLimit = getGateLimit()
+      if (isChoiceAdvanceInFlight()) return
 
-      if (gateLimit !== null && window.scrollY > gateLimit + 2) {
-        clampToGateLimit(gateLimit, true)
+      const gate = getActiveChoiceGate()
+
+      if (gate && window.scrollY > gate.limit + 2) {
+        clampToGateLimit(gate, true)
       }
     }
 
@@ -339,16 +409,91 @@ export function StoryPortfolio({
         window.cancelAnimationFrame(frameId)
       }
     }
-  }, [gateLocked, getGateLimit, nudgeGate, setScrollPosition])
+  }, [
+    fieldGateLocked,
+    getActiveChoiceGate,
+    isChoiceAdvanceInFlight,
+    nudgeGate,
+    scopeGateLocked,
+    setScrollPosition,
+  ])
+
+  useEffect(() => {
+    if (activeSection === "fields" && !isChoiceAdvanceInFlight()) {
+      setFieldGateLocked(true)
+    }
+  }, [activeSection, isChoiceAdvanceInFlight])
+
+  const returnToFieldsGate = useCallback(
+    (options: ScrollToOptions = {}) => {
+      setFieldGateLocked(true)
+      scrollTo("fields", options)
+    },
+    [scrollTo],
+  )
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const requestedProjectId = params.get("project")
+    const requestedFieldId = params.get("field")
+    if (!requestedProjectId && !requestedFieldId) return
+
+    const selectionKey = `${locale}:${window.location.search}`
+    if (routeSelectionKeyRef.current === selectionKey) return
+
+    const requestedProject = requestedProjectId
+      ? projects.find((project) => project.id === requestedProjectId)
+      : null
+    const requestedField = requestedProject
+      ? fields.find((field) => field.id === requestedProject.fieldId)
+      : fields.find((field) => field.id === requestedFieldId)
+
+    if (!requestedField) return
+
+    const requestedFilter =
+      requestedProject && requestedField.filters.includes(requestedProject.category)
+        ? requestedProject.category
+        : ui.allFilter
+    const shouldSelectProject = Boolean(
+      requestedProject &&
+        (!requestedField.scopeCards?.length || requestedFilter !== ui.allFilter),
+    )
+
+    routeSelectionKeyRef.current = selectionKey
+    startChoiceAdvance()
+    setFieldGateLocked(false)
+    setSelectedFieldId(requestedField.id)
+    setActiveFilter(requestedFilter)
+    setSelectedProjectId(shouldSelectProject && requestedProject ? requestedProject.id : null)
+    window.setTimeout(() => scrollTo("gallery", { force: true, immediate: true }), 90)
+  }, [fields, locale, projects, scrollTo, startChoiceAdvance, ui.allFilter])
 
   const selectField = (fieldId: FieldId) => {
+    const field = fields.find((item) => item.id === fieldId)
     const firstProject = projects.find((project) => project.fieldId === fieldId)
-    if (!firstProject) return
+    const hasScopeHub = Boolean(field?.scopeCards?.length)
+    if (!field || (!firstProject && !hasScopeHub)) return
 
+    startChoiceAdvance()
+    setFieldGateLocked(false)
     setSelectedFieldId(fieldId)
     setActiveFilter(ui.allFilter)
-    setSelectedProjectId(firstProject.id)
+    setSelectedProjectId(hasScopeHub ? null : firstProject?.id ?? null)
     window.setTimeout(() => scrollTo("gallery", { force: true }), 90)
+  }
+
+  const selectFilter = (filter: string) => {
+    setActiveFilter(filter)
+
+    if (filter === ui.allFilter) {
+      setSelectedProjectId(null)
+      return
+    }
+
+    const firstMatchingProject = activeProjects.find(
+      (project) => project.category === filter,
+    )
+    setSelectedProjectId(firstMatchingProject?.id ?? null)
   }
 
   return (
@@ -391,7 +536,7 @@ export function StoryPortfolio({
             ui={ui}
             refSetter={setSectionRef("fields")}
             selectedFieldId={selectedFieldId}
-            gateLocked={gateLocked}
+            gateLocked={fieldGateLocked}
             gateNudgeKey={gateNudgeKey}
             onSelectField={selectField}
           />
@@ -402,9 +547,9 @@ export function StoryPortfolio({
             activeFilter={activeFilter}
             filteredProjects={filteredProjects}
             selectedProjectId={selectedProject?.id ?? null}
-            onBack={() => scrollTo("fields")}
-            onFilter={setActiveFilter}
-            onChooseField={() => scrollTo("fields", { immediate: true })}
+            onBack={() => returnToFieldsGate()}
+            onFilter={selectFilter}
+            onChooseField={() => returnToFieldsGate({ immediate: true })}
           />
         </main>
       </div>
@@ -935,6 +1080,10 @@ function GallerySection({
   }
 
   const filters = [ui.allFilter, ...activeField.filters]
+  const scopeCards = activeField.scopeCards ?? []
+  const hasScopeCards = scopeCards.length > 0
+  const showingScopeHub = hasScopeCards && activeFilter === ui.allFilter
+  const activeScope = scopeCards.find((scope) => scope.category === activeFilter)
 
   return (
     <section
@@ -970,9 +1119,28 @@ function GallerySection({
                 <h2 className="mt-2 font-serif text-[clamp(2.4rem,5vw,5rem)] font-semibold leading-none">
                   {activeField.title}
                 </h2>
+                {activeScope ? (
+                  <p className="mt-3 max-w-sm text-xs font-bold uppercase tracking-[0.18em] text-gold">
+                    {activeScope.title}
+                  </p>
+                ) : null}
               </div>
-              <div className="flex flex-wrap gap-2">
-                {filters.map((filter) => (
+              {showingScopeHub ? (
+                <p className="font-prose max-w-md text-base leading-7 text-paper/84 sm:text-lg md:max-w-none md:text-right lg:whitespace-nowrap">
+                  {activeField.scopeIntro}
+                </p>
+              ) : hasScopeCards ? (
+                <button
+                  type="button"
+                  onClick={() => onFilter(ui.allFilter)}
+                  className="inline-flex items-center gap-2 self-start rounded-full border border-paper/22 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-paper/78 transition hover:border-gold hover:text-paper focus:outline-none focus:ring-2 focus:ring-gold md:self-end"
+                >
+                  <ArrowLeft className="h-4 w-4" />
+                  {ui.gallery.backToScopes}
+                </button>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {filters.map((filter) => (
                   <button
                     key={filter}
                     type="button"
@@ -986,28 +1154,47 @@ function GallerySection({
                   >
                     {filter}
                   </button>
-                ))}
-              </div>
+                  ))}
+                </div>
+              )}
             </ScrollReveal>
 
-            <RevealGroup
-              key={`${activeField.id}-${activeFilter}`}
-              className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3"
-              itemClassName="h-full"
-              preset="card-cascade"
-              stagger={0.055}
-            >
-              {filteredProjects.map((project) => (
-                <ProjectCard
-                  key={project.id}
-                  ui={ui}
-                  field={activeField}
-                  project={project}
-                  active={project.id === selectedProjectId}
-                  href={getProjectHref(project.id)}
-                />
-              ))}
-            </RevealGroup>
+            {showingScopeHub ? (
+              <RevealGroup
+                key={`${activeField.id}-scopes`}
+                className="grid items-stretch gap-4 md:grid-cols-2"
+                itemClassName="h-full"
+                preset="card-cascade"
+                stagger={0.07}
+              >
+                {scopeCards.map((scope) => (
+                  <ScopeCard
+                    key={scope.id}
+                    scope={scope}
+                    onSelect={() => onFilter(scope.category)}
+                  />
+                ))}
+              </RevealGroup>
+            ) : (
+              <RevealGroup
+                key={`${activeField.id}-${activeFilter}`}
+                className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3"
+                itemClassName="h-full"
+                preset="card-cascade"
+                stagger={0.055}
+              >
+                {filteredProjects.map((project) => (
+                  <ProjectCard
+                    key={project.id}
+                    ui={ui}
+                    field={activeField}
+                    project={project}
+                    active={project.id === selectedProjectId}
+                    href={getProjectHref(project.id)}
+                  />
+                ))}
+              </RevealGroup>
+            )}
           </div>
         </div>
       </ScrollReveal>
@@ -1114,7 +1301,7 @@ function DetailSection({
                     <MetaBlock label={ui.detail.scope} value={project.scope.join(", ")} />
                   </RevealGroup>
                   <ScrollReveal preset="page-rise" delay={0.14}>
-                    <p className="font-prose mt-7 text-base leading-8 text-ink/82 sm:text-lg">
+                    <p className="font-prose mt-7 whitespace-pre-line text-base leading-8 text-ink/82 sm:text-lg">
                       {project.overview}
                     </p>
                   </ScrollReveal>
@@ -1242,7 +1429,7 @@ function MediaProjectDetailSection({
           </ScrollReveal>
 
           <ScrollReveal preset="page-rise" amount={0.16}>
-            <p className="font-prose mx-auto max-w-4xl border-l-4 border-clay bg-paper/72 px-5 py-4 text-base leading-7 text-ink/82 shadow-[0_14px_36px_rgba(45,32,21,0.1)] sm:px-6 sm:py-5 sm:text-lg">
+            <p className="font-prose mx-auto max-w-4xl whitespace-pre-line border-l-4 border-clay bg-paper/72 px-5 py-4 text-base leading-7 text-ink/82 shadow-[0_14px_36px_rgba(45,32,21,0.1)] sm:px-6 sm:py-5 sm:text-lg">
               {project.overview}
             </p>
           </ScrollReveal>
@@ -1848,6 +2035,50 @@ function FieldCard({
             <ArrowRight className="h-4 w-4" />
           </span>
         </div>
+      </div>
+    </button>
+  )
+}
+
+function ScopeCard({
+  scope,
+  onSelect,
+}: {
+  scope: FieldScopeCard
+  onSelect: () => void
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className="group story-frame relative min-h-[230px] w-full overflow-hidden rounded-[8px] text-left shadow-story transition duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-4 focus:ring-offset-moss sm:aspect-[2/1] motion-reduce:hover:translate-y-0"
+    >
+      <img
+        src={scope.image}
+        alt={scope.imageAlt}
+        width={1448}
+        height={1086}
+        loading="lazy"
+        decoding="async"
+        className="absolute inset-0 h-full w-full object-cover transition duration-500 group-hover:scale-105 motion-reduce:group-hover:scale-100"
+      />
+      <div className="absolute inset-0 bg-[linear-gradient(90deg,rgba(16,48,33,0.94),rgba(16,48,33,0.62)_46%,rgba(16,48,33,0.12)),linear-gradient(180deg,rgba(32,24,16,0.02),rgba(32,24,16,0.34))]" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_82%_18%,rgba(246,235,211,0.16),transparent_30%)]" />
+      <div className="relative z-10 flex min-h-[230px] flex-col justify-between p-5 text-paper sm:p-6">
+        <div>
+          <span className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gold/70 bg-paper/10 text-gold">
+            <PenLine className="h-4 w-4" />
+          </span>
+          <h3 className="mt-4 max-w-[13ch] font-serif text-[clamp(1.85rem,2.7vw,2.55rem)] font-semibold leading-none">
+            {scope.title}
+          </h3>
+          <p className="font-prose mt-3 max-w-sm text-sm leading-6 text-paper/84 sm:text-base sm:leading-7">
+            {scope.description}
+          </p>
+        </div>
+        <span className="flex h-9 w-9 shrink-0 items-center justify-center self-end rounded-full border border-gold/70 text-gold transition group-hover:translate-x-1 group-hover:bg-gold group-hover:text-moss">
+          <ArrowRight className="h-4 w-4" />
+        </span>
       </div>
     </button>
   )

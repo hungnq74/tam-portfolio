@@ -124,8 +124,16 @@ function AdminBanner({
   )
 }
 
-function getMediaStatus(project: { media?: { proposalSlides?: unknown[]; summary?: unknown } }) {
+function getMediaStatus(project: {
+  media?: { proposalSlides?: unknown[]; summary?: unknown; websitePreview?: unknown }
+}) {
   if (!project.media) return "Text detail"
   const slides = project.media.proposalSlides?.length ?? 0
-  return slides > 0 ? `${slides} slides` : project.media.summary ? "Media" : "Cover"
+  return slides > 0
+    ? `${slides} slides`
+    : project.media.websitePreview
+      ? "Website preview"
+      : project.media.summary
+        ? "Media"
+        : "Cover"
 }

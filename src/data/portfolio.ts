@@ -32,6 +32,7 @@ export interface ProjectMediaAsset {
   alt: string
   width: number
   height: number
+  sourceUrl?: string
   focalPoint?: {
     x: number
     y: number
@@ -41,7 +42,19 @@ export interface ProjectMediaAsset {
 export interface ProjectMedia {
   cover: ProjectMediaAsset
   summary?: ProjectMediaAsset
+  websitePreview?: ProjectMediaAsset
   proposalSlides?: ProjectMediaAsset[]
+  contentPosts?: ProjectMediaAsset[]
+}
+
+export interface ProjectNamingRationale {
+  eyebrow: string
+  title: string
+  items: Array<{
+    term: string
+    definition: string
+  }>
+  note: string
 }
 
 export interface Project {
@@ -54,6 +67,7 @@ export interface Project {
   client: string
   year: string
   scope: string[]
+  campaignTitle?: string
   overview: string
   objective: string
   solution: string
@@ -63,6 +77,16 @@ export interface Project {
     row: 0 | 1
   }
   media?: ProjectMedia
+  namingRationale?: ProjectNamingRationale
+}
+
+export interface FieldScopeCard {
+  id: string
+  title: string
+  description: string
+  category: string
+  image: string
+  imageAlt: string
 }
 
 export interface Field {
@@ -77,6 +101,8 @@ export interface Field {
   sheetImage: string
   accent: "clay" | "moss"
   filters: string[]
+  scopeIntro?: string
+  scopeCards?: FieldScopeCard[]
 }
 
 export interface PortfolioUi {
@@ -101,6 +127,7 @@ export interface PortfolioUi {
     lockedBody: string
     lockedAction: string
     back: string
+    backToScopes: string
     eyebrow: string
   }
   detail: {
@@ -117,6 +144,8 @@ export interface PortfolioUi {
     solution: string
     results: string
     proposal: string
+    websitePreview: string
+    visitPost: string
     proposalCarousel: string
     previousSlide: string
     nextSlide: string
@@ -236,6 +265,109 @@ const AXE_PROJECT_MEDIA: ProjectMedia = {
   })),
 }
 
+const TIKTOK_WEBSITE_URL = "https://tettothetop.splashthat.com/"
+const TIKTOK_MEDIA_SIZE = {
+  width: 1600,
+  height: 900,
+}
+
+const TIKTOK_PROJECT_MEDIA: ProjectMedia = {
+  cover: {
+    src: "/assets/projects/tiktok/cover.png",
+    alt: "TikTok Tet to the Top website cover artwork",
+    width: TIKTOK_MEDIA_SIZE.width,
+    height: TIKTOK_MEDIA_SIZE.height,
+    focalPoint: { x: 50, y: 45 },
+  },
+  websitePreview: {
+    src: "/assets/projects/tiktok/website-preview.png",
+    alt: "Scrollable preview of the TikTok Tet to the Top website",
+    width: 1600,
+    height: 9477,
+    sourceUrl: TIKTOK_WEBSITE_URL,
+  },
+}
+
+const ACECOOK_CONTENT_POST_SOURCES = [
+  "https://www.facebook.com/photo.php?fbid=1085368150267062&set=pb.100063816609800.-2207520000&type=3",
+  "https://www.facebook.com/photo.php?fbid=1078433207627223&set=pb.100063816609800.-2207520000&type=3",
+  "https://www.facebook.com/photo.php?fbid=1079972137473330&set=pb.100063816609800.-2207520000&type=3",
+  "https://www.facebook.com/photo.php?fbid=1103924538411423&set=pb.100063816609800.-2207520000&type=3",
+] as const
+
+const ACECOOK_PROJECT_MEDIA: ProjectMedia = {
+  cover: {
+    src: "/assets/projects/acecook/cover.jpg",
+    alt: "Acecook Vietnam national football campaign cover artwork",
+    width: 1920,
+    height: 731,
+    sourceUrl: "https://www.facebook.com/photo/?fbid=1169196428550900&set=a.702063185264229",
+    focalPoint: { x: 50, y: 48 },
+  },
+  contentPosts: [
+    {
+      src: "/assets/projects/acecook/content-01.jpg",
+      alt: "Acecook football campaign social content post 1",
+      width: 1638,
+      height: 2048,
+      sourceUrl: ACECOOK_CONTENT_POST_SOURCES[0],
+    },
+    {
+      src: "/assets/projects/acecook/content-02.jpg",
+      alt: "Acecook football campaign social content post 2",
+      width: 2048,
+      height: 2048,
+      sourceUrl: ACECOOK_CONTENT_POST_SOURCES[1],
+    },
+    {
+      src: "/assets/projects/acecook/content-03.jpg",
+      alt: "Acecook football campaign social content post 3",
+      width: 1500,
+      height: 1500,
+      sourceUrl: ACECOOK_CONTENT_POST_SOURCES[2],
+    },
+    {
+      src: "/assets/projects/acecook/content-04.jpg",
+      alt: "Acecook football campaign social content post 4",
+      width: 1638,
+      height: 2048,
+      sourceUrl: ACECOOK_CONTENT_POST_SOURCES[3],
+    },
+  ],
+}
+
+const TIKTOK_NAMING_RATIONALE_EN: ProjectNamingRationale = {
+  eyebrow: "Naming rationale",
+  title: "TET TO THE TOP",
+  items: [
+    {
+      term: "TET",
+      definition: "Highlight the festive season",
+    },
+    {
+      term: "TO THE TOP",
+      definition: "Represent the growth, momentum, and sales breakthrough",
+    },
+  ],
+  note: "Also sounds like TIK to the TOK (hope so)",
+}
+
+const TIKTOK_NAMING_RATIONALE_VI: ProjectNamingRationale = {
+  eyebrow: "Giải thích tên gọi",
+  title: "TET TO THE TOP",
+  items: [
+    {
+      term: "TET",
+      definition: "Gợi nhắc mùa lễ hội",
+    },
+    {
+      term: "TO THE TOP",
+      definition: "Đại diện cho tăng trưởng, đà bứt phá và doanh số đi lên",
+    },
+  ],
+  note: "Also sounds like TIK to the TOK (hope so)",
+}
+
 export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
   en: {
     chapters: [
@@ -324,7 +456,47 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         imageAlt: "",
         sheetImage: SHARED_FIELD_ASSETS.copywriter.sheetImage,
         accent: "moss",
-        filters: ["Brand Story", "Campaign", "Content"],
+        filters: [
+          "Social Video Script",
+          "Fanpage Always-on Content",
+          "Website Content",
+          "Social Outreach",
+        ],
+        scopeIntro: "I write the words that do more than fill the space",
+        scopeCards: [
+          {
+            id: "social-video-script",
+            title: "Social Video Script",
+            description: "Words that stop the scroll.",
+            category: "Social Video Script",
+            image: "/assets/storybook/scope-social-video-script.png",
+            imageAlt: "Vietnamese storybook style social video script background",
+          },
+          {
+            id: "fanpage-always-on-content",
+            title: "Fanpage Always-on Content",
+            description: "Words that stay in the feed.",
+            category: "Fanpage Always-on Content",
+            image: "/assets/storybook/scope-fanpage-always-on-content.png",
+            imageAlt: "Vietnamese storybook style fanpage content background",
+          },
+          {
+            id: "website-content",
+            title: "Website Content",
+            description: "Words that shape the journey.",
+            category: "Website Content",
+            image: "/assets/storybook/scope-website-content.png",
+            imageAlt: "Vietnamese storybook style website content background",
+          },
+          {
+            id: "social-outreach",
+            title: "Social Outreach",
+            description: "Words that travel further.",
+            category: "Social Outreach",
+            image: "/assets/storybook/scope-social-outreach.png",
+            imageAlt: "Vietnamese storybook style social outreach background",
+          },
+        ],
       },
     ],
     projects: [
@@ -462,7 +634,7 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
       },
       {
         id: "axe",
-        fieldId: "creative-copywriter",
+        fieldId: "social-planner",
         title: "AXE",
         eyebrow: "Project",
         category: "Campaign",
@@ -478,6 +650,48 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         results: ["Image-led detail page", "Upload-ready media structure", "Carousel proposal flow"],
         thumbnail: { col: 1, row: 0 },
         media: AXE_PROJECT_MEDIA,
+      },
+      {
+        id: "acecook",
+        fieldId: "creative-copywriter",
+        title: "Acecook",
+        eyebrow: "Project",
+        category: "Fanpage Always-on Content",
+        summary: "Always-on football content and key visual copy for Acecook's Vietnam National Football Team campaign.",
+        client: "Acecook",
+        year: "2025",
+        scope: ["Always-on Content", "Social Captions", "Key Visual Copy"],
+        campaignTitle: "Bền Chí Kiên Tâm - Vững Vàng Tạo Kỳ Tích",
+        overview:
+          "Some campaigns are about products. This one was about national pride.\n\nAs the main sponsor of the Vietnam National Football Team, Acecook launched Việt Nam Quyết Tiến – Khởi Sắc Vinh Quang to celebrate the team's journey and ignite the pride of millions of Vietnamese fans.\n\nMy role was to develop always-on content throughout the campaign, from social captions to key visual copy, ensuring every touchpoint carried the same uplifting and heroic spirit. Because when football brings a nation together, every word deserves to sound like part of the anthem.",
+        objective:
+          "Keep the campaign's football pride alive across always-on social touchpoints while staying connected to Acecook's sponsorship role.",
+        solution:
+          "Develop captions and key visual copy with an uplifting, heroic tone so each post felt like part of the same national rallying cry.",
+        results: ["Always-on content direction", "Social caption system", "Key visual copy"],
+        thumbnail: { col: 0, row: 0 },
+        media: ACECOOK_PROJECT_MEDIA,
+      },
+      {
+        id: "tiktok",
+        fieldId: "creative-copywriter",
+        title: "TikTok",
+        eyebrow: "Project",
+        category: "Website Content",
+        summary: "Website content and naming for TikTok's Tet to the Top commercial initiative.",
+        client: "TikTok",
+        year: "2025",
+        scope: ["Naming", "Website Content", "Key Messaging"],
+        overview:
+          "Every year, as Tết approaches, TikTok launches one of its biggest commercial and creative initiatives to help SMEs unlock growth during the year's most important shopping season.\n\nIn 2025, I had the opportunity to join the project as a Copywriter, contributing to the development of the event's content concept - from naming to website content and key messaging.\n\nThat was also the year Tết to the Top came to life.",
+        objective:
+          "Create a content concept that makes the campaign feel festive, commercial, and growth-focused for SMEs preparing for Tet.",
+        solution:
+          "Shape the name Tet to the Top around the festive season and the idea of sales momentum, then extend that message across the website flow.",
+        results: ["Tet to the Top naming", "Website content direction", "Key message system"],
+        thumbnail: { col: 2, row: 0 },
+        media: TIKTOK_PROJECT_MEDIA,
+        namingRationale: TIKTOK_NAMING_RATIONALE_EN,
       },
       {
         id: "tvc-script",
@@ -571,7 +785,7 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         body:
           "No magic. No shortcuts. Just curiosity, logic, and a slightly mischievous way of seeing the world.",
         lockedPrompt: "Choose a field to open the project page",
-        unlockedPrompt: "Scroll on or choose another field",
+        unlockedPrompt: "Choose a field to continue",
       },
       gallery: {
         lockedEyebrow: "Field page",
@@ -580,6 +794,7 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
           "The project gallery will open after you choose The Thinking or The Making.",
         lockedAction: "Back to Fields",
         back: "Back",
+        backToScopes: "Back to scopes",
         eyebrow: "Field page",
       },
       detail: {
@@ -597,6 +812,8 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         solution: "Solution",
         results: "Results",
         proposal: "Full proposal",
+        websitePreview: "Website preview",
+        visitPost: "Visit post",
         proposalCarousel: "proposal carousel",
         previousSlide: "Previous slide",
         nextSlide: "Next slide",
@@ -697,7 +914,47 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         imageAlt: "Minh họa lĩnh vực The Making",
         sheetImage: SHARED_FIELD_ASSETS.copywriter.sheetImage,
         accent: "moss",
-        filters: ["Brand Story", "Campaign", "Content"],
+        filters: [
+          "Kịch bản video social",
+          "Nội dung fanpage always-on",
+          "Nội dung website",
+          "Social outreach",
+        ],
+        scopeIntro: "Mình viết những câu chữ không chỉ để lấp đầy khoảng trống.",
+        scopeCards: [
+          {
+            id: "social-video-script",
+            title: "Kịch bản video social",
+            description: "Câu chữ khiến người xem dừng lại.",
+            category: "Kịch bản video social",
+            image: "/assets/storybook/scope-social-video-script.png",
+            imageAlt: "Nền minh họa phong cách truyện Việt cho kịch bản video social",
+          },
+          {
+            id: "fanpage-always-on-content",
+            title: "Nội dung fanpage always-on",
+            description: "Câu chữ ở lại trong feed.",
+            category: "Nội dung fanpage always-on",
+            image: "/assets/storybook/scope-fanpage-always-on-content.png",
+            imageAlt: "Nền minh họa phong cách truyện Việt cho nội dung fanpage",
+          },
+          {
+            id: "website-content",
+            title: "Nội dung website",
+            description: "Câu chữ định hình hành trình.",
+            category: "Nội dung website",
+            image: "/assets/storybook/scope-website-content.png",
+            imageAlt: "Nền minh họa phong cách truyện Việt cho nội dung website",
+          },
+          {
+            id: "social-outreach",
+            title: "Social outreach",
+            description: "Câu chữ đi xa hơn.",
+            category: "Social outreach",
+            image: "/assets/storybook/scope-social-outreach.png",
+            imageAlt: "Nền minh họa phong cách truyện Việt cho social outreach",
+          },
+        ],
       },
     ],
     projects: [
@@ -835,10 +1092,10 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
       },
       {
         id: "axe",
-        fieldId: "creative-copywriter",
+        fieldId: "social-planner",
         title: "AXE",
         eyebrow: "Dự án",
-        category: "Campaign",
+        category: "Chiến dịch",
         summary: "Một case campaign đậm chất proposal, tập trung vào attraction, confidence và visual storytelling.",
         client: "AXE",
         year: "2024",
@@ -851,6 +1108,48 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         results: ["Trang detail thiên về hình ảnh", "Cấu trúc media sẵn sàng upload", "Carousel proposal"],
         thumbnail: { col: 1, row: 0 },
         media: AXE_PROJECT_MEDIA,
+      },
+      {
+        id: "acecook",
+        fieldId: "creative-copywriter",
+        title: "Acecook",
+        eyebrow: "Dự án",
+        category: "Nội dung fanpage always-on",
+        summary: "Nội dung football always-on và copy key visual cho chiến dịch đội tuyển quốc gia của Acecook.",
+        client: "Acecook",
+        year: "2025",
+        scope: ["Nội dung always-on", "Caption social", "Copy key visual"],
+        campaignTitle: "Bền Chí Kiên Tâm - Vững Vàng Tạo Kỳ Tích",
+        overview:
+          "Có những chiến dịch nói về sản phẩm. Chiến dịch này nói về niềm tự hào dân tộc.\n\nVới vai trò nhà tài trợ chính của Đội tuyển Bóng đá Quốc gia Việt Nam, Acecook ra mắt Việt Nam Quyết Tiến – Khởi Sắc Vinh Quang để tôn vinh hành trình của đội tuyển và thắp lên niềm tự hào của hàng triệu người hâm mộ Việt Nam.\n\nVai trò của mình là phát triển nội dung always-on xuyên suốt chiến dịch, từ social captions đến copy key visual, để mọi điểm chạm đều giữ chung một tinh thần cổ vũ hào hùng. Vì khi bóng đá gắn kết cả một quốc gia, từng câu chữ cũng cần vang lên như một phần của bài ca chiến thắng.",
+        objective:
+          "Duy trì tinh thần tự hào bóng đá xuyên suốt các điểm chạm social always-on, đồng thời gắn kết tự nhiên với vai trò nhà tài trợ của Acecook.",
+        solution:
+          "Phát triển caption và copy key visual theo giọng điệu nâng tinh thần, hào hùng, để mỗi bài đăng đều thuộc về cùng một lời cổ vũ quốc gia.",
+        results: ["Định hướng nội dung always-on", "Hệ caption social", "Copy key visual"],
+        thumbnail: { col: 0, row: 0 },
+        media: ACECOOK_PROJECT_MEDIA,
+      },
+      {
+        id: "tiktok",
+        fieldId: "creative-copywriter",
+        title: "TikTok",
+        eyebrow: "Dự án",
+        category: "Nội dung website",
+        summary: "Nội dung website và naming cho sáng kiến Tết to the Top của TikTok.",
+        client: "TikTok",
+        year: "2025",
+        scope: ["Naming", "Website Content", "Key Messaging"],
+        overview:
+          "Mỗi năm khi Tết đến gần, TikTok triển khai một trong những sáng kiến thương mại và sáng tạo lớn nhất để giúp SMEs mở khóa tăng trưởng trong mùa mua sắm quan trọng nhất năm. Năm 2025, mình tham gia dự án với vai trò Copywriter, đóng góp vào concept nội dung của sự kiện - từ naming đến website content và key messaging.",
+        objective:
+          "Tạo một concept nội dung vừa có không khí Tết, vừa thể hiện rõ tinh thần tăng trưởng và bứt phá doanh số cho SMEs.",
+        solution:
+          "Phát triển tên gọi Tet to the Top từ tinh thần mùa lễ hội và ý niệm đi lên trong tăng trưởng, rồi mở rộng thông điệp đó xuyên suốt website.",
+        results: ["Naming Tet to the Top", "Định hướng nội dung website", "Hệ thông điệp chính"],
+        thumbnail: { col: 2, row: 0 },
+        media: TIKTOK_PROJECT_MEDIA,
+        namingRationale: TIKTOK_NAMING_RATIONALE_VI,
       },
       {
         id: "tvc-script",
@@ -944,7 +1243,7 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         body:
           "Mỗi nhánh là một trang truyện riêng, cùng đi về một cách kể thương hiệu rõ ràng và có cảm xúc.",
         lockedPrompt: "Chọn một lĩnh vực để mở trang dự án",
-        unlockedPrompt: "Cuộn tiếp hoặc chọn lĩnh vực khác",
+        unlockedPrompt: "Chọn một lĩnh vực để tiếp tục",
       },
       gallery: {
         lockedEyebrow: "Trang lĩnh vực",
@@ -953,6 +1252,7 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
           "Danh mục dự án sẽ mở ra sau khi bạn chọn The Thinking hoặc The Making.",
         lockedAction: "Quay lại Lĩnh vực",
         back: "Quay lại",
+        backToScopes: "Quay lại scope",
         eyebrow: "Trang lĩnh vực",
       },
       detail: {
@@ -970,6 +1270,8 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         solution: "Solution",
         results: "Kết quả",
         proposal: "Proposal đầy đủ",
+        websitePreview: "Xem trước website",
+        visitPost: "Xem bài post",
         proposalCarousel: "carousel proposal",
         previousSlide: "Slide trước",
         nextSlide: "Slide tiếp theo",

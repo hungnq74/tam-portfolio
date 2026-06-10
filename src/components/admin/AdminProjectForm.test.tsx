@@ -130,10 +130,10 @@ describe("AdminProjectForm basics", () => {
 
     await user.selectOptions(screen.getByLabelText("Field"), "creative-copywriter")
     await user.click(screen.getByRole("tab", { name: "English" }))
-    expect(screen.getByLabelText("Category")).toHaveValue("Brand Story")
+    expect(screen.getByLabelText("Category")).toHaveValue("Social Video Script")
 
     await user.click(screen.getByRole("tab", { name: "Vietnamese" }))
-    expect(screen.getByLabelText("Category")).toHaveValue("Brand Story")
+    expect(screen.getByLabelText("Category")).toHaveValue("Kịch bản video social")
   })
 
   it("disables saving and uploading when Blob storage is not configured", async () => {

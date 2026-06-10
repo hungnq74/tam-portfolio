@@ -22,6 +22,7 @@ export const projectMediaAssetSchema = z.object({
   alt: z.string().min(1).max(180),
   width: z.number().int().positive().max(10000),
   height: z.number().int().positive().max(10000),
+  sourceUrl: z.string().url().max(240).optional(),
   focalPoint: z
     .object({
       x: z.number().min(0).max(100),
@@ -33,7 +34,24 @@ export const projectMediaAssetSchema = z.object({
 export const projectMediaSchema = z.object({
   cover: projectMediaAssetSchema,
   summary: projectMediaAssetSchema.optional(),
+  websitePreview: projectMediaAssetSchema.optional(),
   proposalSlides: z.array(projectMediaAssetSchema).max(ADMIN_PROJECT_PAGE_LIMIT).optional(),
+  contentPosts: z.array(projectMediaAssetSchema).max(12).optional(),
+})
+
+const projectNamingRationaleSchema = z.object({
+  eyebrow: z.string().min(1).max(80),
+  title: z.string().min(1).max(120),
+  items: z
+    .array(
+      z.object({
+        term: z.string().min(1).max(80),
+        definition: z.string().min(1).max(180),
+      }),
+    )
+    .min(1)
+    .max(6),
+  note: z.string().min(1).max(180),
 })
 
 export const portfolioProjectSchema = z.object({
@@ -46,12 +64,14 @@ export const portfolioProjectSchema = z.object({
   client: z.string().min(1).max(120),
   year: z.string().min(1).max(24),
   scope: z.array(z.string().min(1).max(80)).min(1).max(12),
+  campaignTitle: z.string().min(1).max(160).optional(),
   overview: z.string().min(1).max(900),
   objective: z.string().min(1).max(900),
   solution: z.string().min(1).max(900),
   results: z.array(z.string().min(1).max(120)).min(1).max(12),
   thumbnail: thumbnailSchema,
   media: projectMediaSchema.optional(),
+  namingRationale: projectNamingRationaleSchema.optional(),
 })
 
 export const portfolioManifestSchema = z.object({

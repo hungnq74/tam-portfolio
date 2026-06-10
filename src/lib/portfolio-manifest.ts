@@ -173,7 +173,9 @@ function mediaAssets(media?: ProjectMedia) {
 
   if (media?.cover) assets.push(media.cover)
   if (media?.summary) assets.push(media.summary)
+  if (media?.websitePreview) assets.push(media.websitePreview)
   if (media?.proposalSlides) assets.push(...media.proposalSlides)
+  if (media?.contentPosts) assets.push(...media.contentPosts)
 
   return assets
 }

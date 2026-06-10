@@ -167,8 +167,18 @@ export function createFieldOptions() {
       id: "creative-copywriter" as FieldId,
       title: "The Making",
       filters: {
-        en: ["Brand Story", "Campaign", "Content"],
-        vi: ["Brand Story", "Campaign", "Content"],
+        en: [
+          "Social Video Script",
+          "Fanpage Always-on Content",
+          "Website Content",
+          "Social Outreach",
+        ],
+        vi: [
+          "Kịch bản video social",
+          "Nội dung fanpage always-on",
+          "Nội dung website",
+          "Social outreach",
+        ],
       },
     },
   ]

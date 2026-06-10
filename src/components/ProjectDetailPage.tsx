@@ -8,10 +8,10 @@ import {
   useMemo,
   useState,
 } from "react"
-import Link from "next/link"
 import {
   ArrowLeft,
   ArrowRight,
+  ExternalLink,
   Layers3,
 } from "lucide-react"
 import {
@@ -19,6 +19,7 @@ import {
   type PortfolioContentByLocale,
   type PortfolioUi,
   type Project,
+  type ProjectNamingRationale,
   type ProjectMediaAsset,
 } from "@/data/portfolio"
 import { LocaleToggle } from "@/components/LocaleToggle"
@@ -29,6 +30,15 @@ const MEDIA_RAIL_CLASS =
   "relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 sm:w-[calc(100vw-3rem)] lg:w-[min(calc(100vw-6rem),1440px)]"
 const CAROUSEL_RAIL_CLASS =
   "relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 sm:w-[calc(100vw-3rem)] lg:w-[min(calc(100vw-10rem),1440px)] xl:w-[min(calc(100vw-18rem),1440px)]"
+
+function getPortfolioBackHref(project: Project) {
+  const params = new URLSearchParams({
+    field: project.fieldId,
+    project: project.id,
+  })
+
+  return `/?${params.toString()}#gallery`
+}
 
 export function ProjectDetailPage({
   projectId,
@@ -73,18 +83,20 @@ export function ProjectDetailPage({
 
 function ProjectChrome({
   ui,
+  project,
 }: {
   ui: PortfolioUi
+  project: Project
 }) {
   return (
     <div className="mb-5 flex flex-wrap items-center gap-4">
-      <Link
-        href="/"
+      <a
+        href={getPortfolioBackHref(project)}
         className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-clay transition hover:text-moss focus:outline-none focus:ring-2 focus:ring-clay"
       >
         <ArrowLeft className="h-4 w-4" />
         {ui.detail.back}
-      </Link>
+      </a>
     </div>
   )
 }
@@ -123,6 +135,8 @@ function MediaProjectPage({
 }) {
   const media = project.media
   const slides = media?.proposalSlides ?? []
+  const websitePreview = media?.websitePreview
+  const contentPosts = media?.contentPosts ?? []
   const slidesPerPage = useSlidesPerPage()
   const [activePageIndex, setActivePageIndex] = useState(0)
   const pageCount = Math.max(1, Math.ceil(slides.length / slidesPerPage))
@@ -155,7 +169,7 @@ function MediaProjectPage({
   return (
     <main className="relative min-h-screen px-4 pb-24 pt-20 sm:px-6 sm:py-20 lg:px-10">
       <div className="mx-auto w-full max-w-7xl">
-        <ProjectChrome ui={ui} />
+        <ProjectChrome ui={ui} project={project} />
 
         <article className="space-y-10 sm:space-y-14">
           <ProjectMediaImage
@@ -165,11 +179,22 @@ function MediaProjectPage({
             imageClassName="h-full w-full object-contain"
           />
 
-          <div className={cn(MEDIA_RAIL_CLASS, "border-l-4 border-clay bg-paper/72 px-5 py-4 shadow-[0_14px_36px_rgba(45,32,21,0.1)] sm:px-6 sm:py-5")}>
-            <p className="font-prose mx-auto max-w-4xl text-base leading-7 text-ink/82 sm:text-lg">
-              {project.overview}
-            </p>
-          </div>
+          {project.campaignTitle ? (
+            <ProjectCampaignIntro
+              title={project.campaignTitle}
+              body={project.overview}
+            />
+          ) : (
+            <div className={cn(MEDIA_RAIL_CLASS, "border-l-4 border-clay bg-paper/72 px-5 py-4 shadow-[0_14px_36px_rgba(45,32,21,0.1)] sm:px-6 sm:py-5")}>
+              <p className="font-prose mx-auto max-w-4xl whitespace-pre-line text-base leading-7 text-ink/82 sm:text-lg">
+                {project.overview}
+              </p>
+            </div>
+          )}
+
+          {project.namingRationale ? (
+            <ProjectNamingRationaleBlock rationale={project.namingRationale} />
+          ) : null}
 
           {media.summary ? (
             <ProjectMediaImage
@@ -179,7 +204,12 @@ function MediaProjectPage({
             />
           ) : null}
 
-          {slides.length > 0 ? (
+          {websitePreview ? (
+            <ProjectWebsitePreview
+              label={ui.detail.websitePreview}
+              asset={websitePreview}
+            />
+          ) : slides.length > 0 ? (
             <div
               className={cn(CAROUSEL_RAIL_CLASS, "focus:outline-none")}
               role="region"
@@ -268,9 +298,222 @@ function MediaProjectPage({
               ) : null}
             </div>
           ) : null}
+
+          {contentPosts.length > 0 ? (
+            <ProjectContentPostsGrid
+              posts={contentPosts}
+              postLinkLabel={ui.detail.visitPost}
+            />
+          ) : null}
         </article>
       </div>
     </main>
+  )
+}
+
+function ProjectCampaignIntro({
+  title,
+  body,
+}: {
+  title: string
+  body: string
+}) {
+  return (
+    <section
+      className={cn(
+        MEDIA_RAIL_CLASS,
+        "border-y border-[rgba(165,66,47,0.28)] py-8 sm:py-10",
+      )}
+    >
+      <div className="grid gap-7 lg:grid-cols-[0.86fr_1.14fr] lg:items-start lg:gap-12">
+        <h2 className="font-serif text-[clamp(2.4rem,5vw,5.2rem)] font-semibold leading-[0.95] text-clay">
+          {title}
+        </h2>
+        <p className="font-prose whitespace-pre-line text-base leading-8 text-ink/82 sm:text-lg sm:leading-8">
+          {body}
+        </p>
+      </div>
+    </section>
+  )
+}
+
+function ProjectContentPostsGrid({
+  posts,
+  postLinkLabel,
+}: {
+  posts: ProjectMediaAsset[]
+  postLinkLabel: string
+}) {
+  const arrangedPosts = [...posts].sort((left, right) => {
+    const leftRatio = left.height / left.width
+    const rightRatio = right.height / right.width
+
+    return rightRatio - leftRatio
+  })
+
+  return (
+    <section
+      className={cn(MEDIA_RAIL_CLASS, "grid items-start gap-4 sm:grid-cols-2 lg:gap-5")}
+      aria-label="Content posts"
+    >
+      {arrangedPosts.map((post) => (
+        <article
+          key={post.src}
+          className="overflow-hidden rounded-[8px] border border-[rgba(116,63,36,0.2)] bg-paper shadow-[0_16px_42px_rgba(45,32,21,0.12)]"
+        >
+          <ProjectMediaImage
+            asset={post}
+            className="bg-paper"
+            imageClassName="h-auto w-full"
+          />
+          {post.sourceUrl ? (
+            <div className="flex justify-end border-t border-[rgba(116,63,36,0.16)] bg-paper/92 px-3 py-3 sm:px-4">
+              <a
+                href={post.sourceUrl}
+                target="_blank"
+                rel="noreferrer"
+                aria-label={`${postLinkLabel}: ${post.alt}`}
+                className="inline-flex items-center gap-2 rounded-full border border-clay/24 px-3 py-2 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-clay transition hover:border-clay hover:bg-clay hover:text-paper focus:outline-none focus:ring-2 focus:ring-clay"
+              >
+                <ExternalLink className="h-3.5 w-3.5" />
+                {postLinkLabel}
+              </a>
+            </div>
+          ) : null}
+        </article>
+      ))}
+    </section>
+  )
+}
+
+function ProjectWebsitePreview({
+  label,
+  asset,
+}: {
+  label: string
+  asset: ProjectMediaAsset
+}) {
+  const sourceUrl = asset.sourceUrl ?? asset.src
+
+  return (
+    <section
+      className={cn(
+        CAROUSEL_RAIL_CLASS,
+        "overflow-hidden rounded-[8px] border border-[rgba(116,63,36,0.24)] bg-paper shadow-[0_18px_48px_rgba(45,32,21,0.14)]",
+      )}
+      aria-label={label}
+    >
+      <div className="flex flex-col gap-3 border-b border-[rgba(116,63,36,0.16)] bg-[rgba(255,247,226,0.84)] px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+        <div className="flex items-center gap-2">
+          <span className="h-2.5 w-2.5 rounded-full bg-clay/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-gold/70" />
+          <span className="h-2.5 w-2.5 rounded-full bg-moss/70" />
+          <p className="ml-2 text-xs font-bold uppercase tracking-[0.16em] text-clay">
+            {label}
+          </p>
+        </div>
+        <p className="min-w-0 truncate rounded-full border border-[rgba(116,63,36,0.18)] bg-paper/76 px-3 py-1.5 text-xs leading-none text-ink/62">
+          {sourceUrl}
+        </p>
+      </div>
+
+      <div className="relative bg-[#f5dfaa]/35 p-2 sm:p-4">
+        <div className="overflow-hidden rounded-[6px] bg-white shadow-insetpaper">
+          <img
+            src={asset.src}
+            alt={asset.alt}
+            width={asset.width}
+            height={asset.height}
+            loading="lazy"
+            decoding="async"
+            className="block h-auto w-full"
+          />
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function ProjectNamingRationaleBlock({
+  rationale,
+}: {
+  rationale: ProjectNamingRationale
+}) {
+  const tetItem =
+    rationale.items.find((item) => item.term === "TET") ?? rationale.items[0]
+  const topItem =
+    rationale.items.find((item) => item.term === "TO THE TOP") ??
+    rationale.items.find((item) => item.term === "TOP") ??
+    rationale.items[1]
+  const titleTermClass =
+    "font-serif text-5xl font-semibold leading-[0.98] text-clay sm:text-6xl md:text-7xl lg:text-8xl"
+  const definitionClass =
+    "font-prose mt-4 max-w-[17rem] text-base leading-7 text-ink/78 sm:text-lg sm:leading-8"
+
+  return (
+    <section className="mx-auto w-full max-w-5xl px-1 py-8 sm:py-10 lg:py-12">
+      <div className="max-w-[58rem]">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-clay sm:text-sm">
+          {rationale.eyebrow}
+        </p>
+
+        <blockquote className="mt-5 max-w-[55rem] border-l-2 border-gold/60 py-1 pl-5 sm:pl-7">
+          <h2 className="sr-only">{rationale.title}</h2>
+          <div className="flex max-w-full flex-wrap items-start gap-x-5 gap-y-7 sm:gap-x-7 lg:w-max lg:max-w-none lg:flex-nowrap lg:gap-x-8 lg:pb-24 xl:gap-x-10">
+            <div className="inline-flex max-w-full flex-col lg:relative lg:block lg:max-w-none">
+              <span
+                aria-hidden="true"
+                className={cn(
+                  titleTermClass,
+                  "underline decoration-clay decoration-[0.055em] underline-offset-[0.08em]",
+                )}
+              >
+                TET
+              </span>
+              <p
+                className={cn(
+                  definitionClass,
+                  "lg:absolute lg:left-0 lg:top-full lg:mt-5 lg:w-[17rem] lg:max-w-[17rem]",
+                )}
+              >
+                {tetItem?.definition}
+              </p>
+            </div>
+
+            <span
+              aria-hidden="true"
+              className={cn(titleTermClass, "whitespace-nowrap")}
+            >
+              TO THE
+            </span>
+
+            <div className="inline-flex max-w-full flex-col lg:relative lg:block lg:max-w-none">
+              <span
+                aria-hidden="true"
+                className={cn(
+                  titleTermClass,
+                  "underline decoration-clay decoration-[0.055em] underline-offset-[0.08em]",
+                )}
+              >
+                TOP
+              </span>
+              <p
+                className={cn(
+                  definitionClass,
+                  "max-w-[32rem] lg:absolute lg:left-0 lg:top-full lg:mt-5 lg:w-[24rem] lg:max-w-[24rem] 2xl:w-[32rem] 2xl:max-w-[32rem]",
+                )}
+              >
+                {topItem?.definition}
+              </p>
+            </div>
+          </div>
+        </blockquote>
+
+        <p className="font-prose mt-9 max-w-[55rem] pl-5 text-sm italic leading-7 text-ink/76 sm:pl-7 sm:text-base">
+          {rationale.note}
+        </p>
+      </div>
+    </section>
   )
 }
 
@@ -286,7 +529,7 @@ function TextProjectPage({
   return (
     <main className="relative flex min-h-screen items-center px-4 pb-24 pt-20 sm:px-6 sm:py-20 lg:px-10">
       <div className="mx-auto w-full max-w-6xl">
-        <ProjectChrome ui={ui} />
+        <ProjectChrome ui={ui} project={project} />
         <StoryFrame className="overflow-hidden p-5 sm:p-7 lg:p-9">
           <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-10">
             <article className="flex flex-col justify-between">
@@ -302,7 +545,7 @@ function TextProjectPage({
                   <MetaBlock label={ui.detail.year} value={project.year} />
                   <MetaBlock label={ui.detail.scope} value={project.scope.join(", ")} />
                 </div>
-                <p className="font-prose mt-7 text-base leading-8 text-ink/82 sm:text-lg">
+                <p className="font-prose mt-7 whitespace-pre-line text-base leading-8 text-ink/82 sm:text-lg">
                   {project.overview}
                 </p>
               </div>

@@ -90,6 +90,12 @@ describe("owned Blob URL helpers", () => {
           width: 1600,
           height: 900,
         },
+        websitePreview: {
+          src: "projects/demo/a/website-preview.png",
+          alt: "Website preview",
+          width: 1600,
+          height: 9000,
+        },
         proposalSlides: [
           {
             src: "projects/demo/a/proposal-01.png",
@@ -104,12 +110,28 @@ describe("owned Blob URL helpers", () => {
             height: 900,
           },
         ],
+        contentPosts: [
+          {
+            src: "projects/demo/a/content-01.png",
+            alt: "Content post one",
+            width: 1600,
+            height: 1600,
+          },
+          {
+            src: "https://store.blob.vercel-storage.com/projects/other/a/content-02.png",
+            alt: "Foreign post",
+            width: 1600,
+            height: 1600,
+          },
+        ],
       },
     })
 
     expect(getOwnedBlobUrls("demo", [project])).toEqual([
       "https://store.blob.vercel-storage.com/projects/demo/a/cover.png",
+      "projects/demo/a/website-preview.png",
       "projects/demo/a/proposal-01.png",
+      "projects/demo/a/content-01.png",
     ])
   })
 
