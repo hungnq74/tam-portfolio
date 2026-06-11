@@ -23,6 +23,7 @@ export const projectMediaAssetSchema = z.object({
   width: z.number().int().positive().max(10000),
   height: z.number().int().positive().max(10000),
   sourceUrl: z.string().url().max(240).optional(),
+  caption: z.string().min(1).max(1000).optional(),
   focalPoint: z
     .object({
       x: z.number().min(0).max(100),
@@ -33,6 +34,7 @@ export const projectMediaAssetSchema = z.object({
 
 export const projectMediaSchema = z.object({
   cover: projectMediaAssetSchema,
+  introLayout: z.enum(["split-cover"]).optional(),
   summary: projectMediaAssetSchema.optional(),
   websitePreview: projectMediaAssetSchema.optional(),
   proposalSlides: z.array(projectMediaAssetSchema).max(ADMIN_PROJECT_PAGE_LIMIT).optional(),
@@ -65,6 +67,7 @@ export const portfolioProjectSchema = z.object({
   year: z.string().min(1).max(24),
   scope: z.array(z.string().min(1).max(80)).min(1).max(12),
   campaignTitle: z.string().min(1).max(160).optional(),
+  closingNote: z.string().min(1).max(320).optional(),
   overview: z.string().min(1).max(900),
   objective: z.string().min(1).max(900),
   solution: z.string().min(1).max(900),

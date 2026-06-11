@@ -137,6 +137,7 @@ function MediaProjectPage({
   const slides = media?.proposalSlides ?? []
   const websitePreview = media?.websitePreview
   const contentPosts = media?.contentPosts ?? []
+  const usesSplitCoverIntro = media?.introLayout === "split-cover"
   const slidesPerPage = useSlidesPerPage()
   const [activePageIndex, setActivePageIndex] = useState(0)
   const pageCount = Math.max(1, Math.ceil(slides.length / slidesPerPage))
@@ -172,25 +173,36 @@ function MediaProjectPage({
         <ProjectChrome ui={ui} project={project} />
 
         <article className="space-y-10 sm:space-y-14">
-          <ProjectMediaImage
-            asset={media.cover}
-            eager
-            className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-ink"
-            imageClassName="h-full w-full object-contain"
-          />
-
-          {project.campaignTitle ? (
-            <ProjectCampaignIntro
-              title={project.campaignTitle}
+          {usesSplitCoverIntro ? (
+            <ProjectSplitCoverIntro
+              eyebrow={project.category}
+              title={project.title}
               body={project.overview}
+              cover={media.cover}
             />
           ) : (
-            <div className={cn(MEDIA_RAIL_CLASS, "border-l-4 border-clay bg-paper/72 px-5 py-4 shadow-[0_14px_36px_rgba(45,32,21,0.1)] sm:px-6 sm:py-5")}>
-              <p className="font-prose mx-auto max-w-4xl whitespace-pre-line text-base leading-7 text-ink/82 sm:text-lg">
-                {project.overview}
-              </p>
-            </div>
+            <ProjectMediaImage
+              asset={media.cover}
+              eager
+              className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-ink"
+              imageClassName="h-full w-full object-contain"
+            />
           )}
+
+          {!usesSplitCoverIntro ? (
+            project.campaignTitle ? (
+              <ProjectCampaignIntro
+                title={project.campaignTitle}
+                body={project.overview}
+              />
+            ) : (
+              <div className={cn(MEDIA_RAIL_CLASS, "border-l-4 border-clay bg-paper/72 px-5 py-4 shadow-[0_14px_36px_rgba(45,32,21,0.1)] sm:px-6 sm:py-5")}>
+                <p className="font-prose mx-auto max-w-4xl whitespace-pre-line text-base leading-7 text-ink/82 sm:text-lg">
+                  {project.overview}
+                </p>
+              </div>
+            )
+          ) : null}
 
           {project.namingRationale ? (
             <ProjectNamingRationaleBlock rationale={project.namingRationale} />
@@ -303,7 +315,15 @@ function MediaProjectPage({
             <ProjectContentPostsGrid
               posts={contentPosts}
               postLinkLabel={ui.detail.visitPost}
+              showCaptions={project.id === "weshare"}
+              captionLabel={ui.detail.postCaption}
+              readMoreLabel={ui.detail.readMoreCaption}
+              showLessLabel={ui.detail.showLessCaption}
             />
+          ) : null}
+
+          {project.closingNote ? (
+            <ProjectClosingNote note={project.closingNote} />
           ) : null}
         </article>
       </div>
@@ -318,6 +338,8 @@ function ProjectCampaignIntro({
   title: string
   body: string
 }) {
+  const titleLines = title.split("\n").filter(Boolean)
+
   return (
     <section
       className={cn(
@@ -326,8 +348,15 @@ function ProjectCampaignIntro({
       )}
     >
       <div className="grid gap-7 lg:grid-cols-[0.86fr_1.14fr] lg:items-start lg:gap-12">
-        <h2 className="font-serif text-[clamp(2.4rem,5vw,5.2rem)] font-semibold leading-[0.95] text-clay">
-          {title}
+        <h2
+          aria-label={titleLines.join(" ")}
+          className="font-serif text-[clamp(2.4rem,4vw,3.45rem)] font-semibold leading-[0.95] text-clay"
+        >
+          {titleLines.map((line) => (
+            <span key={line} className="block max-w-full sm:whitespace-nowrap">
+              {line}
+            </span>
+          ))}
         </h2>
         <p className="font-prose whitespace-pre-line text-base leading-8 text-ink/82 sm:text-lg sm:leading-8">
           {body}
@@ -337,13 +366,63 @@ function ProjectCampaignIntro({
   )
 }
 
+function ProjectSplitCoverIntro({
+  eyebrow,
+  title,
+  body,
+  cover,
+}: {
+  eyebrow: string
+  title: string
+  body: string
+  cover: ProjectMediaAsset
+}) {
+  return (
+    <section
+      className={cn(
+        MEDIA_RAIL_CLASS,
+        "border-y border-[rgba(165,66,47,0.28)] py-8 sm:py-10",
+      )}
+    >
+      <div className="grid gap-7 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:gap-12">
+        <div className="max-w-2xl">
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-clay">
+            {eyebrow}
+          </p>
+          <h1 className="mt-4 font-serif text-[clamp(3rem,6vw,6.2rem)] font-semibold leading-none text-clay">
+            {title}
+          </h1>
+          <p className="font-prose mt-6 whitespace-pre-line text-base leading-8 text-ink/82 sm:text-lg sm:leading-8">
+            {body}
+          </p>
+        </div>
+        <ProjectMediaImage
+          asset={cover}
+          eager
+          className="overflow-hidden rounded-[8px] border border-[rgba(116,63,36,0.2)] bg-paper shadow-[0_16px_42px_rgba(45,32,21,0.12)]"
+          imageClassName="h-full w-full object-cover"
+        />
+      </div>
+    </section>
+  )
+}
+
 function ProjectContentPostsGrid({
   posts,
   postLinkLabel,
+  showCaptions = false,
+  captionLabel,
+  readMoreLabel,
+  showLessLabel,
 }: {
   posts: ProjectMediaAsset[]
   postLinkLabel: string
+  showCaptions?: boolean
+  captionLabel?: string
+  readMoreLabel?: string
+  showLessLabel?: string
 }) {
+  const [expandedCaptions, setExpandedCaptions] = useState<Record<string, boolean>>({})
   const arrangedPosts = [...posts].sort((left, right) => {
     const leftRatio = left.height / left.width
     const rightRatio = right.height / right.width
@@ -356,33 +435,96 @@ function ProjectContentPostsGrid({
       className={cn(MEDIA_RAIL_CLASS, "grid items-start gap-4 sm:grid-cols-2 lg:gap-5")}
       aria-label="Content posts"
     >
-      {arrangedPosts.map((post) => (
-        <article
-          key={post.src}
-          className="overflow-hidden rounded-[8px] border border-[rgba(116,63,36,0.2)] bg-paper shadow-[0_16px_42px_rgba(45,32,21,0.12)]"
-        >
-          <ProjectMediaImage
-            asset={post}
-            className="bg-paper"
-            imageClassName="h-auto w-full"
-          />
-          {post.sourceUrl ? (
-            <div className="flex justify-end border-t border-[rgba(116,63,36,0.16)] bg-paper/92 px-3 py-3 sm:px-4">
-              <a
-                href={post.sourceUrl}
-                target="_blank"
-                rel="noreferrer"
-                aria-label={`${postLinkLabel}: ${post.alt}`}
-                className="inline-flex items-center gap-2 rounded-full border border-clay/24 px-3 py-2 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-clay transition hover:border-clay hover:bg-clay hover:text-paper focus:outline-none focus:ring-2 focus:ring-clay"
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                {postLinkLabel}
-              </a>
-            </div>
-          ) : null}
-        </article>
-      ))}
+      {arrangedPosts.map((post) => {
+        const caption = showCaptions ? post.caption : undefined
+        const canToggleCaption = Boolean(caption && (caption.length > 150 || caption.includes("\n")))
+        const isCaptionExpanded = Boolean(expandedCaptions[post.src])
+
+        return (
+          <article
+            key={post.src}
+            className="overflow-hidden rounded-[8px] border border-[rgba(116,63,36,0.2)] bg-paper shadow-[0_16px_42px_rgba(45,32,21,0.12)]"
+          >
+            <ProjectMediaImage
+              asset={post}
+              className="bg-paper"
+              imageClassName="h-auto w-full"
+            />
+
+            {caption ? (
+              <div className="border-t border-[rgba(116,63,36,0.16)] bg-paper/96 px-4 py-4 sm:px-5">
+                <p className="mb-2 text-[0.64rem] font-bold uppercase tracking-[0.18em] text-clay">
+                  {captionLabel}
+                </p>
+                <div className="relative">
+                  <p
+                    className={cn(
+                      "font-prose whitespace-pre-line text-sm leading-7 text-ink/78 sm:text-[0.95rem]",
+                      canToggleCaption && !isCaptionExpanded ? "max-h-24 overflow-hidden" : null,
+                    )}
+                  >
+                    {caption}
+                  </p>
+                  {canToggleCaption && !isCaptionExpanded ? (
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-paper via-paper/90 to-paper/0"
+                    />
+                  ) : null}
+                </div>
+
+                {canToggleCaption ? (
+                  <button
+                    type="button"
+                    className="mt-3 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-clay underline decoration-clay/45 underline-offset-4 transition hover:text-moss focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper"
+                    aria-expanded={isCaptionExpanded}
+                    onClick={() => {
+                      setExpandedCaptions((currentCaptions) => ({
+                        ...currentCaptions,
+                        [post.src]: !isCaptionExpanded,
+                      }))
+                    }}
+                  >
+                    {isCaptionExpanded ? showLessLabel : readMoreLabel}
+                  </button>
+                ) : null}
+              </div>
+            ) : null}
+
+            {post.sourceUrl ? (
+              <div className="flex justify-end border-t border-[rgba(116,63,36,0.16)] bg-paper/92 px-3 py-3 sm:px-4">
+                <a
+                  href={post.sourceUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  aria-label={`${postLinkLabel}: ${post.alt}`}
+                  className="inline-flex items-center gap-2 rounded-full border border-clay/24 px-3 py-2 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-clay transition hover:border-clay hover:bg-clay hover:text-paper focus:outline-none focus:ring-2 focus:ring-clay"
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                  {postLinkLabel}
+                </a>
+              </div>
+            ) : null}
+          </article>
+        )
+      })}
     </section>
+  )
+}
+
+function ProjectClosingNote({
+  note,
+}: {
+  note: string
+}) {
+  return (
+    <aside className={cn(MEDIA_RAIL_CLASS, "border-t border-gold/45 pt-6 text-center")}>
+      <div className="overflow-x-auto overscroll-x-contain pb-1">
+        <p className="font-prose inline-block min-w-max whitespace-nowrap px-2 text-base italic leading-8 text-moss/82">
+          {note}
+        </p>
+      </div>
+    </aside>
   )
 }
 

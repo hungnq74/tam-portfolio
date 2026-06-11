@@ -33,6 +33,7 @@ export interface ProjectMediaAsset {
   width: number
   height: number
   sourceUrl?: string
+  caption?: string
   focalPoint?: {
     x: number
     y: number
@@ -41,6 +42,7 @@ export interface ProjectMediaAsset {
 
 export interface ProjectMedia {
   cover: ProjectMediaAsset
+  introLayout?: "split-cover"
   summary?: ProjectMediaAsset
   websitePreview?: ProjectMediaAsset
   proposalSlides?: ProjectMediaAsset[]
@@ -68,6 +70,7 @@ export interface Project {
   year: string
   scope: string[]
   campaignTitle?: string
+  closingNote?: string
   overview: string
   objective: string
   solution: string
@@ -146,6 +149,9 @@ export interface PortfolioUi {
     proposal: string
     websitePreview: string
     visitPost: string
+    postCaption: string
+    readMoreCaption: string
+    showLessCaption: string
     proposalCarousel: string
     previousSlide: string
     nextSlide: string
@@ -332,6 +338,72 @@ const ACECOOK_PROJECT_MEDIA: ProjectMedia = {
       width: 1638,
       height: 2048,
       sourceUrl: ACECOOK_CONTENT_POST_SOURCES[3],
+    },
+  ],
+}
+
+const WESHARE_CONTENT_POST_SOURCES = [
+  "https://www.facebook.com/weshareasia.shopnshare/posts/pfbid02A1oh1pd5gTtNvHfMNCn9iP8hZ9ZcaxTrrvFqvLzwR56xuBpk37MzjAUbtyVREGY8l",
+  "https://www.facebook.com/photo.php?fbid=496909356244245&set=pb.100077755556916.-2207520000&type=3",
+  "https://www.facebook.com/weshareasia.shopnshare/posts/pfbid02JpN1dJ1TouHsHFbUpYzHKNWFARwrnNamFefB4MDS7x7KdDKhexMPK22nVJs5Uu6sl",
+  "https://www.facebook.com/photo.php?fbid=550786410856539&set=pb.100077755556916.-2207520000&type=3",
+  "https://www.facebook.com/photo.php?fbid=507178915217289&set=pb.100077755556916.-2207520000&type=3",
+] as const
+
+const WESHARE_PROJECT_MEDIA: ProjectMedia = {
+  introLayout: "split-cover",
+  cover: {
+    src: "/assets/projects/weshare/cover.jpg",
+    alt: "WeShare brand content cover artwork",
+    width: 1500,
+    height: 1500,
+    sourceUrl: "https://www.facebook.com/photo.php?fbid=529573256311188&set=pb.100077755556916.-2207520000&type=3",
+  },
+  contentPosts: [
+    {
+      src: "/assets/projects/weshare/content-01.jpg",
+      alt: "WeShare always-on social content post 1",
+      width: 1688,
+      height: 1688,
+      sourceUrl: WESHARE_CONTENT_POST_SOURCES[0],
+      caption:
+        "Với đội ngũ diễn viên nghiệp dư cùng đạo diễn không qua trường lớp, chúng tôi tin rằng WeShare sẽ phá đảo rạp phim Việt tháng 9 (không được thì thôi)\n#WeShare #ShopAndShare",
+    },
+    {
+      src: "/assets/projects/weshare/content-02.jpg",
+      alt: "WeShare always-on social content post 2",
+      width: 1125,
+      height: 1504,
+      sourceUrl: WESHARE_CONTENT_POST_SOURCES[1],
+      caption:
+        "ĐỪNG BỎ QUA 🛑\n\nWeShare lên kệ mặt hàng mới nhân dịp sale giữa tháng 🛒\n\nĐặc điểm: Đẹp trai, cao 1m7++\nSở thích: Dùng WeShare trước khi mua sắm online để quyên góp cho các tổ chức thiện nguyện\nTình trạng: Độc thân ‼️\n\n50 tương tác công khai info. WeShare nói là làm !!!",
+    },
+    {
+      src: "/assets/projects/weshare/content-03.jpg",
+      alt: "WeShare always-on social content post 3",
+      width: 500,
+      height: 500,
+      sourceUrl: WESHARE_CONTENT_POST_SOURCES[2],
+      caption:
+        "Cập nhật từ điển \"Anh trai vượt ngàn chông gai\" phiên bản WeShare-ers. Thực tập một câu dưới phần bình luận chứng tỏ đã thuộc bài \"tới bờ tới bến\" nha! ( •̀ ω •́ )✧",
+    },
+    {
+      src: "/assets/projects/weshare/content-04.jpg",
+      alt: "WeShare always-on social content post 4",
+      width: 1052,
+      height: 1440,
+      sourceUrl: WESHARE_CONTENT_POST_SOURCES[3],
+      caption:
+        "Tự nhiên nhận được tin nhắn kì kì, kì này tình yêu tới đỡ hong kịp WeShare-ers ơi\n\n#WeShare #shopandshare",
+    },
+    {
+      src: "/assets/projects/weshare/content-05.jpg",
+      alt: "WeShare always-on social content post 5",
+      width: 1192,
+      height: 1440,
+      sourceUrl: WESHARE_CONTENT_POST_SOURCES[4],
+      caption:
+        "Team Marketing khi nghe sếp bảo WeShare là ứng dụng thân thiện, phù hợp với mọi đối tượng muốn quyên góp cho các tổ chức xã hội qua các đơn hàng trực tuyến hàng ngày mà không phát sinh bất kỳ chi phí nào:",
     },
   ],
 }
@@ -661,7 +733,9 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         client: "Acecook",
         year: "2025",
         scope: ["Always-on Content", "Social Captions", "Key Visual Copy"],
-        campaignTitle: "Bền Chí Kiên Tâm - Vững Vàng Tạo Kỳ Tích",
+        campaignTitle: "Bền Chí Kiên Tâm\nVững Vàng Tạo Kỳ Tích",
+        closingNote:
+          "Little flex: before I joined, most always-on content needed 5-6 rounds of feedback, then mine usually called it a day after 1 or 2.",
         overview:
           "Some campaigns are about products. This one was about national pride.\n\nAs the main sponsor of the Vietnam National Football Team, Acecook launched Việt Nam Quyết Tiến – Khởi Sắc Vinh Quang to celebrate the team's journey and ignite the pride of millions of Vietnamese fans.\n\nMy role was to develop always-on content throughout the campaign, from social captions to key visual copy, ensuring every touchpoint carried the same uplifting and heroic spirit. Because when football brings a nation together, every word deserves to sound like part of the anthem.",
         objective:
@@ -671,6 +745,26 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         results: ["Always-on content direction", "Social caption system", "Key visual copy"],
         thumbnail: { col: 0, row: 0 },
         media: ACECOOK_PROJECT_MEDIA,
+      },
+      {
+        id: "weshare",
+        fieldId: "creative-copywriter",
+        title: "WeShare",
+        eyebrow: "Project",
+        category: "Fanpage Always-on Content",
+        summary: "Always-on social content and campaign storytelling for a Gen Z-friendly charity-tech platform.",
+        client: "WeShare",
+        year: "2025",
+        scope: ["Always-on Content", "Brand Voice", "Conversion-driven Campaigns"],
+        overview:
+          "Doing good shouldn't feel complicated.\n\nWeShare was built to make giving back a little easier, allowing users to donate a portion of their shopping commissions directly to the charitable organizations they care about.\n\nAs Marketing Acting Lead, I led the team in shaping a brand voice that felt closer to Gen Z than a typical charity-tech platform. Through trendy content, relatable storytelling, and conversion-driven campaigns, we turned acts of giving into something more approachable, shareable, and engaging.",
+        objective:
+          "Make WeShare feel approachable for young users while keeping the platform's giving-back mechanism clear and motivating.",
+        solution:
+          "Shape an always-on content voice around trendy references, relatable storytelling, and campaign messages that made donation feel easy to join.",
+        results: ["Gen Z-friendly brand voice", "Always-on content direction", "Conversion-driven campaign messaging"],
+        thumbnail: { col: 1, row: 0 },
+        media: WESHARE_PROJECT_MEDIA,
       },
       {
         id: "tiktok",
@@ -814,6 +908,9 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         proposal: "Full proposal",
         websitePreview: "Website preview",
         visitPost: "Visit post",
+        postCaption: "Facebook caption",
+        readMoreCaption: "Read more",
+        showLessCaption: "Show less",
         proposalCarousel: "proposal carousel",
         previousSlide: "Previous slide",
         nextSlide: "Next slide",
@@ -1119,7 +1216,9 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         client: "Acecook",
         year: "2025",
         scope: ["Nội dung always-on", "Caption social", "Copy key visual"],
-        campaignTitle: "Bền Chí Kiên Tâm - Vững Vàng Tạo Kỳ Tích",
+        campaignTitle: "Bền Chí Kiên Tâm\nVững Vàng Tạo Kỳ Tích",
+        closingNote:
+          "Little flex: before I joined, most always-on content needed 5-6 rounds of feedback, then mine usually called it a day after 1 or 2.",
         overview:
           "Có những chiến dịch nói về sản phẩm. Chiến dịch này nói về niềm tự hào dân tộc.\n\nVới vai trò nhà tài trợ chính của Đội tuyển Bóng đá Quốc gia Việt Nam, Acecook ra mắt Việt Nam Quyết Tiến – Khởi Sắc Vinh Quang để tôn vinh hành trình của đội tuyển và thắp lên niềm tự hào của hàng triệu người hâm mộ Việt Nam.\n\nVai trò của mình là phát triển nội dung always-on xuyên suốt chiến dịch, từ social captions đến copy key visual, để mọi điểm chạm đều giữ chung một tinh thần cổ vũ hào hùng. Vì khi bóng đá gắn kết cả một quốc gia, từng câu chữ cũng cần vang lên như một phần của bài ca chiến thắng.",
         objective:
@@ -1129,6 +1228,26 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         results: ["Định hướng nội dung always-on", "Hệ caption social", "Copy key visual"],
         thumbnail: { col: 0, row: 0 },
         media: ACECOOK_PROJECT_MEDIA,
+      },
+      {
+        id: "weshare",
+        fieldId: "creative-copywriter",
+        title: "WeShare",
+        eyebrow: "Dự án",
+        category: "Nội dung fanpage always-on",
+        summary: "Nội dung social always-on và storytelling chiến dịch cho một nền tảng charity-tech gần gũi với Gen Z.",
+        client: "WeShare",
+        year: "2025",
+        scope: ["Nội dung always-on", "Brand voice", "Chiến dịch chuyển đổi"],
+        overview:
+          "Làm điều tốt không nên là một chuyện phức tạp.\n\nWeShare được xây dựng để việc đóng góp trở nên dễ dàng hơn, cho phép người dùng trích một phần hoa hồng mua sắm để gửi trực tiếp đến những tổ chức thiện nguyện mà họ quan tâm.\n\nVới vai trò Marketing Acting Lead, mình dẫn dắt team định hình một brand voice gần với Gen Z hơn là một nền tảng charity-tech thông thường. Thông qua nội dung bắt trend, storytelling gần gũi và các chiến dịch hướng đến chuyển đổi, tụi mình biến việc cho đi thành một trải nghiệm dễ tiếp cận, dễ chia sẻ và cuốn hút hơn.",
+        objective:
+          "Làm cho WeShare trở nên gần gũi với người dùng trẻ, đồng thời giữ cơ chế đóng góp của nền tảng rõ ràng và có sức thúc đẩy hành động.",
+        solution:
+          "Xây dựng giọng nội dung always-on dựa trên trend, câu chuyện đời thường và thông điệp chiến dịch khiến việc đóng góp trở nên dễ tham gia.",
+        results: ["Brand voice gần với Gen Z", "Định hướng nội dung always-on", "Thông điệp campaign hướng chuyển đổi"],
+        thumbnail: { col: 1, row: 0 },
+        media: WESHARE_PROJECT_MEDIA,
       },
       {
         id: "tiktok",
@@ -1272,6 +1391,9 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         proposal: "Proposal đầy đủ",
         websitePreview: "Xem trước website",
         visitPost: "Xem bài post",
+        postCaption: "Caption Facebook",
+        readMoreCaption: "Xem thêm",
+        showLessCaption: "Thu gọn",
         proposalCarousel: "carousel proposal",
         previousSlide: "Slide trước",
         nextSlide: "Slide tiếp theo",
