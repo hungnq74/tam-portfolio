@@ -6,6 +6,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
 } from "react"
 import {
@@ -115,6 +116,22 @@ function useSlidesPerPage() {
   }, [])
 
   return slidesPerPage
+}
+
+function useContentPostsPerPage() {
+  const [postsPerPage, setPostsPerPage] = useState(1)
+
+  useEffect(() => {
+    const query = window.matchMedia("(min-width: 768px)")
+    const syncPostsPerPage = () => setPostsPerPage(query.matches ? 2 : 1)
+
+    syncPostsPerPage()
+    query.addEventListener("change", syncPostsPerPage)
+
+    return () => query.removeEventListener("change", syncPostsPerPage)
+  }, [])
+
+  return postsPerPage
 }
 
 function getSlideRangeLabel(startIndex: number, visibleCount: number, totalSlides: number) {
@@ -319,6 +336,8 @@ function MediaProjectPage({
               captionLabel={ui.detail.postCaption}
               readMoreLabel={ui.detail.readMoreCaption}
               showLessLabel={ui.detail.showLessCaption}
+              previousLabel={ui.detail.previousSlide}
+              nextLabel={ui.detail.nextSlide}
             />
           ) : null}
 
@@ -414,6 +433,8 @@ function ProjectContentPostsGrid({
   captionLabel,
   readMoreLabel,
   showLessLabel,
+  previousLabel,
+  nextLabel,
 }: {
   posts: ProjectMediaAsset[]
   postLinkLabel: string
@@ -421,6 +442,8 @@ function ProjectContentPostsGrid({
   captionLabel?: string
   readMoreLabel?: string
   showLessLabel?: string
+  previousLabel?: string
+  nextLabel?: string
 }) {
   const [expandedCaptions, setExpandedCaptions] = useState<Record<string, boolean>>({})
   const arrangedPosts = [...posts].sort((left, right) => {
@@ -430,85 +453,302 @@ function ProjectContentPostsGrid({
     return rightRatio - leftRatio
   })
 
+  const toggleCaption = useCallback((postSrc: string) => {
+    setExpandedCaptions((currentCaptions) => ({
+      ...currentCaptions,
+      [postSrc]: !currentCaptions[postSrc],
+    }))
+  }, [])
+
+  if (showCaptions) {
+    return (
+      <ProjectContentPostsCarousel
+        posts={arrangedPosts}
+        postLinkLabel={postLinkLabel}
+        captionLabel={captionLabel}
+        readMoreLabel={readMoreLabel}
+        showLessLabel={showLessLabel}
+        previousLabel={previousLabel}
+        nextLabel={nextLabel}
+        expandedCaptions={expandedCaptions}
+        onToggleCaption={toggleCaption}
+      />
+    )
+  }
+
   return (
     <section
       className={cn(MEDIA_RAIL_CLASS, "grid items-start gap-4 sm:grid-cols-2 lg:gap-5")}
       aria-label="Content posts"
     >
       {arrangedPosts.map((post) => {
-        const caption = showCaptions ? post.caption : undefined
-        const canToggleCaption = Boolean(caption && (caption.length > 150 || caption.includes("\n")))
-        const isCaptionExpanded = Boolean(expandedCaptions[post.src])
-
         return (
-          <article
+          <ProjectContentPostCard
             key={post.src}
-            className="overflow-hidden rounded-[8px] border border-[rgba(116,63,36,0.2)] bg-paper shadow-[0_16px_42px_rgba(45,32,21,0.12)]"
-          >
-            <ProjectMediaImage
-              asset={post}
-              className="bg-paper"
-              imageClassName="h-auto w-full"
-            />
-
-            {caption ? (
-              <div className="border-t border-[rgba(116,63,36,0.16)] bg-paper/96 px-4 py-4 sm:px-5">
-                <p className="mb-2 text-[0.64rem] font-bold uppercase tracking-[0.18em] text-clay">
-                  {captionLabel}
-                </p>
-                <div className="relative">
-                  <p
-                    className={cn(
-                      "font-prose whitespace-pre-line text-sm leading-7 text-ink/78 sm:text-[0.95rem]",
-                      canToggleCaption && !isCaptionExpanded ? "max-h-24 overflow-hidden" : null,
-                    )}
-                  >
-                    {caption}
-                  </p>
-                  {canToggleCaption && !isCaptionExpanded ? (
-                    <span
-                      aria-hidden="true"
-                      className="pointer-events-none absolute inset-x-0 bottom-0 h-10 bg-gradient-to-t from-paper via-paper/90 to-paper/0"
-                    />
-                  ) : null}
-                </div>
-
-                {canToggleCaption ? (
-                  <button
-                    type="button"
-                    className="mt-3 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-clay underline decoration-clay/45 underline-offset-4 transition hover:text-moss focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper"
-                    aria-expanded={isCaptionExpanded}
-                    onClick={() => {
-                      setExpandedCaptions((currentCaptions) => ({
-                        ...currentCaptions,
-                        [post.src]: !isCaptionExpanded,
-                      }))
-                    }}
-                  >
-                    {isCaptionExpanded ? showLessLabel : readMoreLabel}
-                  </button>
-                ) : null}
-              </div>
-            ) : null}
-
-            {post.sourceUrl ? (
-              <div className="flex justify-end border-t border-[rgba(116,63,36,0.16)] bg-paper/92 px-3 py-3 sm:px-4">
-                <a
-                  href={post.sourceUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  aria-label={`${postLinkLabel}: ${post.alt}`}
-                  className="inline-flex items-center gap-2 rounded-full border border-clay/24 px-3 py-2 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-clay transition hover:border-clay hover:bg-clay hover:text-paper focus:outline-none focus:ring-2 focus:ring-clay"
-                >
-                  <ExternalLink className="h-3.5 w-3.5" />
-                  {postLinkLabel}
-                </a>
-              </div>
-            ) : null}
-          </article>
+            post={post}
+            postLinkLabel={postLinkLabel}
+          />
         )
       })}
     </section>
+  )
+}
+
+function ProjectContentPostsCarousel({
+  posts,
+  postLinkLabel,
+  captionLabel,
+  readMoreLabel,
+  showLessLabel,
+  previousLabel,
+  nextLabel,
+  expandedCaptions,
+  onToggleCaption,
+}: {
+  posts: ProjectMediaAsset[]
+  postLinkLabel: string
+  captionLabel?: string
+  readMoreLabel?: string
+  showLessLabel?: string
+  previousLabel?: string
+  nextLabel?: string
+  expandedCaptions: Record<string, boolean>
+  onToggleCaption: (postSrc: string) => void
+}) {
+  const postsPerPage = useContentPostsPerPage()
+  const pageCount = Math.max(1, Math.ceil(posts.length / postsPerPage))
+  const [activePageIndex, setActivePageIndex] = useState(0)
+  const trackRef = useRef<HTMLDivElement | null>(null)
+  const programmaticScrollTimeoutRef = useRef<number | null>(null)
+  const visibleStart = activePageIndex * postsPerPage
+  const visibleCount = Math.min(postsPerPage, Math.max(0, posts.length - visibleStart))
+  const rangeLabel = getSlideRangeLabel(visibleStart, visibleCount, posts.length)
+  const postPages = Array.from({ length: pageCount }, (_, pageIndex) =>
+    posts.slice(pageIndex * postsPerPage, pageIndex * postsPerPage + postsPerPage),
+  )
+
+  const scrollToPostPage = useCallback((pageIndex: number, behavior: ScrollBehavior = "smooth") => {
+    const trackElement = trackRef.current
+    if (!trackElement) return
+
+    if (programmaticScrollTimeoutRef.current) {
+      window.clearTimeout(programmaticScrollTimeoutRef.current)
+    }
+
+    programmaticScrollTimeoutRef.current = window.setTimeout(() => {
+      programmaticScrollTimeoutRef.current = null
+    }, behavior === "smooth" ? 520 : 0)
+
+    trackElement.scrollTo({
+      left: pageIndex * trackElement.clientWidth,
+      behavior,
+    })
+  }, [])
+
+  useEffect(() => {
+    setActivePageIndex((pageIndex) => {
+      const nextPageIndex = Math.min(pageIndex, pageCount - 1)
+      window.requestAnimationFrame(() => scrollToPostPage(nextPageIndex, "auto"))
+
+      return nextPageIndex
+    })
+  }, [pageCount, scrollToPostPage])
+
+  useEffect(() => {
+    return () => {
+      if (programmaticScrollTimeoutRef.current) {
+        window.clearTimeout(programmaticScrollTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  const goToPostPage = useCallback(
+    (direction: number) => {
+      if (pageCount <= 1) return
+
+      setActivePageIndex((index) => {
+        const nextPageIndex = (index + direction + pageCount) % pageCount
+        scrollToPostPage(nextPageIndex)
+
+        return nextPageIndex
+      })
+    },
+    [pageCount, scrollToPostPage],
+  )
+
+  const syncPageFromScroll = useCallback(() => {
+    if (programmaticScrollTimeoutRef.current) return
+
+    const trackElement = trackRef.current
+    if (!trackElement || trackElement.clientWidth === 0) return
+
+    const nextPageIndex = Math.round(trackElement.scrollLeft / trackElement.clientWidth)
+    setActivePageIndex(Math.min(Math.max(nextPageIndex, 0), pageCount - 1))
+  }, [pageCount])
+
+  const onCarouselKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return
+
+    event.preventDefault()
+    goToPostPage(event.key === "ArrowLeft" ? -1 : 1)
+  }
+
+  return (
+    <section
+      className={cn(CAROUSEL_RAIL_CLASS, "focus:outline-none")}
+      role="region"
+      aria-label="WeShare content posts"
+      aria-roledescription="carousel"
+      tabIndex={0}
+      onKeyDown={onCarouselKeyDown}
+    >
+      <div className="mb-4 flex items-center justify-end px-1 sm:px-2">
+        <p
+          className="text-xs font-bold uppercase tracking-[0.16em] text-ink/58"
+          aria-live="polite"
+        >
+          {rangeLabel}
+        </p>
+      </div>
+
+      <div className="relative">
+        <div
+          ref={trackRef}
+          className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          onScroll={syncPageFromScroll}
+        >
+          {postPages.map((pagePosts) => {
+            return (
+              <div
+                key={pagePosts.map((post) => post.src).join("-")}
+                className="grid min-w-full snap-start gap-4 md:grid-cols-2"
+              >
+                {pagePosts.map((post) => (
+                  <ProjectContentPostCard
+                    key={post.src}
+                    post={post}
+                    postLinkLabel={postLinkLabel}
+                    captionLabel={captionLabel}
+                    readMoreLabel={readMoreLabel}
+                    showLessLabel={showLessLabel}
+                    isCaptionExpanded={Boolean(expandedCaptions[post.src])}
+                    onToggleCaption={() => onToggleCaption(post.src)}
+                    compact
+                  />
+                ))}
+              </div>
+            )
+          })}
+        </div>
+
+        {pageCount > 1 ? (
+          <div className="mt-4 flex items-center justify-center gap-3 xl:pointer-events-none xl:absolute xl:inset-y-0 xl:-left-16 xl:-right-16 xl:mt-0 xl:justify-between">
+            <CarouselButton label={previousLabel ?? "Previous post"} onClick={() => goToPostPage(-1)}>
+              <ArrowLeft className="h-4 w-4" />
+            </CarouselButton>
+            <CarouselButton label={nextLabel ?? "Next post"} onClick={() => goToPostPage(1)}>
+              <ArrowRight className="h-4 w-4" />
+            </CarouselButton>
+          </div>
+        ) : null}
+      </div>
+    </section>
+  )
+}
+
+function ProjectContentPostCard({
+  post,
+  postLinkLabel,
+  captionLabel,
+  readMoreLabel,
+  showLessLabel,
+  isCaptionExpanded = false,
+  onToggleCaption,
+  compact = false,
+}: {
+  post: ProjectMediaAsset
+  postLinkLabel: string
+  captionLabel?: string
+  readMoreLabel?: string
+  showLessLabel?: string
+  isCaptionExpanded?: boolean
+  onToggleCaption?: () => void
+  compact?: boolean
+}) {
+  const caption = onToggleCaption ? post.caption : undefined
+  const captionLineBreaks = caption ? (caption.match(/\n/g) ?? []).length : 0
+  const collapsedCaptionHeight = compact ? "max-h-28" : "max-h-24"
+  const canToggleCaption = Boolean(
+    caption &&
+      (compact
+        ? caption.length > 180 || captionLineBreaks >= 4
+        : caption.length > 150 || captionLineBreaks >= 2),
+  )
+
+  return (
+    <article className="overflow-hidden rounded-[8px] border border-[rgba(116,63,36,0.2)] bg-paper shadow-[0_16px_42px_rgba(45,32,21,0.12)]">
+      <div className={cn("flex items-center justify-center bg-paper", compact ? "h-[40vh] min-h-[300px] max-h-[430px]" : null)}>
+        <ProjectMediaImage
+          asset={post}
+          className={cn("w-full bg-paper", compact ? "flex h-full items-center justify-center" : null)}
+          imageClassName={compact ? "h-full w-full object-contain" : "h-auto w-full"}
+        />
+      </div>
+
+      {caption ? (
+        <div className={cn("border-t border-[rgba(116,63,36,0.16)] bg-paper/96", compact ? "px-3 py-3 sm:px-4" : "px-4 py-4 sm:px-5")}>
+          <p className="mb-2 text-[0.64rem] font-bold uppercase tracking-[0.18em] text-clay">
+            {captionLabel}
+          </p>
+          <div className="relative">
+            <p
+              className={cn(
+                "font-prose whitespace-pre-line text-sm leading-7 text-ink/78 sm:text-[0.95rem]",
+                compact ? "sm:text-sm sm:leading-6" : null,
+                canToggleCaption && !isCaptionExpanded ? cn(collapsedCaptionHeight, "overflow-hidden") : null,
+              )}
+            >
+              {caption}
+            </p>
+            {canToggleCaption && !isCaptionExpanded ? (
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-paper via-paper/90 to-paper/0",
+                  compact ? "h-6" : "h-10",
+                )}
+              />
+            ) : null}
+          </div>
+
+          {canToggleCaption ? (
+            <button
+              type="button"
+              className="mt-3 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-clay underline decoration-clay/45 underline-offset-4 transition hover:text-moss focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper"
+              aria-expanded={isCaptionExpanded}
+              onClick={onToggleCaption}
+            >
+              {isCaptionExpanded ? showLessLabel : readMoreLabel}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
+      {post.sourceUrl ? (
+        <div className="flex justify-end border-t border-[rgba(116,63,36,0.16)] bg-paper/92 px-3 py-3 sm:px-4">
+          <a
+            href={post.sourceUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`${postLinkLabel}: ${post.alt}`}
+            className="inline-flex items-center gap-2 rounded-full border border-clay/24 px-3 py-2 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-clay transition hover:border-clay hover:bg-clay hover:text-paper focus:outline-none focus:ring-2 focus:ring-clay"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            {postLinkLabel}
+          </a>
+        </div>
+      ) : null}
+    </article>
   )
 }
 
