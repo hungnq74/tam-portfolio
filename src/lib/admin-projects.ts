@@ -32,6 +32,12 @@ export const projectMediaAssetSchema = z.object({
     .optional(),
 })
 
+const projectVideoCampaignSchema = z.object({
+  title: z.string().min(1).max(140),
+  description: z.string().min(1).max(300),
+  videos: z.array(projectMediaAssetSchema).min(1).max(8),
+})
+
 export const projectMediaSchema = z.object({
   cover: projectMediaAssetSchema,
   introLayout: z.enum(["split-cover"]).optional(),
@@ -39,6 +45,7 @@ export const projectMediaSchema = z.object({
   websitePreview: projectMediaAssetSchema.optional(),
   proposalSlides: z.array(projectMediaAssetSchema).max(ADMIN_PROJECT_PAGE_LIMIT).optional(),
   contentPosts: z.array(projectMediaAssetSchema).max(12).optional(),
+  videoCampaigns: z.array(projectVideoCampaignSchema).max(6).optional(),
 })
 
 const projectNamingRationaleSchema = z.object({

@@ -176,6 +176,9 @@ function mediaAssets(media?: ProjectMedia) {
   if (media?.websitePreview) assets.push(media.websitePreview)
   if (media?.proposalSlides) assets.push(...media.proposalSlides)
   if (media?.contentPosts) assets.push(...media.contentPosts)
+  if (media?.videoCampaigns) {
+    media.videoCampaigns.forEach((campaign) => assets.push(...campaign.videos))
+  }
 
   return assets
 }

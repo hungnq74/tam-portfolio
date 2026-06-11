@@ -40,6 +40,12 @@ export interface ProjectMediaAsset {
   }
 }
 
+export interface ProjectVideoCampaign {
+  title: string
+  description: string
+  videos: ProjectMediaAsset[]
+}
+
 export interface ProjectMedia {
   cover: ProjectMediaAsset
   introLayout?: "split-cover"
@@ -47,6 +53,7 @@ export interface ProjectMedia {
   websitePreview?: ProjectMediaAsset
   proposalSlides?: ProjectMediaAsset[]
   contentPosts?: ProjectMediaAsset[]
+  videoCampaigns?: ProjectVideoCampaign[]
 }
 
 export interface ProjectNamingRationale {
@@ -149,6 +156,7 @@ export interface PortfolioUi {
     proposal: string
     websitePreview: string
     visitPost: string
+    watchVideo: string
     postCaption: string
     readMoreCaption: string
     showLessCaption: string
@@ -404,6 +412,125 @@ const WESHARE_PROJECT_MEDIA: ProjectMedia = {
       sourceUrl: WESHARE_CONTENT_POST_SOURCES[4],
       caption:
         "Team Marketing khi nghe sếp bảo WeShare là ứng dụng thân thiện, phù hợp với mọi đối tượng muốn quyên góp cho các tổ chức xã hội qua các đơn hàng trực tuyến hàng ngày mà không phát sinh bất kỳ chi phí nào:",
+    },
+  ],
+}
+
+const SAMSUNG_VIDEO_SOURCES = [
+  "https://www.facebook.com/reel/1808331319865303",
+  "https://www.facebook.com/share/v/1AxaYvs1yr/",
+  "https://www.facebook.com/reel/1211040077846014",
+  "https://www.tiktok.com/@puntangdong/video/7606569129998355733",
+  "https://www.facebook.com/reel/1794262464584215",
+  "https://www.facebook.com/reel/1380551776938897",
+  "https://www.facebook.com/reel/25408362518856007",
+  "https://www.facebook.com/share/v/1Jk3VhLNqs/",
+] as const
+
+const SAMSUNG_PROJECT_COVER: ProjectMediaAsset = {
+  src: "/assets/projects/samsung/cover.png",
+  alt: "Abstract Samsung Galaxy social video script cover artwork",
+  width: 1500,
+  height: 1500,
+  focalPoint: { x: 50, y: 50 },
+}
+
+const SAMSUNG_TET_VIDEOS: ProjectMediaAsset[] = [
+  {
+    src: "/assets/projects/samsung/video-01.jpg",
+    alt: "Samsung Tet Moi Ven Y Xua creator video preview 1",
+    width: 675,
+    height: 1200,
+    sourceUrl: SAMSUNG_VIDEO_SOURCES[0],
+  },
+  {
+    src: "/assets/projects/samsung/video-02.jpg",
+    alt: "Samsung Tet Moi Ven Y Xua creator video preview 2",
+    width: 675,
+    height: 1200,
+    sourceUrl: SAMSUNG_VIDEO_SOURCES[1],
+  },
+  {
+    src: "/assets/projects/samsung/video-03.jpg",
+    alt: "Samsung Tet Moi Ven Y Xua creator video preview 3",
+    width: 675,
+    height: 1200,
+    sourceUrl: SAMSUNG_VIDEO_SOURCES[2],
+  },
+  {
+    src: "/assets/projects/samsung/video-04.jpg",
+    alt: "Samsung Tet Moi Ven Y Xua TikTok creator video preview",
+    width: 1200,
+    height: 630,
+    sourceUrl: SAMSUNG_VIDEO_SOURCES[3],
+  },
+]
+
+const SAMSUNG_BETTER_YEAR_VIDEOS: ProjectMediaAsset[] = [
+  {
+    src: "/assets/projects/samsung/video-05.jpg",
+    alt: "Samsung Galaxy A56 Gemini festive creator video preview 1",
+    width: 675,
+    height: 1200,
+    sourceUrl: SAMSUNG_VIDEO_SOURCES[4],
+  },
+  {
+    src: "/assets/projects/samsung/video-06.jpg",
+    alt: "Samsung Galaxy A56 Gemini festive creator video preview 2",
+    width: 675,
+    height: 1200,
+    sourceUrl: SAMSUNG_VIDEO_SOURCES[5],
+  },
+  {
+    src: "/assets/projects/samsung/video-07.jpg",
+    alt: "Samsung Galaxy A56 Gemini festive creator video preview 3",
+    width: 675,
+    height: 1200,
+    sourceUrl: SAMSUNG_VIDEO_SOURCES[6],
+  },
+  {
+    src: "/assets/projects/samsung/video-08.jpg",
+    alt: "Samsung Galaxy A56 Gemini festive creator video preview 4",
+    width: 675,
+    height: 1200,
+    sourceUrl: SAMSUNG_VIDEO_SOURCES[7],
+  },
+]
+
+const SAMSUNG_PROJECT_MEDIA_EN: ProjectMedia = {
+  introLayout: "split-cover",
+  cover: SAMSUNG_PROJECT_COVER,
+  videoCampaigns: [
+    {
+      title: "Campaign Tết Mới Vẹn Ý Xưa",
+      description:
+        "Scripts that helped creators connect Galaxy AI with familiar Tet rituals, keeping old meanings while telling them in a newer voice.",
+      videos: SAMSUNG_TET_VIDEOS,
+    },
+    {
+      title: "Campaign Galaxy A56 5G / 07 / 17 - Gemini x Festive: Better new year",
+      description:
+        "Scripts that turned Gemini and Galaxy A56 5G features into creator-led festive moments, from playful crush stories to everyday new-year confidence.",
+      videos: SAMSUNG_BETTER_YEAR_VIDEOS,
+    },
+  ],
+}
+
+const SAMSUNG_PROJECT_MEDIA_VI: ProjectMedia = {
+  introLayout: "split-cover",
+  cover: SAMSUNG_PROJECT_COVER,
+  videoCampaigns: [
+    {
+      title: "Chiến dịch Tết Mới Vẹn Ý Xưa",
+      description:
+        "Những kịch bản giúp creator kết nối Galaxy AI với các nghi thức Tết quen thuộc, giữ lại tinh thần cũ nhưng kể bằng một giọng mới hơn.",
+      videos: SAMSUNG_TET_VIDEOS,
+    },
+    {
+      title: "Chiến dịch Galaxy A56 5G / 07 / 17 - Gemini x Festive: Better new year",
+      description:
+        "Những kịch bản biến Gemini và các tính năng Galaxy A56 5G thành khoảnh khắc festive qua lăng kính creator, từ chuyện crush vui vui đến sự tự tin đầu năm.",
+      videos: SAMSUNG_BETTER_YEAR_VIDEOS,
     },
   ],
 }
@@ -724,6 +851,26 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         media: AXE_PROJECT_MEDIA,
       },
       {
+        id: "samsung",
+        fieldId: "creative-copywriter",
+        title: "Samsung",
+        eyebrow: "Project",
+        category: "Social Video Script",
+        summary: "TikTok video scripts for Samsung Galaxy creator campaigns across different voices and audiences.",
+        client: "Samsung",
+        year: "2025",
+        scope: ["TikTok Video Script", "KOL Script Adaptation", "Galaxy Campaigns"],
+        overview:
+          "The same message can sound completely different depending on who's telling it.\n\nAcross multiple Galaxy product campaigns, I worked on TikTok video scripts for KOLs and creators with very different personalities. Each creator had a different style, audience, and way of telling stories, which meant every script needed its own personality while still bringing the product to the center of attention.",
+        objective:
+          "Adapt Galaxy campaign messages into creator-ready video scripts that felt natural to each KOL's personality and audience.",
+        solution:
+          "Shape each script around the creator's own storytelling rhythm while keeping the Galaxy product benefit clear and central.",
+        results: ["Creator-specific scripts", "Galaxy product storytelling", "Two mini-campaign script sets"],
+        thumbnail: { col: 0, row: 0 },
+        media: SAMSUNG_PROJECT_MEDIA_EN,
+      },
+      {
         id: "acecook",
         fieldId: "creative-copywriter",
         title: "Acecook",
@@ -908,6 +1055,7 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         proposal: "Full proposal",
         websitePreview: "Website preview",
         visitPost: "Visit post",
+        watchVideo: "Watch video",
         postCaption: "Facebook caption",
         readMoreCaption: "Read more",
         showLessCaption: "Show less",
@@ -1207,6 +1355,26 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         media: AXE_PROJECT_MEDIA,
       },
       {
+        id: "samsung",
+        fieldId: "creative-copywriter",
+        title: "Samsung",
+        eyebrow: "Dự án",
+        category: "Kịch bản video social",
+        summary: "Kịch bản TikTok video cho các chiến dịch Samsung Galaxy với nhiều creator voice khác nhau.",
+        client: "Samsung",
+        year: "2025",
+        scope: ["Kịch bản TikTok video", "Điều chỉnh giọng KOL", "Chiến dịch Galaxy"],
+        overview:
+          "Cùng một thông điệp có thể nghe rất khác nhau tùy vào người kể nó.\n\nQua nhiều chiến dịch sản phẩm Galaxy, mình viết kịch bản TikTok video cho các KOL và creator có cá tính rất khác nhau. Mỗi creator có một phong cách, một nhóm khán giả và một cách kể chuyện riêng, nên mỗi kịch bản cũng cần có tính cách riêng nhưng vẫn đưa sản phẩm về đúng vị trí trung tâm.",
+        objective:
+          "Chuyển thông điệp chiến dịch Galaxy thành các kịch bản video sẵn sàng cho creator, tự nhiên với cá tính và tệp khán giả của từng KOL.",
+        solution:
+          "Xây dựng từng kịch bản theo nhịp kể chuyện riêng của creator, đồng thời giữ lợi ích sản phẩm Galaxy rõ ràng và nổi bật.",
+        results: ["Kịch bản riêng theo từng creator", "Storytelling sản phẩm Galaxy", "Hai nhóm mini-campaign"],
+        thumbnail: { col: 0, row: 0 },
+        media: SAMSUNG_PROJECT_MEDIA_VI,
+      },
+      {
         id: "acecook",
         fieldId: "creative-copywriter",
         title: "Acecook",
@@ -1391,6 +1559,7 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         proposal: "Proposal đầy đủ",
         websitePreview: "Xem trước website",
         visitPost: "Xem bài post",
+        watchVideo: "Xem video",
         postCaption: "Caption Facebook",
         readMoreCaption: "Xem thêm",
         showLessCaption: "Thu gọn",

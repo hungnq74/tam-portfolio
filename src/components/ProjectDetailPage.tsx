@@ -14,6 +14,7 @@ import {
   ArrowRight,
   ExternalLink,
   Layers3,
+  Play,
 } from "lucide-react"
 import {
   type Field,
@@ -22,6 +23,7 @@ import {
   type Project,
   type ProjectNamingRationale,
   type ProjectMediaAsset,
+  type ProjectVideoCampaign,
 } from "@/data/portfolio"
 import { LocaleToggle } from "@/components/LocaleToggle"
 import { useLocale } from "@/hooks/useLocale"
@@ -154,6 +156,7 @@ function MediaProjectPage({
   const slides = media?.proposalSlides ?? []
   const websitePreview = media?.websitePreview
   const contentPosts = media?.contentPosts ?? []
+  const videoCampaigns = media?.videoCampaigns ?? []
   const usesSplitCoverIntro = media?.introLayout === "split-cover"
   const slidesPerPage = useSlidesPerPage()
   const [activePageIndex, setActivePageIndex] = useState(0)
@@ -338,6 +341,13 @@ function MediaProjectPage({
               showLessLabel={ui.detail.showLessCaption}
               previousLabel={ui.detail.previousSlide}
               nextLabel={ui.detail.nextSlide}
+            />
+          ) : null}
+
+          {videoCampaigns.length > 0 ? (
+            <ProjectVideoCampaigns
+              campaigns={videoCampaigns}
+              watchVideoLabel={ui.detail.watchVideo}
             />
           ) : null}
 
@@ -750,6 +760,117 @@ function ProjectContentPostCard({
       ) : null}
     </article>
   )
+}
+
+function ProjectVideoCampaigns({
+  campaigns,
+  watchVideoLabel,
+}: {
+  campaigns: ProjectVideoCampaign[]
+  watchVideoLabel: string
+}) {
+  return (
+    <section className={cn(MEDIA_RAIL_CLASS, "space-y-10")} aria-label="Video campaigns">
+      {campaigns.map((campaign) => (
+        <article
+          key={campaign.title}
+          className="border-t border-gold/45 pt-6 sm:pt-8"
+        >
+          <div className="grid gap-4 md:grid-cols-[0.68fr_1fr] md:items-end">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-clay">
+                Video scripts
+              </p>
+              <h2 className="mt-2 font-serif text-3xl font-semibold leading-tight text-moss sm:text-4xl lg:text-5xl">
+                {campaign.title}
+              </h2>
+            </div>
+            <p className="font-prose max-w-3xl text-base leading-7 text-ink/78 sm:text-lg sm:leading-8">
+              {campaign.description}
+            </p>
+          </div>
+
+          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {campaign.videos.map((video, index) => (
+              <ProjectVideoPreviewCard
+                key={video.src}
+                video={video}
+                index={index}
+                watchVideoLabel={watchVideoLabel}
+              />
+            ))}
+          </div>
+        </article>
+      ))}
+    </section>
+  )
+}
+
+function ProjectVideoPreviewCard({
+  video,
+  index,
+  watchVideoLabel,
+}: {
+  video: ProjectMediaAsset
+  index: number
+  watchVideoLabel: string
+}) {
+  const platformLabel = getVideoPlatformLabel(video.sourceUrl)
+
+  return (
+    <article className="overflow-hidden rounded-[8px] border border-[rgba(116,63,36,0.2)] bg-paper shadow-[0_16px_42px_rgba(45,32,21,0.12)]">
+      <a
+        href={video.sourceUrl}
+        target="_blank"
+        rel="noreferrer"
+        aria-label={`${watchVideoLabel}: ${video.alt}`}
+        className="group block focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper"
+      >
+        <div className="relative aspect-[9/16] max-h-[26rem] overflow-hidden bg-ink">
+          <img
+            src={video.src}
+            alt={video.alt}
+            width={video.width}
+            height={video.height}
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(43,30,19,0.08),rgba(43,30,19,0.18)_52%,rgba(43,30,19,0.62))]" />
+          <span className="absolute left-3 top-3 rounded-full border border-paper/60 bg-ink/62 px-2.5 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-paper backdrop-blur">
+            {platformLabel}
+          </span>
+          <span className="absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-paper/92 text-clay shadow-story transition group-hover:bg-clay group-hover:text-paper">
+            <Play className="ml-0.5 h-4 w-4 fill-current" />
+          </span>
+          <div className="absolute inset-x-0 bottom-0 p-4">
+            <p className="text-[0.68rem] font-bold uppercase tracking-[0.16em] text-paper/72">
+              Video {String(index + 1).padStart(2, "0")}
+            </p>
+            <p className="mt-2 inline-flex items-center gap-2 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-paper">
+              {watchVideoLabel}
+              <ExternalLink className="h-3.5 w-3.5" />
+            </p>
+          </div>
+        </div>
+      </a>
+    </article>
+  )
+}
+
+function getVideoPlatformLabel(sourceUrl?: string) {
+  if (!sourceUrl) return "Video"
+
+  try {
+    const hostname = new URL(sourceUrl).hostname.replace(/^www\./, "")
+
+    if (hostname.includes("tiktok")) return "TikTok"
+    if (hostname.includes("facebook")) return "Facebook"
+
+    return hostname
+  } catch {
+    return "Video"
+  }
 }
 
 function ProjectClosingNote({
