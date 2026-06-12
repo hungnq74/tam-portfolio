@@ -179,6 +179,9 @@ function mediaAssets(media?: ProjectMedia) {
   if (media?.videoCampaigns) {
     media.videoCampaigns.forEach((campaign) => assets.push(...campaign.videos))
   }
+  if (media?.outreachSections) {
+    media.outreachSections.forEach((section) => assets.push(...section.posts))
+  }
 
   return assets
 }

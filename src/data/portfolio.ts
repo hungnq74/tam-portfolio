@@ -46,6 +46,13 @@ export interface ProjectVideoCampaign {
   videos: ProjectMediaAsset[]
 }
 
+export interface ProjectOutreachSection {
+  title: string
+  description: string
+  displayMode: "linked-posts" | "caption-posts"
+  posts: ProjectMediaAsset[]
+}
+
 export interface ProjectMedia {
   cover: ProjectMediaAsset
   introLayout?: "split-cover"
@@ -54,6 +61,7 @@ export interface ProjectMedia {
   proposalSlides?: ProjectMediaAsset[]
   contentPosts?: ProjectMediaAsset[]
   videoCampaigns?: ProjectVideoCampaign[]
+  outreachSections?: ProjectOutreachSection[]
 }
 
 export interface ProjectNamingRationale {
@@ -97,6 +105,7 @@ export interface FieldScopeCard {
   category: string
   image: string
   imageAlt: string
+  landingProjectId?: string
 }
 
 export interface Field {
@@ -136,6 +145,8 @@ export interface PortfolioUi {
     lockedTitle: string
     lockedBody: string
     lockedAction: string
+    emptyTitle: string
+    emptyBody: string
     back: string
     backToScopes: string
     eyebrow: string
@@ -416,6 +427,43 @@ const WESHARE_PROJECT_MEDIA: ProjectMedia = {
   ],
 }
 
+const PANASONIC_PROJECT_MEDIA: ProjectMedia = {
+  introLayout: "split-cover",
+  cover: {
+    src: "/assets/projects/panasonic/cover.png",
+    alt: "Panasonic CRM Promote copy-on-visual campaign cover",
+    width: 1080,
+    height: 1080,
+    sourceUrl: "https://drive.google.com/file/d/1PA1a3igLLqZ0RS-U2PgEy8SkQh6v0fa7/view",
+  },
+  contentPosts: [
+    {
+      src: "/assets/projects/panasonic/content-01.jpg",
+      alt: "Panasonic CRM Promote digital ad copy-on-visual post 1",
+      width: 1500,
+      height: 1500,
+    },
+    {
+      src: "/assets/projects/panasonic/content-02.jpg",
+      alt: "Panasonic CRM Promote digital ad copy-on-visual post 2",
+      width: 1500,
+      height: 1500,
+    },
+    {
+      src: "/assets/projects/panasonic/content-03.jpg",
+      alt: "Panasonic CRM Promote digital ad copy-on-visual post 3",
+      width: 1500,
+      height: 1500,
+    },
+    {
+      src: "/assets/projects/panasonic/content-04.jpg",
+      alt: "Panasonic CRM Promote digital ad copy-on-visual post 4",
+      width: 1500,
+      height: 1500,
+    },
+  ],
+}
+
 const SAMSUNG_VIDEO_SOURCES = [
   "https://www.facebook.com/reel/1808331319865303",
   "https://www.facebook.com/share/v/1AxaYvs1yr/",
@@ -531,6 +579,133 @@ const SAMSUNG_PROJECT_MEDIA_VI: ProjectMedia = {
       description:
         "Những kịch bản biến Gemini và các tính năng Galaxy A56 5G thành khoảnh khắc festive qua lăng kính creator, từ chuyện crush vui vui đến sự tự tin đầu năm.",
       videos: SAMSUNG_BETTER_YEAR_VIDEOS,
+    },
+  ],
+}
+
+const SOCIAL_OUTREACH_FORMAL_SOURCES = [
+  "https://www.facebook.com/photo/?fbid=860187803286762&set=a.183686904270192",
+  "https://www.facebook.com/share/p/14drtNwZqAC/",
+  "https://www.facebook.com/BrandsVietnam/posts/pfbid0RConB3x176ZimTHz7QgZZhAsQAMntBd9Qv1hDpyZGVVMsX3AQy4UunQd3XDSm6c2l",
+  "https://www.facebook.com/BrandsVietnam/posts/pfbid02wGtYvaptjxC6ExEKwtEifgE86YX6Jkvr6KE24ia49YQYCZipnEkk6aJwQYkyW8F3l",
+] as const
+
+const SOCIAL_OUTREACH_FORMAL_POSTS: ProjectMediaAsset[] = [
+  {
+    src: "/assets/projects/social-outreach/formal-01.jpg",
+    alt: "Formal social outreach post about Samsung health and wellness",
+    width: 2000,
+    height: 2000,
+    sourceUrl: SOCIAL_OUTREACH_FORMAL_SOURCES[0],
+  },
+  {
+    src: "/assets/projects/social-outreach/formal-02.jpg",
+    alt: "Formal social outreach post for VIB Privilege Banking",
+    width: 2000,
+    height: 2000,
+    sourceUrl: SOCIAL_OUTREACH_FORMAL_SOURCES[1],
+  },
+  {
+    src: "/assets/projects/social-outreach/formal-03.jpg",
+    alt: "Formal social outreach post about Galaxy Z Flip7 and creative limits",
+    width: 1200,
+    height: 1200,
+    sourceUrl: SOCIAL_OUTREACH_FORMAL_SOURCES[2],
+  },
+  {
+    src: "/assets/projects/social-outreach/formal-04.jpg",
+    alt: "Formal social outreach post about Vexere Tet campaign",
+    width: 1180,
+    height: 1036,
+    sourceUrl: SOCIAL_OUTREACH_FORMAL_SOURCES[3],
+  },
+]
+
+const SOCIAL_OUTREACH_MEME_POSTS: ProjectMediaAsset[] = [
+  {
+    src: "/assets/projects/social-outreach/meme-01.jpg",
+    alt: "Meme outreach post from Xem cái này không phí tiền mạng",
+    width: 1280,
+    height: 1014,
+    caption:
+      "Xem cái này không phí tiền mạng\n\nSau khi ăn kem thì giờ tới tiết mục ăn chửi\n\n#HopTacVinamilk #KemVinamilk #KemNgonRõVịRõVui",
+  },
+  {
+    src: "/assets/projects/social-outreach/meme-02.jpg",
+    alt: "Meme outreach post from Ở Đây Zui Nè",
+    width: 960,
+    height: 957,
+    caption:
+      "Ở Đây Zui Nè\n\nMấy khúc này thấy có phước lắm mới quen được ảnh\n\n#HopTacVinamilk #KemVinamilk #KemNgonRõVịRõVui",
+  },
+  {
+    src: "/assets/projects/social-outreach/meme-03.jpg",
+    alt: "Meme outreach post from Insight mất lòng",
+    width: 1080,
+    height: 1080,
+    caption:
+      "Insight mất lòng\n\nVẫn là em bé\n\n#HopTacVinamilk #KemVinamilk #KemNgonRõVịRõVui",
+  },
+  {
+    src: "/assets/projects/social-outreach/meme-04.jpg",
+    alt: "Meme outreach post from Sinh Viên Sài Gòn Confessions",
+    width: 962,
+    height: 1176,
+    caption:
+      "Sinh Viên Sài Gòn Confessions\n\n+1 máy nghe nhạc Tết nhiều hơn nghe giảng bài\n\nMuốn Tết chắc một vé về quê thăm ba má Vexere đặt cho yên tâm nha mấy ní. Kho vé khổng lồ với hơn 3000 nhà xe, tàu, máy bay... muốn đi phương tiện gì cũng có. Giá vé thì minh bạch, rõ ràng, đang sẵn có chương trình giảm 25% (tối đa 50K) ngay cho ní nào mua vé lần đầu trên website hoặc ứng dụng nữa.\n\nVì một cái Tết chắc cú, lên Vexere ngay nha mấy fen ơi\n\n#VeTet #Vexere #DatVexere #TetChacMotVe",
+  },
+  {
+    src: "/assets/projects/social-outreach/meme-05.jpg",
+    alt: "Meme outreach post from Why So Serious",
+    width: 1500,
+    height: 1500,
+    caption:
+      "Why So Serious\n\nTag ngay đứa bạn thân sắp về quê để dặn nó sớm lên chơi với mình\n\nMà nghe nói Tết này trên Vexere có kho vé khổng lồ với hơn 3000 nhà xe, 5000 tuyến đường cùng giá vé minh bạch và đảm bảo khởi hành đúng lịch. Đã vậy những ai lần đầu đặt qua ứng dụng hoặc website còn được Vexere trợ giá giảm 50K nữa, cụ thể như nào thì check comment nha! Còn tui khóc tiếp đây\n\n#VeTet #Vexere #DatVexere #TetChacMotVe",
+  },
+]
+
+const SOCIAL_OUTREACH_PROJECT_MEDIA_EN: ProjectMedia = {
+  cover: {
+    src: "/assets/storybook/scope-social-outreach.png",
+    alt: "Vietnamese storybook style social outreach background",
+    width: 1448,
+    height: 1086,
+  },
+  outreachSections: [
+    {
+      title: "Formal & Academic Voice",
+      description: "A place for thoughtful discussions and carefully chosen words.",
+      displayMode: "linked-posts",
+      posts: SOCIAL_OUTREACH_FORMAL_POSTS,
+    },
+    {
+      title: "Meme & Funny Voice",
+      description: "A place where the same brain occasionally communicates through memes.",
+      displayMode: "caption-posts",
+      posts: SOCIAL_OUTREACH_MEME_POSTS,
+    },
+  ],
+}
+
+const SOCIAL_OUTREACH_PROJECT_MEDIA_VI: ProjectMedia = {
+  cover: {
+    src: "/assets/storybook/scope-social-outreach.png",
+    alt: "Nền minh họa phong cách truyện Việt cho social outreach",
+    width: 1448,
+    height: 1086,
+  },
+  outreachSections: [
+    {
+      title: "Formal & Academic Voice",
+      description: "Một không gian cho những thảo luận chỉn chu và câu chữ được chọn kỹ.",
+      displayMode: "linked-posts",
+      posts: SOCIAL_OUTREACH_FORMAL_POSTS,
+    },
+    {
+      title: "Meme & Funny Voice",
+      description: "Một không gian nơi cùng một bộ não đôi khi giao tiếp bằng meme.",
+      displayMode: "caption-posts",
+      posts: SOCIAL_OUTREACH_MEME_POSTS,
     },
   ],
 }
@@ -694,6 +869,7 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
             category: "Social Outreach",
             image: "/assets/storybook/scope-social-outreach.png",
             imageAlt: "Vietnamese storybook style social outreach background",
+            landingProjectId: "social-outreach",
           },
         ],
       },
@@ -914,6 +1090,47 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         media: WESHARE_PROJECT_MEDIA,
       },
       {
+        id: "panasonic",
+        fieldId: "creative-copywriter",
+        title: "Panasonic",
+        eyebrow: "Project",
+        category: "Fanpage Always-on Content",
+        summary: "Copy-on-visuals for Panasonic's CRM Promote digital advertising assets.",
+        client: "Panasonic",
+        year: "2025",
+        scope: ["Copy-on-visuals", "Digital Ads", "Promotional Headlines"],
+        campaignTitle: "CRM Promote",
+        overview:
+          "In advertising, every word is paying rent.\n\nFor Panasonic's CRM Promote ads campaign, I developed copy-on-visuals across digital advertising assets, turning product benefits and promotional messages into short, catchy headlines that could grab attention in seconds.",
+        objective:
+          "Turn product benefits and promotional messages into concise ad copy that could catch attention quickly in digital placements.",
+        solution:
+          "Write short, benefit-led headlines for each visual asset, keeping the message sharp enough for fast-scrolling ad contexts.",
+        results: ["Digital ad copy-on-visuals", "Short promotional headlines", "CRM Promote message adaptation"],
+        thumbnail: { col: 2, row: 0 },
+        media: PANASONIC_PROJECT_MEDIA,
+      },
+      {
+        id: "social-outreach",
+        fieldId: "creative-copywriter",
+        title: "Social Outreach",
+        eyebrow: "Scope",
+        category: "Social Outreach",
+        summary: "Community outreach content across formal discussions, hot pages, and meme-led social spaces.",
+        client: "Social Outreach",
+        year: "2025",
+        scope: ["Community Seeding", "Voice Adaptation", "Social Outreach"],
+        overview:
+          "Not every piece of content stays on the brand's fanpage.\n\nSome travel to communities. Some spark conversations on hot pages. Others find their way into niche groups where audiences speak an entirely different language.\n\nThat's where social outreach comes in.\n\nFrom formal and academic communities to meme-loving corners of the internet, every audience requires a different way of joining the conversation.",
+        objective:
+          "Adapt campaign messages so they could travel into communities, hot pages, and niche groups without sounding copied from the brand fanpage.",
+        solution:
+          "Shift tone and framing by audience, moving between formal discussion, academic context, and meme-led conversation while keeping the core message intact.",
+        results: ["Formal community posts", "Meme-led outreach posts", "Audience-specific voice adaptation"],
+        thumbnail: { col: 2, row: 1 },
+        media: SOCIAL_OUTREACH_PROJECT_MEDIA_EN,
+      },
+      {
         id: "tiktok",
         fieldId: "creative-copywriter",
         title: "TikTok",
@@ -1034,6 +1251,8 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         lockedBody:
           "The project gallery will open after you choose The Thinking or The Making.",
         lockedAction: "Back to Fields",
+        emptyTitle: "This scope is still waiting.",
+        emptyBody: "Choose another scope to keep exploring the work.",
         back: "Back",
         backToScopes: "Back to scopes",
         eyebrow: "Field page",
@@ -1198,6 +1417,7 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
             category: "Social outreach",
             image: "/assets/storybook/scope-social-outreach.png",
             imageAlt: "Nền minh họa phong cách truyện Việt cho social outreach",
+            landingProjectId: "social-outreach",
           },
         ],
       },
@@ -1418,6 +1638,47 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         media: WESHARE_PROJECT_MEDIA,
       },
       {
+        id: "panasonic",
+        fieldId: "creative-copywriter",
+        title: "Panasonic",
+        eyebrow: "Dự án",
+        category: "Nội dung fanpage always-on",
+        summary: "Copy-on-visual cho các digital ads trong chiến dịch CRM Promote của Panasonic.",
+        client: "Panasonic",
+        year: "2025",
+        scope: ["Copy-on-visual", "Digital ads", "Headline khuyến mãi"],
+        campaignTitle: "CRM Promote",
+        overview:
+          "Trong quảng cáo, từng chữ đều phải tự chứng minh giá trị của mình.\n\nVới chiến dịch CRM Promote ads của Panasonic, mình phát triển copy-on-visual cho các digital advertising assets, biến lợi ích sản phẩm và thông điệp khuyến mãi thành những headline ngắn, bắt tai và có thể thu hút sự chú ý chỉ trong vài giây.",
+        objective:
+          "Chuyển lợi ích sản phẩm và thông điệp khuyến mãi thành copy quảng cáo ngắn gọn, đủ nhanh để bắt sự chú ý trong các placement digital.",
+        solution:
+          "Viết headline ngắn theo từng visual asset, giữ thông điệp rõ lợi ích và đủ sắc trong bối cảnh người xem lướt rất nhanh.",
+        results: ["Copy-on-visual cho digital ads", "Headline khuyến mãi ngắn gọn", "Điều chỉnh thông điệp CRM Promote"],
+        thumbnail: { col: 2, row: 0 },
+        media: PANASONIC_PROJECT_MEDIA,
+      },
+      {
+        id: "social-outreach",
+        fieldId: "creative-copywriter",
+        title: "Social Outreach",
+        eyebrow: "Phạm vi",
+        category: "Social outreach",
+        summary: "Nội dung outreach đi vào cộng đồng, hot page và những góc meme/niche trên social.",
+        client: "Social Outreach",
+        year: "2025",
+        scope: ["Community seeding", "Điều chỉnh giọng viết", "Social outreach"],
+        overview:
+          "Không phải nội dung nào cũng ở lại trên fanpage của thương hiệu.\n\nCó nội dung đi vào cộng đồng. Có nội dung khơi gợi cuộc trò chuyện trên hot page. Có nội dung tìm đường vào những nhóm niche, nơi khán giả nói bằng một ngôn ngữ rất khác.\n\nĐó là lúc social outreach xuất hiện.\n\nTừ những cộng đồng trang trọng, học thuật đến các góc internet sống bằng meme, mỗi nhóm khán giả đều cần một cách khác nhau để bước vào cuộc trò chuyện.",
+        objective:
+          "Điều chỉnh thông điệp chiến dịch để có thể đi vào cộng đồng, hot page và nhóm niche mà không nghe như copy từ fanpage thương hiệu.",
+        solution:
+          "Chuyển đổi giọng điệu và góc tiếp cận theo từng tệp khán giả, từ thảo luận chỉn chu, ngữ cảnh học thuật đến cuộc trò chuyện bằng meme, nhưng vẫn giữ lõi thông điệp.",
+        results: ["Bài outreach cho cộng đồng formal", "Bài outreach theo meme voice", "Điều chỉnh giọng viết theo từng nhóm khán giả"],
+        thumbnail: { col: 2, row: 1 },
+        media: SOCIAL_OUTREACH_PROJECT_MEDIA_VI,
+      },
+      {
         id: "tiktok",
         fieldId: "creative-copywriter",
         title: "TikTok",
@@ -1538,6 +1799,8 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         lockedBody:
           "Danh mục dự án sẽ mở ra sau khi bạn chọn The Thinking hoặc The Making.",
         lockedAction: "Quay lại Lĩnh vực",
+        emptyTitle: "Scope này vẫn đang chờ nội dung.",
+        emptyBody: "Chọn một scope khác để tiếp tục xem các dự án.",
         back: "Quay lại",
         backToScopes: "Quay lại scope",
         eyebrow: "Trang lĩnh vực",

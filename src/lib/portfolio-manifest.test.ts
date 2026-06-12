@@ -144,6 +144,27 @@ describe("owned Blob URL helpers", () => {
             ],
           },
         ],
+        outreachSections: [
+          {
+            title: "Outreach one",
+            description: "Outreach group.",
+            displayMode: "linked-posts",
+            posts: [
+              {
+                src: "projects/demo/a/outreach-01.png",
+                alt: "Outreach one",
+                width: 1200,
+                height: 1200,
+              },
+              {
+                src: "https://store.blob.vercel-storage.com/projects/other/a/outreach-02.png",
+                alt: "Foreign outreach",
+                width: 1200,
+                height: 1200,
+              },
+            ],
+          },
+        ],
       },
     })
 
@@ -153,6 +174,7 @@ describe("owned Blob URL helpers", () => {
       "projects/demo/a/proposal-01.png",
       "projects/demo/a/content-01.png",
       "projects/demo/a/video-01.png",
+      "projects/demo/a/outreach-01.png",
     ])
   })
 

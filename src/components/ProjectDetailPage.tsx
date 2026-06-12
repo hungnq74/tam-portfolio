@@ -9,6 +9,7 @@ import {
   useRef,
   useState,
 } from "react"
+import Link from "next/link"
 import {
   ArrowLeft,
   ArrowRight,
@@ -23,6 +24,7 @@ import {
   type Project,
   type ProjectNamingRationale,
   type ProjectMediaAsset,
+  type ProjectOutreachSection,
   type ProjectVideoCampaign,
 } from "@/data/portfolio"
 import { LocaleToggle } from "@/components/LocaleToggle"
@@ -35,6 +37,14 @@ const CAROUSEL_RAIL_CLASS =
   "relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 sm:w-[calc(100vw-3rem)] lg:w-[min(calc(100vw-10rem),1440px)] xl:w-[min(calc(100vw-18rem),1440px)]"
 
 function getPortfolioBackHref(project: Project) {
+  if (project.id === "social-outreach") {
+    const params = new URLSearchParams({
+      field: project.fieldId,
+    })
+
+    return `/?${params.toString()}#gallery`
+  }
+
   const params = new URLSearchParams({
     field: project.fieldId,
     project: project.id,
@@ -93,13 +103,13 @@ function ProjectChrome({
 }) {
   return (
     <div className="mb-5 flex flex-wrap items-center gap-4">
-      <a
+      <Link
         href={getPortfolioBackHref(project)}
         className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-clay transition hover:text-moss focus:outline-none focus:ring-2 focus:ring-clay"
       >
         <ArrowLeft className="h-4 w-4" />
         {ui.detail.back}
-      </a>
+      </Link>
     </div>
   )
 }
@@ -157,6 +167,7 @@ function MediaProjectPage({
   const websitePreview = media?.websitePreview
   const contentPosts = media?.contentPosts ?? []
   const videoCampaigns = media?.videoCampaigns ?? []
+  const outreachSections = media?.outreachSections ?? []
   const usesSplitCoverIntro = media?.introLayout === "split-cover"
   const slidesPerPage = useSlidesPerPage()
   const [activePageIndex, setActivePageIndex] = useState(0)
@@ -187,6 +198,16 @@ function MediaProjectPage({
 
   if (!media) return null
 
+  if (outreachSections.length > 0) {
+    return (
+      <ProjectSocialOutreachPage
+        ui={ui}
+        project={project}
+        sections={outreachSections}
+      />
+    )
+  }
+
   return (
     <main className="relative min-h-screen px-4 pb-24 pt-20 sm:px-6 sm:py-20 lg:px-10">
       <div className="mx-auto w-full max-w-7xl">
@@ -196,7 +217,7 @@ function MediaProjectPage({
           {usesSplitCoverIntro ? (
             <ProjectSplitCoverIntro
               eyebrow={project.category}
-              title={project.title}
+              title={project.campaignTitle ?? project.title}
               body={project.overview}
               cover={media.cover}
             />
@@ -433,6 +454,313 @@ function ProjectSplitCoverIntro({
         />
       </div>
     </section>
+  )
+}
+
+function ProjectSocialOutreachPage({
+  ui,
+  project,
+  sections,
+}: {
+  ui: PortfolioUi
+  project: Project
+  sections: ProjectOutreachSection[]
+}) {
+  return (
+    <main className="relative min-h-screen px-4 pb-24 pt-20 sm:px-6 sm:py-20 lg:px-10">
+      <div className="mx-auto w-full max-w-7xl">
+        <ProjectChrome ui={ui} project={project} />
+
+        <article className="space-y-12 sm:space-y-16">
+          <section
+            className={cn(
+              MEDIA_RAIL_CLASS,
+              "border-y border-[rgba(165,66,47,0.28)] py-8 sm:py-10",
+            )}
+          >
+            <div className="grid gap-7 lg:grid-cols-[0.75fr_1.25fr] lg:items-start lg:gap-14">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.22em] text-clay">
+                  {project.eyebrow}
+                </p>
+                <h1 className="mt-4 font-serif text-[clamp(3.2rem,7vw,7rem)] font-semibold leading-none text-clay">
+                  {project.title}
+                </h1>
+              </div>
+              <p className="font-prose max-w-3xl whitespace-pre-line text-base leading-8 text-ink/82 sm:text-lg sm:leading-8">
+                {project.overview}
+              </p>
+            </div>
+          </section>
+
+          {sections.map((section, index) => (
+            <ProjectOutreachSectionBlock
+              key={section.title}
+              section={section}
+              index={index}
+              postLinkLabel={ui.detail.visitPost}
+              captionLabel={ui.detail.postCaption}
+              previousLabel={ui.detail.previousSlide}
+              nextLabel={ui.detail.nextSlide}
+            />
+          ))}
+        </article>
+      </div>
+    </main>
+  )
+}
+
+function ProjectOutreachSectionBlock({
+  section,
+  index,
+  postLinkLabel,
+  captionLabel,
+  previousLabel,
+  nextLabel,
+}: {
+  section: ProjectOutreachSection
+  index: number
+  postLinkLabel: string
+  captionLabel: string
+  previousLabel: string
+  nextLabel: string
+}) {
+  return (
+    <section className={cn(MEDIA_RAIL_CLASS, "space-y-5 border-t border-gold/45 pt-6 sm:pt-8")}>
+      <div className="max-w-3xl border-l-2 border-gold/60 pl-4 sm:pl-5">
+        <p className="text-xs font-bold uppercase tracking-[0.2em] text-clay">
+          Voice {String(index + 1).padStart(2, "0")}
+        </p>
+        <h2 className="mt-2 font-serif text-[clamp(2rem,3.7vw,3.8rem)] font-semibold leading-[0.98] text-clay">
+          {section.title}
+        </h2>
+        <p className="font-prose mt-3 max-w-2xl text-base leading-7 text-ink/76 sm:text-[1.05rem] sm:leading-8">
+          {section.description}
+        </p>
+      </div>
+
+      <ProjectOutreachPosts
+        section={section}
+        postLinkLabel={postLinkLabel}
+        captionLabel={captionLabel}
+        previousLabel={previousLabel}
+        nextLabel={nextLabel}
+      />
+    </section>
+  )
+}
+
+function ProjectOutreachPosts({
+  section,
+  postLinkLabel,
+  captionLabel,
+  previousLabel,
+  nextLabel,
+}: {
+  section: ProjectOutreachSection
+  postLinkLabel: string
+  captionLabel: string
+  previousLabel: string
+  nextLabel: string
+}) {
+  const showLinks = section.displayMode === "linked-posts"
+  const showCaptions = section.displayMode === "caption-posts"
+  const postsPerPage = useContentPostsPerPage()
+  const pageCount = Math.max(1, Math.ceil(section.posts.length / postsPerPage))
+  const [activePageIndex, setActivePageIndex] = useState(0)
+  const trackRef = useRef<HTMLDivElement | null>(null)
+  const programmaticScrollTimeoutRef = useRef<number | null>(null)
+  const visibleStart = activePageIndex * postsPerPage
+  const visibleCount = Math.min(postsPerPage, Math.max(0, section.posts.length - visibleStart))
+  const rangeLabel = getSlideRangeLabel(visibleStart, visibleCount, section.posts.length)
+  const postPages = Array.from({ length: pageCount }, (_, pageIndex) =>
+    section.posts.slice(pageIndex * postsPerPage, pageIndex * postsPerPage + postsPerPage),
+  )
+
+  const scrollToPostPage = useCallback((pageIndex: number, behavior: ScrollBehavior = "smooth") => {
+    const trackElement = trackRef.current
+    if (!trackElement) return
+
+    if (programmaticScrollTimeoutRef.current) {
+      window.clearTimeout(programmaticScrollTimeoutRef.current)
+    }
+
+    programmaticScrollTimeoutRef.current = window.setTimeout(() => {
+      programmaticScrollTimeoutRef.current = null
+    }, behavior === "smooth" ? 520 : 0)
+
+    trackElement.scrollTo({
+      left: pageIndex * trackElement.clientWidth,
+      behavior,
+    })
+  }, [])
+
+  useEffect(() => {
+    setActivePageIndex((pageIndex) => {
+      const nextPageIndex = Math.min(pageIndex, pageCount - 1)
+      window.requestAnimationFrame(() => scrollToPostPage(nextPageIndex, "auto"))
+
+      return nextPageIndex
+    })
+  }, [pageCount, scrollToPostPage])
+
+  useEffect(() => {
+    return () => {
+      if (programmaticScrollTimeoutRef.current) {
+        window.clearTimeout(programmaticScrollTimeoutRef.current)
+      }
+    }
+  }, [])
+
+  const goToPostPage = useCallback(
+    (direction: number) => {
+      if (pageCount <= 1) return
+
+      setActivePageIndex((index) => {
+        const nextPageIndex = (index + direction + pageCount) % pageCount
+        scrollToPostPage(nextPageIndex)
+
+        return nextPageIndex
+      })
+    },
+    [pageCount, scrollToPostPage],
+  )
+
+  const syncPageFromScroll = useCallback(() => {
+    if (programmaticScrollTimeoutRef.current) return
+
+    const trackElement = trackRef.current
+    if (!trackElement || trackElement.clientWidth === 0) return
+
+    const nextPageIndex = Math.round(trackElement.scrollLeft / trackElement.clientWidth)
+    setActivePageIndex(Math.min(Math.max(nextPageIndex, 0), pageCount - 1))
+  }, [pageCount])
+
+  const onCarouselKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return
+
+    event.preventDefault()
+    goToPostPage(event.key === "ArrowLeft" ? -1 : 1)
+  }
+
+  return (
+    <div
+      className={cn(CAROUSEL_RAIL_CLASS, "focus:outline-none")}
+      role="region"
+      aria-label={`${section.title} posts`}
+      aria-roledescription="carousel"
+      tabIndex={0}
+      onKeyDown={onCarouselKeyDown}
+    >
+      <div className="mb-4 flex items-center justify-end px-1 sm:px-2">
+        <p
+          className="text-xs font-bold uppercase tracking-[0.16em] text-ink/58"
+          aria-live="polite"
+        >
+          {rangeLabel}
+        </p>
+      </div>
+
+      <div className="relative">
+        <div
+          ref={trackRef}
+          className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+          onScroll={syncPageFromScroll}
+          data-scroll-gate-ignore
+        >
+          {postPages.map((pagePosts) => (
+            <div
+              key={pagePosts.map((post) => post.src).join("-")}
+              className="grid min-w-full snap-start items-stretch gap-4 md:grid-cols-2"
+            >
+              {pagePosts.map((post) => (
+                <ProjectOutreachPostCard
+                  key={post.src}
+                  post={post}
+                  postLinkLabel={postLinkLabel}
+                  captionLabel={captionLabel}
+                  showLink={showLinks}
+                  showCaption={showCaptions}
+                  compact
+                />
+              ))}
+            </div>
+          ))}
+        </div>
+
+        {pageCount > 1 ? (
+          <div className="mt-4 flex items-center justify-center gap-3 xl:pointer-events-none xl:absolute xl:inset-y-0 xl:-left-16 xl:-right-16 xl:mt-0 xl:justify-between">
+            <CarouselButton label={previousLabel} onClick={() => goToPostPage(-1)}>
+              <ArrowLeft className="h-4 w-4" />
+            </CarouselButton>
+            <CarouselButton label={nextLabel} onClick={() => goToPostPage(1)}>
+              <ArrowRight className="h-4 w-4" />
+            </CarouselButton>
+          </div>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+function ProjectOutreachPostCard({
+  post,
+  postLinkLabel,
+  captionLabel,
+  showLink,
+  showCaption,
+  compact = false,
+}: {
+  post: ProjectMediaAsset
+  postLinkLabel: string
+  captionLabel: string
+  showLink: boolean
+  showCaption: boolean
+  compact?: boolean
+}) {
+  const caption = showCaption ? post.caption : undefined
+
+  return (
+    <article className="flex h-full flex-col overflow-hidden rounded-[8px] border border-[rgba(116,63,36,0.2)] bg-paper shadow-[0_16px_42px_rgba(45,32,21,0.12)]">
+      <div className={cn("flex items-center justify-center bg-paper", compact ? "h-[42vh] min-h-[300px] max-h-[460px]" : null)}>
+        <ProjectMediaImage
+          asset={post}
+          className={cn("w-full bg-paper", compact ? "flex h-full items-center justify-center" : null)}
+          imageClassName={compact ? "h-full w-full object-contain" : "h-auto w-full object-contain"}
+        />
+      </div>
+
+      {caption ? (
+        <div className={cn("border-t border-[rgba(116,63,36,0.16)] bg-paper/96", compact ? "px-3 py-3 sm:px-4" : "px-4 py-4 sm:px-5")}>
+          <p className="mb-2 text-[0.64rem] font-bold uppercase tracking-[0.18em] text-clay">
+            {captionLabel}
+          </p>
+          <p
+            className={cn(
+              "font-prose whitespace-pre-line text-sm leading-7 text-ink/78 sm:text-[0.95rem]",
+              compact ? "max-h-40 overflow-y-auto pr-2 sm:text-sm sm:leading-6" : null,
+            )}
+          >
+            {caption}
+          </p>
+        </div>
+      ) : null}
+
+      {showLink && post.sourceUrl ? (
+        <div className="mt-auto flex justify-end border-t border-[rgba(116,63,36,0.16)] bg-paper/92 px-3 py-3 sm:px-4">
+          <a
+            href={post.sourceUrl}
+            target="_blank"
+            rel="noreferrer"
+            aria-label={`${postLinkLabel}: ${post.alt}`}
+            className="inline-flex items-center gap-2 rounded-full border border-clay/24 px-3 py-2 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-clay transition hover:border-clay hover:bg-clay hover:text-paper focus:outline-none focus:ring-2 focus:ring-clay"
+          >
+            <ExternalLink className="h-3.5 w-3.5" />
+            {postLinkLabel}
+          </a>
+        </div>
+      ) : null}
+    </article>
   )
 }
 
@@ -836,21 +1164,23 @@ function ProjectVideoPreviewCard({
             decoding="async"
             className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
           />
-          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(43,30,19,0.08),rgba(43,30,19,0.18)_52%,rgba(43,30,19,0.62))]" />
-          <span className="absolute left-3 top-3 rounded-full border border-paper/60 bg-ink/62 px-2.5 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-paper backdrop-blur">
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(43,30,19,0.42),rgba(43,30,19,0.06)_28%,rgba(43,30,19,0.18)_56%,rgba(43,30,19,0.88))]" />
+          <span className="absolute left-3 top-3 rounded-full border border-paper/70 bg-ink/90 px-2.5 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-paper shadow-[0_8px_20px_rgba(43,30,19,0.28)] backdrop-blur">
             {platformLabel}
           </span>
           <span className="absolute right-3 top-3 inline-flex h-10 w-10 items-center justify-center rounded-full bg-paper/92 text-clay shadow-story transition group-hover:bg-clay group-hover:text-paper">
             <Play className="ml-0.5 h-4 w-4 fill-current" />
           </span>
           <div className="absolute inset-x-0 bottom-0 p-4">
-            <p className="text-[0.68rem] font-bold uppercase tracking-[0.16em] text-paper/72">
-              Video {String(index + 1).padStart(2, "0")}
-            </p>
-            <p className="mt-2 inline-flex items-center gap-2 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-paper">
-              {watchVideoLabel}
-              <ExternalLink className="h-3.5 w-3.5" />
-            </p>
+            <div className="inline-flex max-w-full flex-col rounded-[6px] bg-ink/90 px-3 py-2 text-paper shadow-[0_12px_28px_rgba(43,30,19,0.32)] ring-1 ring-paper/20 backdrop-blur-sm">
+              <p className="text-[0.68rem] font-bold uppercase tracking-[0.16em] text-paper/82">
+                Video {String(index + 1).padStart(2, "0")}
+              </p>
+              <p className="mt-1.5 inline-flex items-center gap-2 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-paper">
+                {watchVideoLabel}
+                <ExternalLink className="h-3.5 w-3.5" />
+              </p>
+            </div>
           </div>
         </div>
       </a>

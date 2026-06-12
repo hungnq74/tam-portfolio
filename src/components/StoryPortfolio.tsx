@@ -47,6 +47,7 @@ import { getLenis } from "@/components/LenisProvider"
 import { LocaleToggle } from "@/components/LocaleToggle"
 import { useLocale } from "@/hooks/useLocale"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
+import { resolvePortfolioRouteState } from "@/lib/portfolio-route-state"
 import { cn } from "@/lib/utils"
 
 const COVER_IMAGE = "/assets/storybook/cover.png"
@@ -68,6 +69,7 @@ type ChoiceGate = {
 }
 
 const MotionPreferenceContext = createContext(false)
+const RouteRestoreContext = createContext(0)
 
 function useMotionPreference() {
   return useContext(MotionPreferenceContext)
@@ -98,6 +100,33 @@ function getProjectHref(projectId: string) {
   return `/work/${projectId}`
 }
 
+function hasExplicitPortfolioTarget() {
+  if (typeof window === "undefined") return false
+
+  const params = new URLSearchParams(window.location.search)
+  return Boolean(params.get("field") || params.get("project") || window.location.hash === "#gallery")
+}
+
+function replacePortfolioGalleryUrl({
+  fieldId,
+  projectId,
+}: {
+  fieldId?: FieldId | null
+  projectId?: string | null
+}) {
+  if (typeof window === "undefined") return
+
+  const params = new URLSearchParams()
+
+  if (fieldId) params.set("field", fieldId)
+  if (projectId) params.set("project", projectId)
+
+  const search = params.toString()
+  const nextUrl = search ? `/?${search}#gallery` : "/"
+
+  window.history.replaceState(window.history.state, "", nextUrl)
+}
+
 export function StoryPortfolio({
   contentByLocale,
 }: {
@@ -119,7 +148,7 @@ export function StoryPortfolio({
   })
   const touchStartYRef = useRef<number | null>(null)
   const choiceAdvanceUntilRef = useRef(0)
-  const routeSelectionKeyRef = useRef<string | null>(null)
+  const routeSyncInitializedRef = useRef(false)
   const reducedMotion = useReducedMotion()
   const { scrollYProgress } = useScroll()
   const smoothProgress = useSpring(scrollYProgress, {
@@ -133,6 +162,7 @@ export function StoryPortfolio({
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null)
   const [fieldGateLocked, setFieldGateLocked] = useState(true)
   const [gateNudgeKey, setGateNudgeKey] = useState(0)
+  const [routeRestoreNonce, setRouteRestoreNonce] = useState(0)
 
   const activeField = selectedFieldId
     ? fields.find((field) => field.id === selectedFieldId) ?? fields[0]
@@ -311,6 +341,70 @@ export function StoryPortfolio({
     [fieldGateLocked, jumpToFieldsGate, jumpToScopeGate, reducedMotion, scopeGateLocked],
   )
 
+  const scheduleRouteScroll = useCallback(
+    (id: SectionId) => {
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          const node = sectionRefs.current[id]
+          if (!node) return
+
+          setActiveSection(id)
+          setScrollPosition(node.getBoundingClientRect().top + window.scrollY)
+        })
+      })
+    },
+    [setScrollPosition],
+  )
+
+  const applyRouteState = useCallback(
+    ({ reveal = false, scroll = true }: { reveal?: boolean; scroll?: boolean } = {}) => {
+      const routeState = resolvePortfolioRouteState({
+        allFilter: ui.allFilter,
+        fields,
+        hash: window.location.hash,
+        projects,
+        search: window.location.search,
+      })
+
+      if (reveal) {
+        setRouteRestoreNonce((nonce) => nonce + 1)
+      }
+
+      if (!routeState.selectedFieldId) {
+        setFieldGateLocked(true)
+        setSelectedFieldId(null)
+        setActiveFilter(ui.allFilter)
+        setSelectedProjectId(null)
+      } else {
+        startChoiceAdvance()
+        setFieldGateLocked(false)
+        setSelectedFieldId(routeState.selectedFieldId)
+        setActiveFilter(routeState.activeFilter)
+        setSelectedProjectId(routeState.selectedProjectId)
+      }
+
+      if (scroll) {
+        scheduleRouteScroll(routeState.targetSection)
+      }
+    },
+    [fields, projects, scheduleRouteScroll, startChoiceAdvance, ui.allFilter],
+  )
+
+  const applyRouteStateRef = useRef(applyRouteState)
+
+  useEffect(() => {
+    applyRouteStateRef.current = applyRouteState
+  }, [applyRouteState])
+
+  useEffect(() => {
+    const previousScrollRestoration = window.history.scrollRestoration
+    window.history.scrollRestoration = "manual"
+
+    return () => {
+      window.history.scrollRestoration = previousScrollRestoration
+    }
+  }, [])
+
   useEffect(() => {
     if (!fieldGateLocked && !scopeGateLocked) return
 
@@ -426,47 +520,40 @@ export function StoryPortfolio({
 
   const returnToFieldsGate = useCallback(
     (options: ScrollToOptions = {}) => {
+      replacePortfolioGalleryUrl({})
       setFieldGateLocked(true)
+      setSelectedFieldId(null)
+      setActiveFilter(ui.allFilter)
+      setSelectedProjectId(null)
       scrollTo("fields", options)
     },
-    [scrollTo],
+    [scrollTo, ui.allFilter],
   )
 
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-    const requestedProjectId = params.get("project")
-    const requestedFieldId = params.get("field")
-    if (!requestedProjectId && !requestedFieldId) return
+    const isInitialSync = !routeSyncInitializedRef.current
+    routeSyncInitializedRef.current = true
 
-    const selectionKey = `${locale}:${window.location.search}`
-    if (routeSelectionKeyRef.current === selectionKey) return
+    applyRouteState({
+      scroll: isInitialSync || hasExplicitPortfolioTarget(),
+    })
+  }, [applyRouteState, locale])
 
-    const requestedProject = requestedProjectId
-      ? projects.find((project) => project.id === requestedProjectId)
-      : null
-    const requestedField = requestedProject
-      ? fields.find((field) => field.id === requestedProject.fieldId)
-      : fields.find((field) => field.id === requestedFieldId)
+  useEffect(() => {
+    const syncFromHistory = () => {
+      applyRouteStateRef.current({ reveal: true, scroll: true })
+    }
 
-    if (!requestedField) return
+    window.addEventListener("popstate", syncFromHistory)
+    window.addEventListener("hashchange", syncFromHistory)
+    window.addEventListener("pageshow", syncFromHistory)
 
-    const requestedFilter =
-      requestedProject && requestedField.filters.includes(requestedProject.category)
-        ? requestedProject.category
-        : ui.allFilter
-    const shouldSelectProject = Boolean(
-      requestedProject &&
-        (!requestedField.scopeCards?.length || requestedFilter !== ui.allFilter),
-    )
-
-    routeSelectionKeyRef.current = selectionKey
-    startChoiceAdvance()
-    setFieldGateLocked(false)
-    setSelectedFieldId(requestedField.id)
-    setActiveFilter(requestedFilter)
-    setSelectedProjectId(shouldSelectProject && requestedProject ? requestedProject.id : null)
-    window.setTimeout(() => scrollTo("gallery", { force: true, immediate: true }), 90)
-  }, [fields, locale, projects, scrollTo, startChoiceAdvance, ui.allFilter])
+    return () => {
+      window.removeEventListener("popstate", syncFromHistory)
+      window.removeEventListener("hashchange", syncFromHistory)
+      window.removeEventListener("pageshow", syncFromHistory)
+    }
+  }, [])
 
   const selectField = (fieldId: FieldId) => {
     const field = fields.find((item) => item.id === fieldId)
@@ -474,6 +561,7 @@ export function StoryPortfolio({
     const hasScopeHub = Boolean(field?.scopeCards?.length)
     if (!field || (!firstProject && !hasScopeHub)) return
 
+    replacePortfolioGalleryUrl({ fieldId })
     startChoiceAdvance()
     setFieldGateLocked(false)
     setSelectedFieldId(fieldId)
@@ -486,6 +574,7 @@ export function StoryPortfolio({
     setActiveFilter(filter)
 
     if (filter === ui.allFilter) {
+      replacePortfolioGalleryUrl({ fieldId: activeField?.id ?? selectedFieldId })
       setSelectedProjectId(null)
       return
     }
@@ -493,66 +582,72 @@ export function StoryPortfolio({
     const firstMatchingProject = activeProjects.find(
       (project) => project.category === filter,
     )
+    replacePortfolioGalleryUrl({
+      fieldId: activeField?.id ?? selectedFieldId,
+      projectId: firstMatchingProject?.id ?? null,
+    })
     setSelectedProjectId(firstMatchingProject?.id ?? null)
   }
 
   return (
     <MotionPreferenceContext.Provider value={reducedMotion}>
-      <div className="story-texture min-h-screen overflow-x-clip">
-        <LocaleToggle
-          locale={locale}
-          ariaLabel={ui.languageToggleAria}
-          onLocaleChange={setLocale}
-          className="fixed left-4 top-4 z-[60]"
-        />
-        <ProgressRail
-          chapters={chapters}
-          ui={ui}
-          activeSection={activeSection}
-          lockedSectionIds={lockedSectionIds}
-          onJump={scrollTo}
-          progress={reducedMotion ? scrollYProgress : smoothProgress}
-        />
-        <MobileChapterBar
-          chapters={chapters}
-          ui={ui}
-          activeSection={activeSection}
-          lockedSectionIds={lockedSectionIds}
-          onJump={scrollTo}
-          progress={reducedMotion ? scrollYProgress : smoothProgress}
-        />
+      <RouteRestoreContext.Provider value={routeRestoreNonce}>
+        <div className="story-texture min-h-screen overflow-x-clip">
+          <LocaleToggle
+            locale={locale}
+            ariaLabel={ui.languageToggleAria}
+            onLocaleChange={setLocale}
+            className="fixed left-4 top-4 z-[60]"
+          />
+          <ProgressRail
+            chapters={chapters}
+            ui={ui}
+            activeSection={activeSection}
+            lockedSectionIds={lockedSectionIds}
+            onJump={scrollTo}
+            progress={reducedMotion ? scrollYProgress : smoothProgress}
+          />
+          <MobileChapterBar
+            chapters={chapters}
+            ui={ui}
+            activeSection={activeSection}
+            lockedSectionIds={lockedSectionIds}
+            onJump={scrollTo}
+            progress={reducedMotion ? scrollYProgress : smoothProgress}
+          />
 
-        <main className="pb-24 lg:px-[5.5rem] lg:pb-0">
-          <CoverAboutTransition
-            author={author}
-            ui={ui}
-            coverRefSetter={setSectionRef("cover")}
-            aboutRefSetter={setSectionRef("about")}
-            onNext={() => scrollTo("about")}
-            onAboutNext={() => scrollTo("fields")}
-          />
-          <FieldsSection
-            fields={fields}
-            ui={ui}
-            refSetter={setSectionRef("fields")}
-            selectedFieldId={selectedFieldId}
-            gateLocked={fieldGateLocked}
-            gateNudgeKey={gateNudgeKey}
-            onSelectField={selectField}
-          />
-          <GallerySection
-            ui={ui}
-            refSetter={setSectionRef("gallery")}
-            activeField={activeField}
-            activeFilter={activeFilter}
-            filteredProjects={filteredProjects}
-            selectedProjectId={selectedProject?.id ?? null}
-            onBack={() => returnToFieldsGate()}
-            onFilter={selectFilter}
-            onChooseField={() => returnToFieldsGate({ immediate: true })}
-          />
-        </main>
-      </div>
+          <main className="pb-24 lg:px-[5.5rem] lg:pb-0">
+            <CoverAboutTransition
+              author={author}
+              ui={ui}
+              coverRefSetter={setSectionRef("cover")}
+              aboutRefSetter={setSectionRef("about")}
+              onNext={() => scrollTo("about")}
+              onAboutNext={() => scrollTo("fields")}
+            />
+            <FieldsSection
+              fields={fields}
+              ui={ui}
+              refSetter={setSectionRef("fields")}
+              selectedFieldId={selectedFieldId}
+              gateLocked={fieldGateLocked}
+              gateNudgeKey={gateNudgeKey}
+              onSelectField={selectField}
+            />
+            <GallerySection
+              ui={ui}
+              refSetter={setSectionRef("gallery")}
+              activeField={activeField}
+              activeFilter={activeFilter}
+              filteredProjects={filteredProjects}
+              selectedProjectId={selectedProject?.id ?? null}
+              onBack={() => returnToFieldsGate()}
+              onFilter={selectFilter}
+              onChooseField={() => returnToFieldsGate({ immediate: true })}
+            />
+          </main>
+        </div>
+      </RouteRestoreContext.Provider>
     </MotionPreferenceContext.Provider>
   )
 }
@@ -639,17 +734,61 @@ function CoverAboutTransition({
   const aboutScale = useTransform(stageProgress, [0.28, 0.82], [0.96, 1])
   const aboutY = useTransform(stageProgress, [0.28, 0.82], [34, 0])
 
+  const syncInteractivity = useCallback(
+    (latest?: number) => {
+      if (reducedMotion) return
+
+      let progress = latest
+
+      if (progress === undefined) {
+        const stage = stageRef.current
+        if (stage) {
+          const stageTop = stage.getBoundingClientRect().top + window.scrollY
+          const stageEnd = stageTop + stage.offsetHeight - window.innerHeight
+          progress =
+            stageEnd > stageTop
+              ? Math.min(Math.max((window.scrollY - stageTop) / (stageEnd - stageTop), 0), 1)
+              : scrollYProgress.get()
+        } else {
+          progress = scrollYProgress.get()
+        }
+      }
+
+      setCoverInteractive((current) => {
+        const next = progress < 0.42
+        return current === next ? current : next
+      })
+      setAboutInteractive((current) => {
+        const next = progress > 0.56
+        return current === next ? current : next
+      })
+    },
+    [reducedMotion, scrollYProgress],
+  )
+
+  useEffect(() => {
+    if (reducedMotion) return
+
+    const syncOnNextFrame = () => {
+      window.requestAnimationFrame(() => syncInteractivity())
+    }
+
+    syncOnNextFrame()
+    window.addEventListener("popstate", syncOnNextFrame)
+    window.addEventListener("hashchange", syncOnNextFrame)
+    window.addEventListener("pageshow", syncOnNextFrame)
+
+    return () => {
+      window.removeEventListener("popstate", syncOnNextFrame)
+      window.removeEventListener("hashchange", syncOnNextFrame)
+      window.removeEventListener("pageshow", syncOnNextFrame)
+    }
+  }, [reducedMotion, syncInteractivity])
+
   useMotionValueEvent(scrollYProgress, "change", (latest) => {
     if (reducedMotion) return
 
-    setCoverInteractive((current) => {
-      const next = latest < 0.42
-      return current === next ? current : next
-    })
-    setAboutInteractive((current) => {
-      const next = latest > 0.56
-      return current === next ? current : next
-    })
+    syncInteractivity(latest)
   })
 
   if (reducedMotion) {
@@ -1084,6 +1223,16 @@ function GallerySection({
   const hasScopeCards = scopeCards.length > 0
   const showingScopeHub = hasScopeCards && activeFilter === ui.allFilter
   const activeScope = scopeCards.find((scope) => scope.category === activeFilter)
+  const galleryTitle = activeScope?.title ?? activeField.title
+  const gallerySubheading = activeScope ? activeField.title : null
+  const handleGalleryBack = () => {
+    if (activeScope) {
+      onFilter(ui.allFilter)
+      return
+    }
+
+    onBack()
+  }
 
   return (
     <section
@@ -1107,7 +1256,7 @@ function GallerySection({
               <div>
                 <button
                   type="button"
-                  onClick={onBack}
+                  onClick={handleGalleryBack}
                   className="mb-5 inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-gold transition hover:text-paper focus:outline-none focus:ring-2 focus:ring-gold"
                 >
                   <ArrowLeft className="h-4 w-4" />
@@ -1117,11 +1266,11 @@ function GallerySection({
                   {ui.gallery.eyebrow}
                 </p>
                 <h2 className="mt-2 font-serif text-[clamp(2.4rem,5vw,5rem)] font-semibold leading-none">
-                  {activeField.title}
+                  {galleryTitle}
                 </h2>
-                {activeScope ? (
+                {gallerySubheading ? (
                   <p className="mt-3 max-w-sm text-xs font-bold uppercase tracking-[0.18em] text-gold">
-                    {activeScope.title}
+                    {gallerySubheading}
                   </p>
                 ) : null}
               </div>
@@ -1175,6 +1324,17 @@ function GallerySection({
                   />
                 ))}
               </RevealGroup>
+            ) : filteredProjects.length === 0 ? (
+              <ScrollReveal preset="page-rise" amount={0.16}>
+                <div className="rounded-[8px] border border-paper/18 bg-paper/8 px-5 py-8 text-center">
+                  <h3 className="font-serif text-3xl font-semibold text-paper sm:text-4xl">
+                    {ui.gallery.emptyTitle}
+                  </h3>
+                  <p className="font-prose mx-auto mt-3 max-w-xl text-base leading-7 text-paper/72">
+                    {ui.gallery.emptyBody}
+                  </p>
+                </div>
+              </ScrollReveal>
             ) : (
               <RevealGroup
                 key={`${activeField.id}-${activeFilter}`}
@@ -1191,6 +1351,12 @@ function GallerySection({
                     project={project}
                     active={project.id === selectedProjectId}
                     href={getProjectHref(project.id)}
+                    onNavigate={() =>
+                      replacePortfolioGalleryUrl({
+                        fieldId: activeField.id,
+                        projectId: project.id,
+                      })
+                    }
                   />
                 ))}
               </RevealGroup>
@@ -1826,6 +1992,7 @@ function ScrollReveal({
   amount?: number
 }) {
   const reducedMotion = useMotionPreference()
+  const routeRestoreNonce = useContext(RouteRestoreContext)
 
   if (reducedMotion) {
     return <div className={className}>{children}</div>
@@ -1834,7 +2001,8 @@ function ScrollReveal({
   return (
     <motion.div
       className={cn("will-change-transform", className)}
-      initial="hidden"
+      initial={routeRestoreNonce > 0 ? false : "hidden"}
+      animate={routeRestoreNonce > 0 ? "visible" : undefined}
       whileInView="visible"
       viewport={{ once, amount, margin: "0px 0px -12% 0px" }}
       variants={getRevealVariants(preset, delay)}
@@ -2047,12 +2215,8 @@ function ScopeCard({
   scope: FieldScopeCard
   onSelect: () => void
 }) {
-  return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className="group story-frame relative min-h-[230px] w-full overflow-hidden rounded-[8px] text-left shadow-story transition duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-4 focus:ring-offset-moss sm:aspect-[2/1] motion-reduce:hover:translate-y-0"
-    >
+  const content = (
+    <>
       <img
         src={scope.image}
         alt={scope.imageAlt}
@@ -2080,6 +2244,29 @@ function ScopeCard({
           <ArrowRight className="h-4 w-4" />
         </span>
       </div>
+    </>
+  )
+  const className =
+    "group story-frame relative block min-h-[230px] w-full overflow-hidden rounded-[8px] text-left shadow-story transition duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-4 focus:ring-offset-moss sm:aspect-[2/1] motion-reduce:hover:translate-y-0"
+
+  if (scope.landingProjectId) {
+    return (
+      <Link
+        href={getProjectHref(scope.landingProjectId)}
+        className={className}
+      >
+        {content}
+      </Link>
+    )
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      className={className}
+    >
+      {content}
     </button>
   )
 }
@@ -2090,18 +2277,21 @@ function ProjectCard({
   project,
   active,
   href,
+  onNavigate,
 }: {
   ui: PortfolioUi
   field: Field
   project: Project
   active: boolean
   href: string
+  onNavigate?: () => void
 }) {
   const coverFocalPoint = project.media?.cover.focalPoint ?? { x: 50, y: 50 }
 
   return (
     <Link
       href={href}
+      onClick={onNavigate}
       aria-current={active ? "page" : undefined}
       className={cn(
         "group flex h-[25rem] w-full flex-col overflow-hidden rounded-[8px] border bg-paper text-left text-ink shadow-[0_18px_45px_rgba(20,28,20,0.18)] transition duration-300 focus:outline-none focus:ring-2 focus:ring-gold motion-reduce:hover:translate-y-0",
