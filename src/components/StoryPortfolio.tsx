@@ -916,8 +916,14 @@ function StaticFullBleedCover({ ui, onNext }: { ui: PortfolioUi; onNext: () => v
       <p className="sr-only">{ui.cover.description}</p>
       <img
         src={COVER_IMAGE}
+        alt=""
+        aria-hidden="true"
+        className="absolute inset-0 h-full w-full scale-110 object-cover opacity-45 blur-xl lg:hidden"
+      />
+      <img
+        src={COVER_IMAGE}
         alt={ui.cover.imageAlt}
-        className="absolute inset-0 h-full w-full object-cover"
+        className="absolute left-0 top-0 h-auto w-full max-w-none object-contain lg:inset-0 lg:h-full lg:w-full lg:object-cover"
       />
       <div className="absolute inset-x-0 bottom-24 z-10 flex flex-col items-center lg:bottom-10">
         <button
@@ -966,7 +972,7 @@ function SplitCoverPanel({
         src={COVER_IMAGE}
         alt=""
         className={cn(
-          "absolute inset-y-0 h-full w-screen max-w-none object-cover",
+          "absolute top-0 h-auto w-screen max-w-none object-contain lg:inset-y-0 lg:h-full lg:object-cover",
           left ? "left-0" : "right-0",
         )}
         draggable={false}
