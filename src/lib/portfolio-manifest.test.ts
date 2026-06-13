@@ -124,6 +124,26 @@ describe("owned Blob URL helpers", () => {
             height: 1600,
           },
         ],
+        imageCampaigns: [
+          {
+            title: "Image campaign one",
+            description: "Image campaign group.",
+            images: [
+              {
+                src: "projects/demo/a/image-campaign-01.png",
+                alt: "Image campaign one",
+                width: 1600,
+                height: 900,
+              },
+              {
+                src: "https://store.blob.vercel-storage.com/projects/other/a/image-campaign-02.png",
+                alt: "Foreign image campaign",
+                width: 1600,
+                height: 900,
+              },
+            ],
+          },
+        ],
         videoCampaigns: [
           {
             title: "Campaign one",
@@ -173,6 +193,7 @@ describe("owned Blob URL helpers", () => {
       "projects/demo/a/website-preview.png",
       "projects/demo/a/proposal-01.png",
       "projects/demo/a/content-01.png",
+      "projects/demo/a/image-campaign-01.png",
       "projects/demo/a/video-01.png",
       "projects/demo/a/outreach-01.png",
     ])

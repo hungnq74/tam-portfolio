@@ -67,6 +67,12 @@ describe("resolvePortfolioRouteState", () => {
       selectedProjectId: "samsung",
     })
 
+    expect(resolveEn("?field=creative-copywriter&project=tesla-education", "#gallery")).toMatchObject({
+      selectedFieldId: "creative-copywriter",
+      activeFilter: "Social Video Script",
+      selectedProjectId: "tesla-education",
+    })
+
     expect(resolveEn("?field=creative-copywriter&project=tiktok", "#gallery")).toMatchObject({
       selectedFieldId: "creative-copywriter",
       activeFilter: "Website Content",

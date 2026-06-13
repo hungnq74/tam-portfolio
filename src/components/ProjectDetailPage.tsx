@@ -22,6 +22,7 @@ import {
   type PortfolioContentByLocale,
   type PortfolioUi,
   type Project,
+  type ProjectImageCampaign,
   type ProjectNamingRationale,
   type ProjectMediaAsset,
   type ProjectOutreachSection,
@@ -166,6 +167,7 @@ function MediaProjectPage({
   const slides = media?.proposalSlides ?? []
   const websitePreview = media?.websitePreview
   const contentPosts = media?.contentPosts ?? []
+  const imageCampaigns = media?.imageCampaigns ?? []
   const videoCampaigns = media?.videoCampaigns ?? []
   const outreachSections = media?.outreachSections ?? []
   const usesSplitCoverIntro = media?.introLayout === "split-cover"
@@ -362,6 +364,13 @@ function MediaProjectPage({
               showLessLabel={ui.detail.showLessCaption}
               previousLabel={ui.detail.previousSlide}
               nextLabel={ui.detail.nextSlide}
+            />
+          ) : null}
+
+          {imageCampaigns.length > 0 ? (
+            <ProjectImageCampaigns
+              campaigns={imageCampaigns}
+              postLinkLabel={ui.detail.visitPost}
             />
           ) : null}
 
@@ -1090,6 +1099,68 @@ function ProjectContentPostCard({
   )
 }
 
+function ProjectImageCampaigns({
+  campaigns,
+  postLinkLabel,
+}: {
+  campaigns: ProjectImageCampaign[]
+  postLinkLabel: string
+}) {
+  return (
+    <section className={cn(MEDIA_RAIL_CLASS, "space-y-10")} aria-label="Image campaigns">
+      {campaigns.map((campaign) => (
+        <article
+          key={campaign.title}
+          className="border-t border-gold/45 pt-6 sm:pt-8"
+        >
+          <div className="grid gap-4 md:grid-cols-[0.68fr_1fr] md:items-start">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-clay">
+                Campus campaigns
+              </p>
+              <h2 className="mt-2 font-serif text-3xl font-semibold leading-tight text-moss sm:text-4xl lg:text-5xl">
+                {campaign.title}
+              </h2>
+            </div>
+            <p className="font-prose max-w-3xl whitespace-pre-line text-base leading-7 text-ink/78 sm:text-lg sm:leading-8">
+              {campaign.description}
+            </p>
+          </div>
+
+          <div className="mt-5 grid gap-4 md:grid-cols-3">
+            {campaign.images.map((image) => (
+              <article
+                key={image.src}
+                className="flex h-full flex-col overflow-hidden rounded-[8px] border border-[rgba(116,63,36,0.2)] bg-paper shadow-[0_16px_42px_rgba(45,32,21,0.12)]"
+              >
+                <ProjectMediaImage
+                  asset={image}
+                  className="w-full bg-paper"
+                  imageClassName="h-auto w-full object-contain"
+                />
+                {image.sourceUrl ? (
+                  <div className="mt-auto flex justify-end border-t border-[rgba(116,63,36,0.16)] bg-paper/92 px-3 py-3 sm:px-4">
+                    <a
+                      href={image.sourceUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label={`${postLinkLabel}: ${image.alt}`}
+                      className="inline-flex items-center gap-2 rounded-full border border-clay/24 px-3 py-2 text-[0.68rem] font-bold uppercase tracking-[0.14em] text-clay transition hover:border-clay hover:bg-clay hover:text-paper focus:outline-none focus:ring-2 focus:ring-clay"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5" />
+                      {postLinkLabel}
+                    </a>
+                  </div>
+                ) : null}
+              </article>
+            ))}
+          </div>
+        </article>
+      ))}
+    </section>
+  )
+}
+
 function ProjectVideoCampaigns({
   campaigns,
   watchVideoLabel,
@@ -1099,38 +1170,100 @@ function ProjectVideoCampaigns({
 }) {
   return (
     <section className={cn(MEDIA_RAIL_CLASS, "space-y-10")} aria-label="Video campaigns">
-      {campaigns.map((campaign) => (
-        <article
-          key={campaign.title}
-          className="border-t border-gold/45 pt-6 sm:pt-8"
-        >
-          <div className="grid gap-4 md:grid-cols-[0.68fr_1fr] md:items-end">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.2em] text-clay">
-                Video scripts
-              </p>
-              <h2 className="mt-2 font-serif text-3xl font-semibold leading-tight text-moss sm:text-4xl lg:text-5xl">
-                {campaign.title}
-              </h2>
-            </div>
-            <p className="font-prose max-w-3xl text-base leading-7 text-ink/78 sm:text-lg sm:leading-8">
-              {campaign.description}
-            </p>
-          </div>
+      {campaigns.map((campaign) => {
+        const featuredVideo = campaign.videos.length === 1 ? campaign.videos[0] : null
 
-          <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-            {campaign.videos.map((video, index) => (
-              <ProjectVideoPreviewCard
-                key={video.src}
-                video={video}
-                index={index}
+        return (
+          <article
+            key={campaign.title}
+            className="border-t border-gold/45 pt-6 sm:pt-8"
+          >
+            <div className="grid gap-4 md:grid-cols-[0.68fr_1fr] md:items-end">
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.2em] text-clay">
+                  Video scripts
+                </p>
+                <h2 className="mt-2 font-serif text-3xl font-semibold leading-tight text-moss sm:text-4xl lg:text-5xl">
+                  {campaign.title}
+                </h2>
+              </div>
+              <p className="font-prose max-w-3xl text-base leading-7 text-ink/78 sm:text-lg sm:leading-8">
+                {campaign.description}
+              </p>
+            </div>
+
+            {featuredVideo ? (
+              <ProjectFeaturedVideoCard
+                video={featuredVideo}
                 watchVideoLabel={watchVideoLabel}
               />
-            ))}
-          </div>
-        </article>
-      ))}
+            ) : (
+              <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                {campaign.videos.map((video, index) => (
+                  <ProjectVideoPreviewCard
+                    key={video.src}
+                    video={video}
+                    index={index}
+                    watchVideoLabel={watchVideoLabel}
+                  />
+                ))}
+              </div>
+            )}
+          </article>
+        )
+      })}
     </section>
+  )
+}
+
+function ProjectFeaturedVideoCard({
+  video,
+  watchVideoLabel,
+}: {
+  video: ProjectMediaAsset
+  watchVideoLabel: string
+}) {
+  const platformLabel = getVideoPlatformLabel(video.sourceUrl)
+  const ctaLabel = video.ctaLabel ?? watchVideoLabel
+
+  return (
+    <article className="mt-6 overflow-hidden rounded-[8px] border border-[rgba(116,63,36,0.2)] bg-paper shadow-[0_18px_48px_rgba(45,32,21,0.14)] lg:mx-auto lg:max-w-6xl">
+      <a
+        href={video.sourceUrl}
+        target="_blank"
+        rel="noreferrer"
+        aria-label={`${ctaLabel}: ${video.alt}`}
+        className="group block focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper"
+      >
+        <div
+          className="relative overflow-hidden bg-ink"
+          style={{ aspectRatio: `${video.width} / ${video.height}` }}
+        >
+          <img
+            src={video.src}
+            alt={video.alt}
+            width={video.width}
+            height={video.height}
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.025]"
+          />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(43,30,19,0.34),rgba(43,30,19,0.04)_38%,rgba(43,30,19,0.74))]" />
+          <span className="absolute left-3 top-3 rounded-full border border-paper/70 bg-ink/90 px-2.5 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-paper shadow-[0_8px_20px_rgba(43,30,19,0.28)] backdrop-blur sm:left-5 sm:top-5">
+            {platformLabel}
+          </span>
+          <span className="absolute left-1/2 top-1/2 inline-flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-paper/92 text-clay shadow-story transition group-hover:bg-clay group-hover:text-paper sm:h-16 sm:w-16">
+            <Play className="ml-1 h-5 w-5 fill-current sm:h-6 sm:w-6" />
+          </span>
+          <div className="absolute inset-x-0 bottom-0 flex justify-end p-4 sm:p-5">
+            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-paper px-4 py-2 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-clay shadow-[0_12px_28px_rgba(43,30,19,0.28)] transition group-hover:bg-clay group-hover:text-paper">
+              {ctaLabel}
+              <ExternalLink className="h-3.5 w-3.5" />
+            </span>
+          </div>
+        </div>
+      </a>
+    </article>
   )
 }
 
@@ -1144,6 +1277,7 @@ function ProjectVideoPreviewCard({
   watchVideoLabel: string
 }) {
   const platformLabel = getVideoPlatformLabel(video.sourceUrl)
+  const ctaLabel = video.ctaLabel ?? watchVideoLabel
 
   return (
     <article className="overflow-hidden rounded-[8px] border border-[rgba(116,63,36,0.2)] bg-paper shadow-[0_16px_42px_rgba(45,32,21,0.12)]">
@@ -1151,7 +1285,7 @@ function ProjectVideoPreviewCard({
         href={video.sourceUrl}
         target="_blank"
         rel="noreferrer"
-        aria-label={`${watchVideoLabel}: ${video.alt}`}
+        aria-label={`${ctaLabel}: ${video.alt}`}
         className="group block focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper"
       >
         <div className="relative aspect-[9/16] max-h-[26rem] overflow-hidden bg-ink">
@@ -1177,7 +1311,7 @@ function ProjectVideoPreviewCard({
                 Video {String(index + 1).padStart(2, "0")}
               </p>
               <p className="mt-1.5 inline-flex items-center gap-2 text-[0.72rem] font-bold uppercase tracking-[0.14em] text-paper">
-                {watchVideoLabel}
+                {ctaLabel}
                 <ExternalLink className="h-3.5 w-3.5" />
               </p>
             </div>

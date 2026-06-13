@@ -34,6 +34,7 @@ export interface ProjectMediaAsset {
   height: number
   sourceUrl?: string
   caption?: string
+  ctaLabel?: string
   focalPoint?: {
     x: number
     y: number
@@ -44,6 +45,12 @@ export interface ProjectVideoCampaign {
   title: string
   description: string
   videos: ProjectMediaAsset[]
+}
+
+export interface ProjectImageCampaign {
+  title: string
+  description: string
+  images: ProjectMediaAsset[]
 }
 
 export interface ProjectOutreachSection {
@@ -61,6 +68,7 @@ export interface ProjectMedia {
   proposalSlides?: ProjectMediaAsset[]
   contentPosts?: ProjectMediaAsset[]
   videoCampaigns?: ProjectVideoCampaign[]
+  imageCampaigns?: ProjectImageCampaign[]
   outreachSections?: ProjectOutreachSection[]
 }
 
@@ -369,7 +377,37 @@ const WESHARE_CONTENT_POST_SOURCES = [
   "https://www.facebook.com/photo.php?fbid=507178915217289&set=pb.100077755556916.-2207520000&type=3",
 ] as const
 
-const WESHARE_PROJECT_MEDIA: ProjectMedia = {
+const WESHARE_STUDENT_CAMPAIGN_SOURCES = [
+  "https://www.facebook.com/photo/?fbid=946450497525809&set=a.571399528364243",
+  "https://www.facebook.com/photo/?fbid=937129305117020&set=a.459574422872513",
+  "https://www.facebook.com/photo/?fbid=916697910489982&set=a.541724431320667",
+] as const
+
+const WESHARE_STUDENT_CAMPAIGN_IMAGES: ProjectMediaAsset[] = [
+  {
+    src: "/assets/projects/weshare/student-campaign-01.jpg",
+    alt: "WeShare student-led campaign with HCMUS",
+    width: 2048,
+    height: 1366,
+    sourceUrl: WESHARE_STUDENT_CAMPAIGN_SOURCES[0],
+  },
+  {
+    src: "/assets/projects/weshare/student-campaign-02.jpg",
+    alt: "WeShare student-led campaign with HCMUE",
+    width: 2048,
+    height: 1365,
+    sourceUrl: WESHARE_STUDENT_CAMPAIGN_SOURCES[1],
+  },
+  {
+    src: "/assets/projects/weshare/student-campaign-03.jpg",
+    alt: "WeShare student-led campaign with FTU",
+    width: 2048,
+    height: 1362,
+    sourceUrl: WESHARE_STUDENT_CAMPAIGN_SOURCES[2],
+  },
+]
+
+const WESHARE_PROJECT_MEDIA_BASE: ProjectMedia = {
   introLayout: "split-cover",
   cover: {
     src: "/assets/projects/weshare/cover.jpg",
@@ -423,6 +461,30 @@ const WESHARE_PROJECT_MEDIA: ProjectMedia = {
       sourceUrl: WESHARE_CONTENT_POST_SOURCES[4],
       caption:
         "Team Marketing khi nghe sếp bảo WeShare là ứng dụng thân thiện, phù hợp với mọi đối tượng muốn quyên góp cho các tổ chức xã hội qua các đơn hàng trực tuyến hàng ngày mà không phát sinh bất kỳ chi phí nào:",
+    },
+  ],
+}
+
+const WESHARE_PROJECT_MEDIA_EN: ProjectMedia = {
+  ...WESHARE_PROJECT_MEDIA_BASE,
+  imageCampaigns: [
+    {
+      title: "Student-led Campaigns",
+      description:
+        "With students at the heart of our audience, we brought WeShare closer to campus life through a series of student-led campaigns and partnerships.\n\nThe result? More than 20,000 new users in just 10 months.\n\nTurns out, people are more willing to do good when it doesn't sound like homework.",
+      images: WESHARE_STUDENT_CAMPAIGN_IMAGES,
+    },
+  ],
+}
+
+const WESHARE_PROJECT_MEDIA_VI: ProjectMedia = {
+  ...WESHARE_PROJECT_MEDIA_BASE,
+  imageCampaigns: [
+    {
+      title: "Student-led Campaigns",
+      description:
+        "Với sinh viên là nhóm khán giả trọng tâm, WeShare đến gần hơn với đời sống campus thông qua chuỗi chiến dịch và hợp tác do sinh viên dẫn dắt.\n\nKết quả? Hơn 20.000 người dùng mới chỉ trong 10 tháng.\n\nHóa ra, mọi người sẵn sàng làm điều tốt hơn khi chuyện đó không nghe như bài tập về nhà.",
+      images: WESHARE_STUDENT_CAMPAIGN_IMAGES,
     },
   ],
 }
@@ -579,6 +641,51 @@ const SAMSUNG_PROJECT_MEDIA_VI: ProjectMedia = {
       description:
         "Những kịch bản biến Gemini và các tính năng Galaxy A56 5G thành khoảnh khắc festive qua lăng kính creator, từ chuyện crush vui vui đến sự tự tin đầu năm.",
       videos: SAMSUNG_BETTER_YEAR_VIDEOS,
+    },
+  ],
+}
+
+const TESLA_EDUCATION_VIDEO_SOURCE =
+  "https://www.facebook.com/reel/1355172016653079"
+
+const TESLA_EDUCATION_PROJECT_COVER: ProjectMediaAsset = {
+  src: "/assets/projects/tesla-education/cover.png",
+  alt: "Abstract Tesla Education learning pathway cover",
+  width: 1500,
+  height: 1500,
+}
+
+const TESLA_EDUCATION_VIDEO: ProjectMediaAsset = {
+  src: "/assets/projects/tesla-education/video-01.jpg",
+  alt: "Tesla Education brand introduction video preview",
+  width: 1980,
+  height: 1044,
+  sourceUrl: TESLA_EDUCATION_VIDEO_SOURCE,
+  ctaLabel: "TAKE ME THERE",
+}
+
+const TESLA_EDUCATION_PROJECT_MEDIA_EN: ProjectMedia = {
+  introLayout: "split-cover",
+  cover: TESLA_EDUCATION_PROJECT_COVER,
+  videoCampaigns: [
+    {
+      title: "Brand Introduction Video",
+      description:
+        "I'd love to show you the video right here, but it's apparently too heavy for this little portfolio to carry. Mind taking a quick trip to Tesla Education's Fanpage instead?",
+      videos: [TESLA_EDUCATION_VIDEO],
+    },
+  ],
+}
+
+const TESLA_EDUCATION_PROJECT_MEDIA_VI: ProjectMedia = {
+  introLayout: "split-cover",
+  cover: TESLA_EDUCATION_PROJECT_COVER,
+  videoCampaigns: [
+    {
+      title: "Brand Introduction Video",
+      description:
+        "I'd love to show you the video right here, but it's apparently too heavy for this little portfolio to carry. Mind taking a quick trip to Tesla Education's Fanpage instead?",
+      videos: [TESLA_EDUCATION_VIDEO],
     },
   ],
 }
@@ -1047,6 +1154,26 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         media: SAMSUNG_PROJECT_MEDIA_EN,
       },
       {
+        id: "tesla-education",
+        fieldId: "creative-copywriter",
+        title: "Tesla Education",
+        eyebrow: "Project",
+        category: "Social Video Script",
+        summary: "Creative concept and full script for Tesla Education's inspiring brand introduction video.",
+        client: "Tesla Education",
+        year: "2026",
+        scope: ["Brand Introduction Video", "Creative Concept", "Full Script"],
+        overview:
+          "Every school has a story. The challenge is telling it in a way that people can actually feel.\n\nMy role was to develop the creative concept and write the full script for an inspiring brand introduction video, bringing together the voices of teachers, leaders, and educators who shape the learning journey every day.\n\nRather than listing achievements or facilities, the video focused on the beliefs behind them - turning educational values into a story that felt authentic, human, and worth remembering.",
+        objective:
+          "Turn Tesla Education's school story into a brand introduction video that felt human, inspiring, and emotionally clear.",
+        solution:
+          "Build the concept and full script around the beliefs behind the school, weaving together educator voices instead of simply listing facilities or achievements.",
+        results: ["Creative concept", "Full brand video script", "Education value storytelling"],
+        thumbnail: { col: 1, row: 0 },
+        media: TESLA_EDUCATION_PROJECT_MEDIA_EN,
+      },
+      {
         id: "acecook",
         fieldId: "creative-copywriter",
         title: "Acecook",
@@ -1087,7 +1214,7 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
           "Shape an always-on content voice around trendy references, relatable storytelling, and campaign messages that made donation feel easy to join.",
         results: ["Gen Z-friendly brand voice", "Always-on content direction", "Conversion-driven campaign messaging"],
         thumbnail: { col: 1, row: 0 },
-        media: WESHARE_PROJECT_MEDIA,
+        media: WESHARE_PROJECT_MEDIA_EN,
       },
       {
         id: "panasonic",
@@ -1595,6 +1722,26 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         media: SAMSUNG_PROJECT_MEDIA_VI,
       },
       {
+        id: "tesla-education",
+        fieldId: "creative-copywriter",
+        title: "Tesla Education",
+        eyebrow: "Dự án",
+        category: "Kịch bản video social",
+        summary: "Creative concept và kịch bản đầy đủ cho video giới thiệu thương hiệu truyền cảm hứng của Tesla Education.",
+        client: "Tesla Education",
+        year: "2026",
+        scope: ["Video giới thiệu thương hiệu", "Creative concept", "Kịch bản đầy đủ"],
+        overview:
+          "Mỗi ngôi trường đều có một câu chuyện. Thử thách là kể câu chuyện đó theo cách người xem thật sự cảm được.\n\nVai trò của mình là phát triển creative concept và viết toàn bộ kịch bản cho một video giới thiệu thương hiệu truyền cảm hứng, kết nối tiếng nói của giáo viên, đội ngũ lãnh đạo và những nhà giáo dục đang định hình hành trình học tập mỗi ngày.\n\nThay vì chỉ liệt kê thành tích hay cơ sở vật chất, video tập trung vào niềm tin đứng phía sau những điều đó - biến giá trị giáo dục thành một câu chuyện chân thật, con người và đáng nhớ.",
+        objective:
+          "Biến câu chuyện của Tesla Education thành một video giới thiệu thương hiệu có cảm xúc, truyền cảm hứng và rõ tinh thần con người.",
+        solution:
+          "Xây dựng concept và kịch bản xoay quanh những niềm tin phía sau ngôi trường, kết nối nhiều tiếng nói của đội ngũ giáo dục thay vì chỉ liệt kê cơ sở vật chất hay thành tích.",
+        results: ["Creative concept", "Kịch bản video thương hiệu", "Storytelling giá trị giáo dục"],
+        thumbnail: { col: 1, row: 0 },
+        media: TESLA_EDUCATION_PROJECT_MEDIA_VI,
+      },
+      {
         id: "acecook",
         fieldId: "creative-copywriter",
         title: "Acecook",
@@ -1635,7 +1782,7 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
           "Xây dựng giọng nội dung always-on dựa trên trend, câu chuyện đời thường và thông điệp chiến dịch khiến việc đóng góp trở nên dễ tham gia.",
         results: ["Brand voice gần với Gen Z", "Định hướng nội dung always-on", "Thông điệp campaign hướng chuyển đổi"],
         thumbnail: { col: 1, row: 0 },
-        media: WESHARE_PROJECT_MEDIA,
+        media: WESHARE_PROJECT_MEDIA_VI,
       },
       {
         id: "panasonic",

@@ -24,6 +24,7 @@ export const projectMediaAssetSchema = z.object({
   height: z.number().int().positive().max(10000),
   sourceUrl: z.string().url().max(240).optional(),
   caption: z.string().min(1).max(1000).optional(),
+  ctaLabel: z.string().min(1).max(80).optional(),
   focalPoint: z
     .object({
       x: z.number().min(0).max(100),
@@ -36,6 +37,12 @@ const projectVideoCampaignSchema = z.object({
   title: z.string().min(1).max(140),
   description: z.string().min(1).max(300),
   videos: z.array(projectMediaAssetSchema).min(1).max(8),
+})
+
+const projectImageCampaignSchema = z.object({
+  title: z.string().min(1).max(140),
+  description: z.string().min(1).max(500),
+  images: z.array(projectMediaAssetSchema).min(1).max(8),
 })
 
 const projectOutreachSectionSchema = z.object({
@@ -53,6 +60,7 @@ export const projectMediaSchema = z.object({
   proposalSlides: z.array(projectMediaAssetSchema).max(ADMIN_PROJECT_PAGE_LIMIT).optional(),
   contentPosts: z.array(projectMediaAssetSchema).max(12).optional(),
   videoCampaigns: z.array(projectVideoCampaignSchema).max(6).optional(),
+  imageCampaigns: z.array(projectImageCampaignSchema).max(6).optional(),
   outreachSections: z.array(projectOutreachSectionSchema).max(4).optional(),
 })
 
