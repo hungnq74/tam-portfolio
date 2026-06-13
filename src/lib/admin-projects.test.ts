@@ -13,11 +13,11 @@ describe("validateAdminProjectPayload", () => {
 
     expect(result.success).toBe(false)
     expect(result.errors).toContain(
-      "Upload a cover image and proposal PDF before saving a new project.",
+      "Upload a cover image and proposal PDF before saving this Thinking project.",
     )
   })
 
-  it("allows an edit payload to preserve a text-only project", () => {
+  it("requires AXE-style media when editing a Thinking project", () => {
     const payload = createAdminPayload({ shared: { media: undefined } })
 
     const result = validateAdminProjectPayload(payload, {
@@ -25,7 +25,60 @@ describe("validateAdminProjectPayload", () => {
       routeProjectId: "demo-project",
     })
 
-    expect(result.success).toBe(true)
+    expect(result.success).toBe(false)
+    expect(result.errors).toContain(
+      "Upload a cover image and proposal PDF before saving this Thinking project.",
+    )
+  })
+
+  it("requires cover, summary, and proposal slides for Thinking media", () => {
+    const withoutSummary = validateAdminProjectPayload(
+      createAdminPayload({
+        shared: {
+          media: {
+            cover: testMedia.cover,
+            proposalSlides: testMedia.proposalSlides,
+          },
+        },
+      }),
+      { requireMedia: false },
+    )
+    const withoutSlides = validateAdminProjectPayload(
+      createAdminPayload({
+        shared: {
+          media: {
+            cover: testMedia.cover,
+            summary: testMedia.summary,
+          },
+        },
+      }),
+      { requireMedia: false },
+    )
+
+    expect(withoutSummary.success).toBe(false)
+    expect(withoutSummary.errors).toContain(
+      "Upload a cover image and proposal PDF before saving this Thinking project.",
+    )
+    expect(withoutSlides.success).toBe(false)
+    expect(withoutSlides.errors).toContain(
+      "Upload a cover image and proposal PDF before saving this Thinking project.",
+    )
+  })
+
+  it("rejects admin saves outside Thinking in Systems", () => {
+    const result = validateAdminProjectPayload(
+      createAdminPayload({
+        shared: { fieldId: "creative-copywriter" },
+        locales: {
+          en: { category: "Social Video Script" },
+          vi: { category: "Kịch bản video social" },
+        },
+      }),
+      { requireMedia: false },
+    )
+
+    expect(result.success).toBe(false)
+    expect(result.errors).toContain("Admin can only manage Thinking in Systems projects.")
   })
 
   it("rejects invalid slugs and route id changes", () => {

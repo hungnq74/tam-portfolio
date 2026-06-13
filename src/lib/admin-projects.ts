@@ -4,12 +4,14 @@ import {
   type FieldId,
   type Locale,
   type Project,
+  type ProjectMedia,
 } from "@/data/portfolio"
 
 export const ADMIN_PROJECT_PAGE_LIMIT = 50
 export const ADMIN_PROJECT_PDF_SIZE_LIMIT = 150 * 1024 * 1024
 
 const FIELD_IDS = ["social-planner", "creative-copywriter"] as const
+export const ADMIN_MANAGED_FIELD_IDS = ["social-planner"] as const
 
 const fieldIdSchema = z.enum(FIELD_IDS)
 const thumbnailSchema = z.object({
@@ -178,6 +180,18 @@ export function getFieldFilters(locale: Locale, fieldId: FieldId) {
   )
 }
 
+export function isAdminManagedFieldId(fieldId: FieldId) {
+  return ADMIN_MANAGED_FIELD_IDS.includes(fieldId as (typeof ADMIN_MANAGED_FIELD_IDS)[number])
+}
+
+export function isAdminManagedProject(project: Pick<Project, "fieldId">) {
+  return isAdminManagedFieldId(project.fieldId)
+}
+
+function hasAxeStyleMedia(media?: ProjectMedia) {
+  return Boolean(media?.cover && media.summary && (media.proposalSlides?.length ?? 0) > 0)
+}
+
 export function validateAdminProjectPayload(
   input: unknown,
   options: {
@@ -201,8 +215,17 @@ export function validateAdminProjectPayload(
     errors.push("Project id cannot be changed after creation.")
   }
 
-  if (options.requireMedia && !payload.shared.media) {
-    errors.push("Upload a cover image and proposal PDF before saving a new project.")
+  if (!isAdminManagedFieldId(payload.shared.fieldId)) {
+    errors.push("Admin can only manage Thinking in Systems projects.")
+  }
+
+  if (
+    (options.requireMedia || isAdminManagedFieldId(payload.shared.fieldId)) &&
+    !hasAxeStyleMedia(payload.shared.media)
+  ) {
+    errors.push(
+      "Upload a cover image and proposal PDF before saving this Thinking project.",
+    )
   }
 
   if (payload.shared.media?.proposalSlides?.length === 0) {

@@ -6,6 +6,7 @@ import { AdminLogoutButton } from "@/components/admin/AdminLogoutButton"
 import { AdminProjectForm } from "@/components/admin/AdminProjectForm"
 import { requireAdmin } from "@/lib/admin-auth"
 import { getAdminFieldOptions } from "@/lib/admin-form-options"
+import { isAdminManagedProject } from "@/lib/admin-projects"
 import { readAdminPortfolioSnapshot } from "@/lib/portfolio-manifest"
 
 type EditProjectPageProps = {
@@ -33,7 +34,7 @@ export default async function EditProjectPage({ params }: EditProjectPageProps) 
   const en = snapshot.contentByLocale.en.projects.find((project) => project.id === projectId)
   const vi = snapshot.contentByLocale.vi.projects.find((project) => project.id === projectId)
 
-  if (!en || !vi) {
+  if (!en || !vi || !isAdminManagedProject(en)) {
     notFound()
   }
 

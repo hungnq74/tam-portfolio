@@ -73,6 +73,25 @@ describe("admin project create API", () => {
     expect(body.details.length).toBeGreaterThan(0)
   })
 
+  it("rejects create payloads outside Thinking in Systems", async () => {
+    const response = await POST(
+      request(
+        createAdminPayload({
+          shared: { fieldId: "creative-copywriter" },
+          locales: {
+            en: { category: "Social Video Script" },
+            vi: { category: "Kịch bản video social" },
+          },
+        }),
+      ),
+    )
+
+    expect(response.status).toBe(400)
+    const body = await response.json()
+    expect(body.details).toContain("Admin can only manage Thinking in Systems projects.")
+    expect(mocks.readAdminPortfolioSnapshot).not.toHaveBeenCalled()
+  })
+
   it("blocks writes when Blob storage is not configured", async () => {
     mocks.readAdminPortfolioSnapshot.mockResolvedValue(
       createSnapshot({ configured: false, etag: null }),

@@ -90,9 +90,50 @@ describe("admin Blob upload API", () => {
     })
   })
 
+  it("allows cover and summary image paths used by the admin media flow", async () => {
+    mocks.handleUpload.mockImplementation(async ({ onBeforeGenerateToken }) => {
+      const coverOptions = await onBeforeGenerateToken(
+        "projects/demo-project/upload-id/cover.webp",
+        "cover-payload",
+      )
+      const summaryOptions = await onBeforeGenerateToken(
+        "projects/demo-project/upload-id/summary.png",
+        "summary-payload",
+      )
+
+      return { ok: true, coverOptions, summaryOptions }
+    })
+
+    const response = await POST(request(JSON.stringify({ type: "client" })))
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.coverOptions).toMatchObject({
+      allowOverwrite: false,
+      tokenPayload: "cover-payload",
+    })
+    expect(body.summaryOptions).toMatchObject({
+      allowOverwrite: false,
+      tokenPayload: "summary-payload",
+    })
+  })
+
   it("rejects upload paths outside project media directories", async () => {
     mocks.handleUpload.mockImplementation(async ({ onBeforeGenerateToken }) => {
       await onBeforeGenerateToken("users/demo/avatar.png", null)
+    })
+
+    const response = await POST(request(JSON.stringify({ type: "client" })))
+
+    expect(response.status).toBe(400)
+    await expect(response.json()).resolves.toEqual({
+      error: "Upload path is not allowed.",
+    })
+  })
+
+  it("rejects direct PDF uploads because proposal pages must be rendered images", async () => {
+    mocks.handleUpload.mockImplementation(async ({ onBeforeGenerateToken }) => {
+      await onBeforeGenerateToken("projects/demo-project/upload-id/proposal.pdf", null)
     })
 
     const response = await POST(request(JSON.stringify({ type: "client" })))

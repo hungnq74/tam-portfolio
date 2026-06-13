@@ -5,6 +5,7 @@ import { AdminPageHeader, AdminPageShell } from "@/components/admin/AdminChrome"
 import { AdminDeleteButton } from "@/components/admin/AdminDeleteButton"
 import { AdminLogoutButton } from "@/components/admin/AdminLogoutButton"
 import { requireAdmin } from "@/lib/admin-auth"
+import { isAdminManagedProject } from "@/lib/admin-projects"
 import { readAdminPortfolioSnapshot } from "@/lib/portfolio-manifest"
 
 export const dynamic = "force-dynamic"
@@ -16,7 +17,7 @@ export const metadata: Metadata = {
 export default async function AdminPage() {
   await requireAdmin()
   const snapshot = await readAdminPortfolioSnapshot()
-  const projects = snapshot.contentByLocale.en.projects
+  const projects = snapshot.contentByLocale.en.projects.filter(isAdminManagedProject)
 
   return (
     <AdminPageShell>
