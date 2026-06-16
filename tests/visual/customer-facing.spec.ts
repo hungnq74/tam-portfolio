@@ -401,7 +401,7 @@ const projectTemplateRoutes: CustomerRoute[] = [
       },
       {
         kind: "region",
-        name: "Content posts",
+        name: "Acecook content posts",
         label: "Acecook content posts",
       },
     ],
@@ -463,14 +463,14 @@ const projectTemplateRoutes: CustomerRoute[] = [
     locale: "en",
     anchors: [
       {
-        kind: "role",
-        role: "heading",
-        name: "Tesla Education",
-        label: "Tesla Education heading",
+        kind: "text",
+        value: "Every school has a story",
+        exact: false,
+        label: "Tesla Education overview",
       },
       {
         kind: "image",
-        name: "Abstract Tesla Education learning pathway cover",
+        name: "Tesla Education horizontal campaign cover",
         label: "Tesla Education cover",
       },
       {
@@ -498,7 +498,7 @@ const projectTemplateRoutes: CustomerRoute[] = [
       },
       {
         kind: "region",
-        name: "Content posts",
+        name: "Panasonic content posts",
         label: "Panasonic content posts",
       },
     ],

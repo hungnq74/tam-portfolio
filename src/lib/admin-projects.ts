@@ -60,6 +60,7 @@ export const projectMediaSchema = z.object({
   summary: projectMediaAssetSchema.optional(),
   websitePreview: projectMediaAssetSchema.optional(),
   proposalSlides: z.array(projectMediaAssetSchema).max(ADMIN_PROJECT_PAGE_LIMIT).optional(),
+  contentPostsLayout: z.enum(["grid", "carousel"]).optional(),
   contentPosts: z.array(projectMediaAssetSchema).max(12).optional(),
   videoCampaigns: z.array(projectVideoCampaignSchema).max(6).optional(),
   imageCampaigns: z.array(projectImageCampaignSchema).max(6).optional(),

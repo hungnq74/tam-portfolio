@@ -212,4 +212,28 @@ describe("createLocalizedProjects", () => {
       definition: "Bối cảnh mùa lễ hội",
     })
   })
+
+  it("preserves content posts carousel layout in shared media", () => {
+    const projects = createLocalizedProjects(
+      createAdminPayload({
+        shared: {
+          media: {
+            ...testMedia,
+            contentPostsLayout: "carousel",
+            contentPosts: [
+              {
+                src: "https://store.blob.vercel-storage.com/projects/demo/a/content.png",
+                alt: "Shared carousel post",
+                width: 1200,
+                height: 1200,
+              },
+            ],
+          },
+        },
+      }),
+    )
+
+    expect(projects.en.media?.contentPostsLayout).toBe("carousel")
+    expect(projects.vi.media?.contentPostsLayout).toBe("carousel")
+  })
 })

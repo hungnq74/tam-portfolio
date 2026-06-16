@@ -156,6 +156,7 @@ function MediaProjectPage({
   const slides = media?.proposalSlides ?? []
   const websitePreview = media?.websitePreview
   const contentPosts = media?.contentPosts ?? []
+  const contentPostsLayout = media?.contentPostsLayout ?? "grid"
   const imageCampaigns = media?.imageCampaigns ?? []
   const videoCampaigns = media?.videoCampaigns ?? []
   const outreachSections = media?.outreachSections ?? []
@@ -347,8 +348,9 @@ function MediaProjectPage({
           {contentPosts.length > 0 ? (
             <ProjectContentPostsGrid
               posts={contentPosts}
+              layout={contentPostsLayout}
+              ariaLabel={`${project.title} content posts`}
               postLinkLabel={ui.detail.visitPost}
-              showCaptions={project.id === "weshare"}
               captionLabel={ui.detail.postCaption}
               readMoreLabel={ui.detail.readMoreCaption}
               showLessLabel={ui.detail.showLessCaption}
@@ -590,10 +592,16 @@ function ProjectOutreachPosts({
       programmaticScrollTimeoutRef.current = null
     }, behavior === "smooth" ? 520 : 0)
 
-    trackElement.scrollTo({
-      left: pageIndex * trackElement.clientWidth,
-      behavior,
-    })
+    const nextScrollLeft = pageIndex * trackElement.clientWidth
+
+    if (typeof trackElement.scrollTo === "function") {
+      trackElement.scrollTo({
+        left: nextScrollLeft,
+        behavior,
+      })
+    } else {
+      trackElement.scrollLeft = nextScrollLeft
+    }
   }, [])
 
   useEffect(() => {
@@ -767,8 +775,9 @@ function ProjectOutreachPostCard({
 
 function ProjectContentPostsGrid({
   posts,
+  layout,
+  ariaLabel,
   postLinkLabel,
-  showCaptions = false,
   captionLabel,
   readMoreLabel,
   showLessLabel,
@@ -776,8 +785,9 @@ function ProjectContentPostsGrid({
   nextLabel,
 }: {
   posts: ProjectMediaAsset[]
+  layout: "grid" | "carousel"
+  ariaLabel: string
   postLinkLabel: string
-  showCaptions?: boolean
   captionLabel?: string
   readMoreLabel?: string
   showLessLabel?: string
@@ -799,10 +809,11 @@ function ProjectContentPostsGrid({
     }))
   }, [])
 
-  if (showCaptions) {
+  if (layout === "carousel") {
     return (
       <ProjectContentPostsCarousel
         posts={arrangedPosts}
+        ariaLabel={ariaLabel}
         postLinkLabel={postLinkLabel}
         captionLabel={captionLabel}
         readMoreLabel={readMoreLabel}
@@ -818,7 +829,7 @@ function ProjectContentPostsGrid({
   return (
     <section
       className={cn(MEDIA_RAIL_CLASS, "grid items-start gap-4 sm:grid-cols-2 lg:gap-5")}
-      aria-label="Content posts"
+      aria-label={ariaLabel}
     >
       {arrangedPosts.map((post) => {
         return (
@@ -835,6 +846,7 @@ function ProjectContentPostsGrid({
 
 function ProjectContentPostsCarousel({
   posts,
+  ariaLabel,
   postLinkLabel,
   captionLabel,
   readMoreLabel,
@@ -845,6 +857,7 @@ function ProjectContentPostsCarousel({
   onToggleCaption,
 }: {
   posts: ProjectMediaAsset[]
+  ariaLabel: string
   postLinkLabel: string
   captionLabel?: string
   readMoreLabel?: string
@@ -878,10 +891,16 @@ function ProjectContentPostsCarousel({
       programmaticScrollTimeoutRef.current = null
     }, behavior === "smooth" ? 520 : 0)
 
-    trackElement.scrollTo({
-      left: pageIndex * trackElement.clientWidth,
-      behavior,
-    })
+    const nextScrollLeft = pageIndex * trackElement.clientWidth
+
+    if (typeof trackElement.scrollTo === "function") {
+      trackElement.scrollTo({
+        left: nextScrollLeft,
+        behavior,
+      })
+    } else {
+      trackElement.scrollLeft = nextScrollLeft
+    }
   }, [])
 
   useEffect(() => {
@@ -936,7 +955,7 @@ function ProjectContentPostsCarousel({
     <section
       className={cn(CAROUSEL_RAIL_CLASS, "focus:outline-none")}
       role="region"
-      aria-label="WeShare content posts"
+      aria-label={ariaLabel}
       aria-roledescription="carousel"
       tabIndex={0}
       onKeyDown={onCarouselKeyDown}

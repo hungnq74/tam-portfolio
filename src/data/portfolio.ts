@@ -66,6 +66,7 @@ export interface ProjectMedia {
   summary?: ProjectMediaAsset
   websitePreview?: ProjectMediaAsset
   proposalSlides?: ProjectMediaAsset[]
+  contentPostsLayout?: "grid" | "carousel"
   contentPosts?: ProjectMediaAsset[]
   videoCampaigns?: ProjectVideoCampaign[]
   imageCampaigns?: ProjectImageCampaign[]
@@ -370,6 +371,7 @@ const ACECOOK_PROJECT_MEDIA: ProjectMedia = {
     sourceUrl: "https://www.facebook.com/photo/?fbid=1169196428550900&set=a.702063185264229",
     focalPoint: { x: 50, y: 48 },
   },
+  contentPostsLayout: "carousel",
   contentPosts: [
     {
       src: "/assets/projects/acecook/content-01.jpg",
@@ -420,6 +422,7 @@ const WESHARE_CONTENT_POST_SOURCES = [
   "https://www.facebook.com/weshareasia.shopnshare/posts/pfbid02JpN1dJ1TouHsHFbUpYzHKNWFARwrnNamFefB4MDS7x7KdDKhexMPK22nVJs5Uu6sl",
   "https://www.facebook.com/photo.php?fbid=550786410856539&set=pb.100077755556916.-2207520000&type=3",
   "https://www.facebook.com/photo.php?fbid=507178915217289&set=pb.100077755556916.-2207520000&type=3",
+  "https://www.facebook.com/photo.php?fbid=527680926500421&set=pb.100077755556916.-2207520000&type=3",
 ] as const
 
 const WESHARE_STUDENT_CAMPAIGN_SOURCES = [
@@ -461,6 +464,7 @@ const WESHARE_PROJECT_MEDIA_BASE: ProjectMedia = {
     height: 1500,
     sourceUrl: "https://www.facebook.com/photo.php?fbid=529573256311188&set=pb.100077755556916.-2207520000&type=3",
   },
+  contentPostsLayout: "carousel",
   contentPosts: [
     {
       src: "/assets/projects/weshare/content-01.jpg",
@@ -506,6 +510,15 @@ const WESHARE_PROJECT_MEDIA_BASE: ProjectMedia = {
       sourceUrl: WESHARE_CONTENT_POST_SOURCES[4],
       caption:
         "Team Marketing khi nghe sếp bảo WeShare là ứng dụng thân thiện, phù hợp với mọi đối tượng muốn quyên góp cho các tổ chức xã hội qua các đơn hàng trực tuyến hàng ngày mà không phát sinh bất kỳ chi phí nào:",
+    },
+    {
+      src: "/assets/projects/weshare/content-06.jpg",
+      alt: "WeShare always-on social content post 6",
+      width: 2000,
+      height: 2000,
+      sourceUrl: WESHARE_CONTENT_POST_SOURCES[5],
+      caption:
+        "Lần đầu ra mắt: WeShare-ers đạp gió, mở app 2024\n\nĐội trưởng nào sẽ đạt vị trí top quyên góp trong chương trình?\n\nĐộc quyền chỉ có trên weshare.asia - Đón xem ngay!\n\n#WeShare",
     },
   ],
 }
@@ -554,6 +567,7 @@ const PANASONIC_PROJECT_MEDIA: ProjectMedia = {
     height: 1080,
     sourceUrl: "https://drive.google.com/file/d/1PA1a3igLLqZ0RS-U2PgEy8SkQh6v0fa7/view",
   },
+  contentPostsLayout: "carousel",
   contentPosts: [
     {
       src: "/assets/projects/panasonic/content-01.jpg",
@@ -735,15 +749,16 @@ const TESLA_EDUCATION_VIDEO_SOURCE =
   "https://www.facebook.com/reel/1355172016653079"
 
 const TESLA_EDUCATION_PROJECT_COVER: ProjectMediaAsset = {
-  src: "/assets/projects/tesla-education/cover.png",
-  alt: "Abstract Tesla Education learning pathway cover",
-  width: 1500,
-  height: 1500,
+  src: "/assets/projects/tesla-education/cover-wide.jpg",
+  alt: "Tesla Education horizontal campaign cover",
+  width: 2048,
+  height: 1365,
+  sourceUrl: "https://www.facebook.com/photo.php?fbid=1407252798088393&set=pb.100064110576744.-2207520000&type=3",
 }
 
 const TESLA_EDUCATION_PROJECT_COVER_VI: ProjectMediaAsset = {
   ...TESLA_EDUCATION_PROJECT_COVER,
-  alt: "Ảnh bìa hành trình học tập Tesla Education",
+  alt: "Ảnh bìa ngang chiến dịch Tesla Education",
 }
 
 const TESLA_EDUCATION_VIDEO: ProjectMediaAsset = {
@@ -762,7 +777,6 @@ const TESLA_EDUCATION_VIDEO_VI: ProjectMediaAsset = {
 }
 
 const TESLA_EDUCATION_PROJECT_MEDIA_EN: ProjectMedia = {
-  introLayout: "split-cover",
   cover: TESLA_EDUCATION_PROJECT_COVER,
   videoCampaigns: [
     {
@@ -775,7 +789,6 @@ const TESLA_EDUCATION_PROJECT_MEDIA_EN: ProjectMedia = {
 }
 
 const TESLA_EDUCATION_PROJECT_MEDIA_VI: ProjectMedia = {
-  introLayout: "split-cover",
   cover: TESLA_EDUCATION_PROJECT_COVER_VI,
   videoCampaigns: [
     {
