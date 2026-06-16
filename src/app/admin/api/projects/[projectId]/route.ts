@@ -3,7 +3,6 @@ import { revalidatePath } from "next/cache"
 import { NextRequest, NextResponse } from "next/server"
 import {
   createLocalizedProjects,
-  isAdminManagedProject,
   validateAdminProjectPayload,
 } from "@/lib/admin-projects"
 import { requireAdminRequest } from "@/lib/admin-auth"
@@ -84,9 +83,6 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   if (!existingProjects) {
     return jsonError("Project not found.", 404)
   }
-  if (!existingProjects.every(isAdminManagedProject)) {
-    return jsonError("Project not found.", 404)
-  }
 
   try {
     assertExpectedEtag(snapshot, parsed.payload.expectedEtag)
@@ -161,9 +157,6 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
 
   const existingProjects = findLocalizedProjects(snapshot, projectId)
   if (!existingProjects) {
-    return jsonError("Project not found.", 404)
-  }
-  if (!existingProjects.every(isAdminManagedProject)) {
     return jsonError("Project not found.", 404)
   }
 

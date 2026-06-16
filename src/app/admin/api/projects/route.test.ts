@@ -73,11 +73,11 @@ describe("admin project create API", () => {
     expect(body.details.length).toBeGreaterThan(0)
   })
 
-  it("rejects create payloads outside Thinking in Systems", async () => {
+  it("creates Writing projects without AXE-style media", async () => {
     const response = await POST(
       request(
         createAdminPayload({
-          shared: { fieldId: "creative-copywriter" },
+          shared: { fieldId: "creative-copywriter", media: undefined },
           locales: {
             en: { category: "Social Video Script" },
             vi: { category: "Kịch bản video social" },
@@ -86,10 +86,25 @@ describe("admin project create API", () => {
       ),
     )
 
-    expect(response.status).toBe(400)
-    const body = await response.json()
-    expect(body.details).toContain("Admin can only manage Thinking in Systems projects.")
-    expect(mocks.readAdminPortfolioSnapshot).not.toHaveBeenCalled()
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      etag: "etag-2",
+      projectId: "demo-project",
+    })
+    expect(mocks.addProjectToManifest).toHaveBeenCalledWith(
+      expect.objectContaining({ revision: "revision-1" }),
+      {
+        en: expect.objectContaining({
+          fieldId: "creative-copywriter",
+          media: undefined,
+        }),
+        vi: expect.objectContaining({
+          fieldId: "creative-copywriter",
+          media: undefined,
+        }),
+      },
+    )
   })
 
   it("blocks writes when Blob storage is not configured", async () => {

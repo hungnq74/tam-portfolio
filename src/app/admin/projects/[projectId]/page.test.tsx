@@ -48,7 +48,7 @@ describe("EditProjectPage", () => {
     )
   })
 
-  it("renders the editor for Thinking projects with Thinking-only field options", async () => {
+  it("renders the editor for Thinking projects with all admin field options", async () => {
     render(
       await EditProjectPage({
         params: Promise.resolve({ projectId: "thinking-project" }),
@@ -61,14 +61,19 @@ describe("EditProjectPage", () => {
     const fieldSelect = screen.getByLabelText("Field") as HTMLSelectElement
     expect(Array.from(fieldSelect.options).map((option) => option.value)).toEqual([
       "social-planner",
+      "creative-copywriter",
     ])
   })
 
-  it("returns not found for Writing projects", async () => {
-    await expect(
-      EditProjectPage({
+  it("renders the editor for Writing projects", async () => {
+    render(
+      await EditProjectPage({
         params: Promise.resolve({ projectId: "writing-project" }),
       }),
-    ).rejects.toThrow("NEXT_NOT_FOUND")
+    )
+
+    expect(screen.getByRole("heading", { name: "Edit project" })).toBeInTheDocument()
+    expect(screen.getByText("Writing Draft")).toBeInTheDocument()
+    expect(screen.getByLabelText("Field")).toHaveValue("creative-copywriter")
   })
 })

@@ -65,10 +65,10 @@ describe("validateAdminProjectPayload", () => {
     )
   })
 
-  it("rejects admin saves outside Thinking in Systems", () => {
+  it("allows Writing projects without AXE-style media", () => {
     const result = validateAdminProjectPayload(
       createAdminPayload({
-        shared: { fieldId: "creative-copywriter" },
+        shared: { fieldId: "creative-copywriter", media: undefined },
         locales: {
           en: { category: "Social Video Script" },
           vi: { category: "Kịch bản video social" },
@@ -77,8 +77,7 @@ describe("validateAdminProjectPayload", () => {
       { requireMedia: false },
     )
 
-    expect(result.success).toBe(false)
-    expect(result.errors).toContain("Admin can only manage Thinking in Systems projects.")
+    expect(result.success).toBe(true)
   })
 
   it("rejects invalid slugs and route id changes", () => {
@@ -153,6 +152,64 @@ describe("createLocalizedProjects", () => {
       category: "Chiến dịch",
       scope: ["Chien luoc", "Ke hoach noi dung"],
       thumbnail: { col: 0, row: 1 },
+    })
+  })
+
+  it("preserves optional copy and locale-specific media text", () => {
+    const projects = createLocalizedProjects(
+      createAdminPayload({
+        locales: {
+          en: {
+            campaignTitle: "English campaign",
+            closingNote: "English closing note",
+            media: {
+              ...testMedia,
+              cover: {
+                ...testMedia.cover,
+                alt: "English cover alt",
+                caption: "English cover caption",
+              },
+            },
+            namingRationale: {
+              eyebrow: "Naming",
+              title: "Why this name",
+              items: [{ term: "Tet", definition: "Seasonal context" }],
+              note: "English note",
+            },
+          },
+          vi: {
+            campaignTitle: "Chiến dịch tiếng Việt",
+            closingNote: "Ghi chú kết tiếng Việt",
+            media: {
+              ...testMedia,
+              cover: {
+                ...testMedia.cover,
+                alt: "Alt bìa tiếng Việt",
+                caption: "Caption bìa tiếng Việt",
+              },
+            },
+            namingRationale: {
+              eyebrow: "Tên gọi",
+              title: "Vì sao chọn tên này",
+              items: [{ term: "Tết", definition: "Bối cảnh mùa lễ hội" }],
+              note: "Ghi chú tiếng Việt",
+            },
+          },
+        },
+      }),
+    )
+
+    expect(projects.en.campaignTitle).toBe("English campaign")
+    expect(projects.vi.campaignTitle).toBe("Chiến dịch tiếng Việt")
+    expect(projects.en.media?.cover.caption).toBe("English cover caption")
+    expect(projects.vi.media?.cover.caption).toBe("Caption bìa tiếng Việt")
+    expect(projects.en.namingRationale?.items[0]).toEqual({
+      term: "Tet",
+      definition: "Seasonal context",
+    })
+    expect(projects.vi.namingRationale?.items[0]).toEqual({
+      term: "Tết",
+      definition: "Bối cảnh mùa lễ hội",
     })
   })
 })

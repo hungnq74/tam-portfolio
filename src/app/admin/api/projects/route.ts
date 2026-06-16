@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
   }
 
   const input = await request.json().catch(() => null)
-  const parsed = validateAdminProjectPayload(input, { requireMedia: true })
+  const parsed = validateAdminProjectPayload(input, { requireMedia: false })
 
   if (!parsed.success) {
     return jsonError("Project validation failed.", 400, parsed.errors)

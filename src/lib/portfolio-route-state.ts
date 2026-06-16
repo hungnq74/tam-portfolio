@@ -8,6 +8,24 @@ export interface PortfolioRouteState {
   hasExplicitTarget: boolean
 }
 
+export function projectReturnsToScopeHub(project: Project, field: Field) {
+  return Boolean(
+    field.scopeCards?.some((scope) => scope.landingProjectId === project.id),
+  )
+}
+
+export function getPortfolioGalleryHref(project: Project, field: Field) {
+  const params = new URLSearchParams({
+    field: field.id,
+  })
+
+  if (!projectReturnsToScopeHub(project, field)) {
+    params.set("project", project.id)
+  }
+
+  return `/?${params.toString()}#gallery`
+}
+
 export function resolvePortfolioRouteState({
   allFilter,
   fields,
@@ -44,19 +62,18 @@ export function resolvePortfolioRouteState({
     }
   }
 
-  const projectReturnsToScopeHub = Boolean(
-    requestedProject &&
-      requestedField.scopeCards?.some((scope) => scope.landingProjectId === requestedProject.id),
+  const returnsToScopeHub = Boolean(
+    requestedProject && projectReturnsToScopeHub(requestedProject, requestedField),
   )
   const requestedFilter =
     requestedProject &&
-    !projectReturnsToScopeHub &&
+    !returnsToScopeHub &&
     requestedField.filters.includes(requestedProject.category)
       ? requestedProject.category
       : allFilter
   const shouldSelectProject = Boolean(
     requestedProject &&
-      !projectReturnsToScopeHub &&
+      !returnsToScopeHub &&
       (!requestedField.scopeCards?.length || requestedFilter !== allFilter),
   )
 

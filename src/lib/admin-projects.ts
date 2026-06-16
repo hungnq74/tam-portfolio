@@ -11,7 +11,7 @@ export const ADMIN_PROJECT_PAGE_LIMIT = 50
 export const ADMIN_PROJECT_PDF_SIZE_LIMIT = 150 * 1024 * 1024
 
 const FIELD_IDS = ["social-planner", "creative-copywriter"] as const
-export const ADMIN_MANAGED_FIELD_IDS = ["social-planner"] as const
+export const ADMIN_MANAGED_FIELD_IDS = FIELD_IDS
 
 const fieldIdSchema = z.enum(FIELD_IDS)
 const thumbnailSchema = z.object({
@@ -123,10 +123,14 @@ const adminLocaleProjectSchema = z.object({
   summary: z.string().min(1).max(280),
   client: z.string().min(1).max(120),
   scope: z.array(z.string().min(1).max(80)).min(1).max(12),
+  campaignTitle: z.string().min(1).max(160).optional(),
+  closingNote: z.string().min(1).max(320).optional(),
   overview: z.string().min(1).max(900),
   objective: z.string().min(1).max(900),
   solution: z.string().min(1).max(900),
   results: z.array(z.string().min(1).max(120)).min(1).max(12),
+  media: projectMediaSchema.optional(),
+  namingRationale: projectNamingRationaleSchema.optional(),
 })
 
 export const adminProjectSaveSchema = z.object({
@@ -175,9 +179,13 @@ export function normalizeListText(value: string) {
 }
 
 export function getFieldFilters(locale: Locale, fieldId: FieldId) {
-  return (
+  const fieldFilters =
     PORTFOLIO_CONTENT[locale].fields.find((field) => field.id === fieldId)?.filters ?? []
-  )
+  const existingCategories = PORTFOLIO_CONTENT[locale].projects
+    .filter((project) => project.fieldId === fieldId)
+    .map((project) => project.category)
+
+  return Array.from(new Set([...fieldFilters, ...existingCategories]))
 }
 
 export function isAdminManagedFieldId(fieldId: FieldId) {
@@ -190,6 +198,15 @@ export function isAdminManagedProject(project: Pick<Project, "fieldId">) {
 
 function hasAxeStyleMedia(media?: ProjectMedia) {
   return Boolean(media?.cover && media.summary && (media.proposalSlides?.length ?? 0) > 0)
+}
+
+function getLocaleMedia(payload: AdminProjectSavePayload, locale: Locale) {
+  return payload.locales[locale].media ?? payload.shared.media
+}
+
+function getSubmittedMedia(payload: AdminProjectSavePayload) {
+  const media = [payload.shared.media, payload.locales.en.media, payload.locales.vi.media]
+  return media.filter(Boolean) as ProjectMedia[]
 }
 
 export function validateAdminProjectPayload(
@@ -215,20 +232,16 @@ export function validateAdminProjectPayload(
     errors.push("Project id cannot be changed after creation.")
   }
 
-  if (!isAdminManagedFieldId(payload.shared.fieldId)) {
-    errors.push("Admin can only manage Thinking in Systems projects.")
-  }
-
   if (
-    (options.requireMedia || isAdminManagedFieldId(payload.shared.fieldId)) &&
-    !hasAxeStyleMedia(payload.shared.media)
+    (options.requireMedia || payload.shared.fieldId === "social-planner") &&
+    !(["en", "vi"] as const).every((locale) => hasAxeStyleMedia(getLocaleMedia(payload, locale)))
   ) {
     errors.push(
       "Upload a cover image and proposal PDF before saving this Thinking project.",
     )
   }
 
-  if (payload.shared.media?.proposalSlides?.length === 0) {
+  if (getSubmittedMedia(payload).some((media) => media.proposalSlides?.length === 0)) {
     errors.push("Proposal carousel must contain at least one slide when media is provided.")
   }
 
@@ -267,12 +280,15 @@ export function createLocalizedProjects(payload: AdminProjectSavePayload) {
     client: payload.locales[locale].client,
     year: payload.shared.year,
     scope: payload.locales[locale].scope,
+    campaignTitle: payload.locales[locale].campaignTitle,
+    closingNote: payload.locales[locale].closingNote,
     overview: payload.locales[locale].overview,
     objective: payload.locales[locale].objective,
     solution: payload.locales[locale].solution,
     results: payload.locales[locale].results,
     thumbnail: payload.shared.thumbnail,
-    media: payload.shared.media,
+    media: getLocaleMedia(payload, locale),
+    namingRationale: payload.locales[locale].namingRationale,
   })
 
   return {

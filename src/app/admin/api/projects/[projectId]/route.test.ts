@@ -93,12 +93,19 @@ describe("admin project update API", () => {
     expect(body.details).toContain("Project id cannot be changed after creation.")
   })
 
-  it("rejects update payloads outside Thinking in Systems", async () => {
+  it("updates Writing projects", async () => {
+    mocks.readAdminPortfolioSnapshot.mockResolvedValue(
+      createSnapshot({
+        projects: [createProject("demo-project", { fieldId: "creative-copywriter" })],
+        viProjects: [createProject("demo-project", { fieldId: "creative-copywriter" })],
+      }),
+    )
+
     const response = await PUT(
       request(
         "PUT",
         createAdminPayload({
-          shared: { fieldId: "creative-copywriter" },
+          shared: { fieldId: "creative-copywriter", media: undefined },
           locales: {
             en: { category: "Social Video Script" },
             vi: { category: "Kịch bản video social" },
@@ -108,10 +115,19 @@ describe("admin project update API", () => {
       context,
     )
 
-    expect(response.status).toBe(400)
-    const body = await response.json()
-    expect(body.details).toContain("Admin can only manage Thinking in Systems projects.")
-    expect(mocks.readAdminPortfolioSnapshot).not.toHaveBeenCalled()
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      etag: "etag-2",
+      projectId: "demo-project",
+    })
+    expect(mocks.replaceProjectInManifest).toHaveBeenCalledWith(
+      expect.objectContaining({ revision: "revision-1" }),
+      {
+        en: expect.objectContaining({ fieldId: "creative-copywriter" }),
+        vi: expect.objectContaining({ fieldId: "creative-copywriter" }),
+      },
+    )
   })
 
   it("returns not found when one locale is missing", async () => {
@@ -126,21 +142,6 @@ describe("admin project update API", () => {
 
     expect(response.status).toBe(404)
     await expect(response.json()).resolves.toEqual({ error: "Project not found." })
-  })
-
-  it("returns not found instead of converting a Writing project", async () => {
-    mocks.readAdminPortfolioSnapshot.mockResolvedValue(
-      createSnapshot({
-        projects: [createProject("demo-project", { fieldId: "creative-copywriter" })],
-        viProjects: [createProject("demo-project", { fieldId: "creative-copywriter" })],
-      }),
-    )
-
-    const response = await PUT(request("PUT", createAdminPayload()), context)
-
-    expect(response.status).toBe(404)
-    await expect(response.json()).resolves.toEqual({ error: "Project not found." })
-    expect(mocks.replaceProjectInManifest).not.toHaveBeenCalled()
   })
 
   it("returns a conflict for stale update etags", async () => {
@@ -212,7 +213,7 @@ describe("admin project delete API", () => {
     await expect(response.json()).resolves.toEqual({ error: "Project not found." })
   })
 
-  it("returns not found when deleting a Writing project", async () => {
+  it("deletes a Writing project", async () => {
     mocks.readAdminPortfolioSnapshot.mockResolvedValue(
       createSnapshot({
         projects: [createProject("demo-project", { fieldId: "creative-copywriter" })],
@@ -225,9 +226,15 @@ describe("admin project delete API", () => {
       context,
     )
 
-    expect(response.status).toBe(404)
-    await expect(response.json()).resolves.toEqual({ error: "Project not found." })
-    expect(mocks.removeProjectFromManifest).not.toHaveBeenCalled()
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toEqual({
+      ok: true,
+      etag: "etag-2",
+    })
+    expect(mocks.removeProjectFromManifest).toHaveBeenCalledWith(
+      expect.objectContaining({ revision: "revision-1" }),
+      "demo-project",
+    )
   })
 
   it("returns a conflict for stale delete etags", async () => {

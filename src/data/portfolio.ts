@@ -138,6 +138,7 @@ export interface PortfolioUi {
   cover: {
     title: string
     description: string
+    imageSrc: string
     imageAlt: string
     nextAria: string
     nextLabel: string
@@ -269,6 +270,8 @@ const SHARED_FIELD_ASSETS = {
 
 const AXE_CONTEXT =
   "Context: Make AXE Vietnam the top #1 brand discussed by Gen Z on social media and distribute 2M product samples."
+const AXE_CONTEXT_VI =
+  "Bối cảnh: đưa AXE Vietnam trở thành thương hiệu được Gen Z thảo luận nhiều nhất trên social media và phân phối 2 triệu mẫu thử sản phẩm."
 
 const AXE_PDF_PAGE_COUNT = 15
 const AXE_PDF_PAGE_SIZE = {
@@ -298,6 +301,23 @@ const AXE_PROJECT_MEDIA: ProjectMedia = {
   })),
 }
 
+const AXE_PROJECT_MEDIA_VI: ProjectMedia = {
+  cover: {
+    ...AXE_PROJECT_MEDIA.cover,
+    alt: "Ảnh bìa proposal chiến dịch AXE",
+  },
+  summary: AXE_PROJECT_MEDIA.summary
+    ? {
+        ...AXE_PROJECT_MEDIA.summary,
+        alt: "Trang tóm tắt proposal AXE",
+      }
+    : undefined,
+  proposalSlides: AXE_PROJECT_MEDIA.proposalSlides?.map((slide, index) => ({
+    ...slide,
+    alt: `Trang proposal AXE ${index + 1}`,
+  })),
+}
+
 const TIKTOK_WEBSITE_URL = "https://tettothetop.splashthat.com/"
 const TIKTOK_MEDIA_SIZE = {
   width: 1600,
@@ -319,6 +339,19 @@ const TIKTOK_PROJECT_MEDIA: ProjectMedia = {
     height: 9477,
     sourceUrl: TIKTOK_WEBSITE_URL,
   },
+}
+
+const TIKTOK_PROJECT_MEDIA_VI: ProjectMedia = {
+  cover: {
+    ...TIKTOK_PROJECT_MEDIA.cover,
+    alt: "Ảnh bìa website Tết to the Top của TikTok",
+  },
+  websitePreview: TIKTOK_PROJECT_MEDIA.websitePreview
+    ? {
+        ...TIKTOK_PROJECT_MEDIA.websitePreview,
+        alt: "Bản xem trước website Tết to the Top của TikTok",
+      }
+    : undefined,
 }
 
 const ACECOOK_CONTENT_POST_SOURCES = [
@@ -367,6 +400,18 @@ const ACECOOK_PROJECT_MEDIA: ProjectMedia = {
       sourceUrl: ACECOOK_CONTENT_POST_SOURCES[3],
     },
   ],
+}
+
+const ACECOOK_PROJECT_MEDIA_VI: ProjectMedia = {
+  ...ACECOOK_PROJECT_MEDIA,
+  cover: {
+    ...ACECOOK_PROJECT_MEDIA.cover,
+    alt: "Ảnh bìa chiến dịch bóng đá Acecook",
+  },
+  contentPosts: ACECOOK_PROJECT_MEDIA.contentPosts?.map((post, index) => ({
+    ...post,
+    alt: `Bài đăng social chiến dịch bóng đá Acecook ${index + 1}`,
+  })),
 }
 
 const WESHARE_CONTENT_POST_SOURCES = [
@@ -479,12 +524,23 @@ const WESHARE_PROJECT_MEDIA_EN: ProjectMedia = {
 
 const WESHARE_PROJECT_MEDIA_VI: ProjectMedia = {
   ...WESHARE_PROJECT_MEDIA_BASE,
+  cover: {
+    ...WESHARE_PROJECT_MEDIA_BASE.cover,
+    alt: "Ảnh bìa nội dung thương hiệu WeShare",
+  },
+  contentPosts: WESHARE_PROJECT_MEDIA_BASE.contentPosts?.map((post, index) => ({
+    ...post,
+    alt: `Bài đăng social always-on WeShare ${index + 1}`,
+  })),
   imageCampaigns: [
     {
-      title: "Student-led Campaigns",
+      title: "Chiến dịch do sinh viên dẫn dắt",
       description:
         "Với sinh viên là nhóm khán giả trọng tâm, WeShare đến gần hơn với đời sống campus thông qua chuỗi chiến dịch và hợp tác do sinh viên dẫn dắt.\n\nKết quả? Hơn 20.000 người dùng mới chỉ trong 10 tháng.\n\nHóa ra, mọi người sẵn sàng làm điều tốt hơn khi chuyện đó không nghe như bài tập về nhà.",
-      images: WESHARE_STUDENT_CAMPAIGN_IMAGES,
+      images: WESHARE_STUDENT_CAMPAIGN_IMAGES.map((image, index) => ({
+        ...image,
+        alt: `Chiến dịch sinh viên của WeShare ${index + 1}`,
+      })),
     },
   ],
 }
@@ -526,6 +582,18 @@ const PANASONIC_PROJECT_MEDIA: ProjectMedia = {
   ],
 }
 
+const PANASONIC_PROJECT_MEDIA_VI: ProjectMedia = {
+  ...PANASONIC_PROJECT_MEDIA,
+  cover: {
+    ...PANASONIC_PROJECT_MEDIA.cover,
+    alt: "Ảnh bìa chiến dịch copy-on-visual CRM Promote của Panasonic",
+  },
+  contentPosts: PANASONIC_PROJECT_MEDIA.contentPosts?.map((post, index) => ({
+    ...post,
+    alt: `Mẫu digital ad CRM Promote của Panasonic ${index + 1}`,
+  })),
+}
+
 const SAMSUNG_VIDEO_SOURCES = [
   "https://www.facebook.com/reel/1808331319865303",
   "https://www.facebook.com/share/v/1AxaYvs1yr/",
@@ -543,6 +611,11 @@ const SAMSUNG_PROJECT_COVER: ProjectMediaAsset = {
   width: 1500,
   height: 1500,
   focalPoint: { x: 50, y: 50 },
+}
+
+const SAMSUNG_PROJECT_COVER_VI: ProjectMediaAsset = {
+  ...SAMSUNG_PROJECT_COVER,
+  alt: "Ảnh bìa kịch bản video social Samsung Galaxy",
 }
 
 const SAMSUNG_TET_VIDEOS: ProjectMediaAsset[] = [
@@ -607,6 +680,19 @@ const SAMSUNG_BETTER_YEAR_VIDEOS: ProjectMediaAsset[] = [
   },
 ]
 
+const SAMSUNG_TET_VIDEOS_VI: ProjectMediaAsset[] = SAMSUNG_TET_VIDEOS.map(
+  (video, index) => ({
+    ...video,
+    alt: `Video preview creator chiến dịch Tết Mới Vẹn Ý Xưa ${index + 1}`,
+  }),
+)
+
+const SAMSUNG_BETTER_YEAR_VIDEOS_VI: ProjectMediaAsset[] =
+  SAMSUNG_BETTER_YEAR_VIDEOS.map((video, index) => ({
+    ...video,
+    alt: `Video preview creator chiến dịch Galaxy A56 Gemini ${index + 1}`,
+  }))
+
 const SAMSUNG_PROJECT_MEDIA_EN: ProjectMedia = {
   introLayout: "split-cover",
   cover: SAMSUNG_PROJECT_COVER,
@@ -628,19 +714,19 @@ const SAMSUNG_PROJECT_MEDIA_EN: ProjectMedia = {
 
 const SAMSUNG_PROJECT_MEDIA_VI: ProjectMedia = {
   introLayout: "split-cover",
-  cover: SAMSUNG_PROJECT_COVER,
+  cover: SAMSUNG_PROJECT_COVER_VI,
   videoCampaigns: [
     {
       title: "Chiến dịch Tết Mới Vẹn Ý Xưa",
       description:
         "Những kịch bản giúp creator kết nối Galaxy AI với các nghi thức Tết quen thuộc, giữ lại tinh thần cũ nhưng kể bằng một giọng mới hơn.",
-      videos: SAMSUNG_TET_VIDEOS,
+      videos: SAMSUNG_TET_VIDEOS_VI,
     },
     {
-      title: "Chiến dịch Galaxy A56 5G / 07 / 17 - Gemini x Festive: Better new year",
+      title: "Chiến dịch Galaxy A56 5G x Gemini: Năm mới tốt hơn",
       description:
         "Những kịch bản biến Gemini và các tính năng Galaxy A56 5G thành khoảnh khắc festive qua lăng kính creator, từ chuyện crush vui vui đến sự tự tin đầu năm.",
-      videos: SAMSUNG_BETTER_YEAR_VIDEOS,
+      videos: SAMSUNG_BETTER_YEAR_VIDEOS_VI,
     },
   ],
 }
@@ -655,6 +741,11 @@ const TESLA_EDUCATION_PROJECT_COVER: ProjectMediaAsset = {
   height: 1500,
 }
 
+const TESLA_EDUCATION_PROJECT_COVER_VI: ProjectMediaAsset = {
+  ...TESLA_EDUCATION_PROJECT_COVER,
+  alt: "Ảnh bìa hành trình học tập Tesla Education",
+}
+
 const TESLA_EDUCATION_VIDEO: ProjectMediaAsset = {
   src: "/assets/projects/tesla-education/video-01.jpg",
   alt: "Tesla Education brand introduction video preview",
@@ -662,6 +753,12 @@ const TESLA_EDUCATION_VIDEO: ProjectMediaAsset = {
   height: 1044,
   sourceUrl: TESLA_EDUCATION_VIDEO_SOURCE,
   ctaLabel: "TAKE ME THERE",
+}
+
+const TESLA_EDUCATION_VIDEO_VI: ProjectMediaAsset = {
+  ...TESLA_EDUCATION_VIDEO,
+  alt: "Video preview giới thiệu thương hiệu Tesla Education",
+  ctaLabel: "XEM VIDEO",
 }
 
 const TESLA_EDUCATION_PROJECT_MEDIA_EN: ProjectMedia = {
@@ -679,13 +776,13 @@ const TESLA_EDUCATION_PROJECT_MEDIA_EN: ProjectMedia = {
 
 const TESLA_EDUCATION_PROJECT_MEDIA_VI: ProjectMedia = {
   introLayout: "split-cover",
-  cover: TESLA_EDUCATION_PROJECT_COVER,
+  cover: TESLA_EDUCATION_PROJECT_COVER_VI,
   videoCampaigns: [
     {
-      title: "Brand Introduction Video",
+      title: "Video giới thiệu thương hiệu",
       description:
-        "I'd love to show you the video right here, but it's apparently too heavy for this little portfolio to carry. Mind taking a quick trip to Tesla Education's Fanpage instead?",
-      videos: [TESLA_EDUCATION_VIDEO],
+        "Mình rất muốn để bạn xem video ngay tại đây, nhưng có vẻ nó hơi nặng với chiếc portfolio nhỏ này. Mình dẫn bạn sang fanpage Tesla Education xem một chút nhé?",
+      videos: [TESLA_EDUCATION_VIDEO_VI],
     },
   ],
 }
@@ -771,6 +868,18 @@ const SOCIAL_OUTREACH_MEME_POSTS: ProjectMediaAsset[] = [
   },
 ]
 
+const SOCIAL_OUTREACH_FORMAL_POSTS_VI: ProjectMediaAsset[] =
+  SOCIAL_OUTREACH_FORMAL_POSTS.map((post, index) => ({
+    ...post,
+    alt: `Bài outreach giọng formal ${index + 1}`,
+  }))
+
+const SOCIAL_OUTREACH_MEME_POSTS_VI: ProjectMediaAsset[] =
+  SOCIAL_OUTREACH_MEME_POSTS.map((post, index) => ({
+    ...post,
+    alt: `Bài outreach giọng meme ${index + 1}`,
+  }))
+
 const SOCIAL_OUTREACH_PROJECT_MEDIA_EN: ProjectMedia = {
   cover: {
     src: "/assets/storybook/scope-social-outreach.png",
@@ -803,16 +912,16 @@ const SOCIAL_OUTREACH_PROJECT_MEDIA_VI: ProjectMedia = {
   },
   outreachSections: [
     {
-      title: "Formal & Academic Voice",
+      title: "Giọng formal và học thuật",
       description: "Một không gian cho những thảo luận chỉn chu và câu chữ được chọn kỹ.",
       displayMode: "linked-posts",
-      posts: SOCIAL_OUTREACH_FORMAL_POSTS,
+      posts: SOCIAL_OUTREACH_FORMAL_POSTS_VI,
     },
     {
-      title: "Meme & Funny Voice",
+      title: "Giọng meme và hài hước",
       description: "Một không gian nơi cùng một bộ não đôi khi giao tiếp bằng meme.",
       displayMode: "caption-posts",
-      posts: SOCIAL_OUTREACH_MEME_POSTS,
+      posts: SOCIAL_OUTREACH_MEME_POSTS_VI,
     },
   ],
 }
@@ -846,7 +955,7 @@ const TIKTOK_NAMING_RATIONALE_VI: ProjectNamingRationale = {
       definition: "Đại diện cho tăng trưởng, đà bứt phá và doanh số đi lên",
     },
   ],
-  note: "Also sounds like TIK to the TOK (hope so)",
+  note: "Nghe cũng gần giống TIK to the TOK nữa, hy vọng là vậy.",
 }
 
 export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
@@ -1248,6 +1357,7 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         title: "Portfolio - A Vietnamese Fairytale for Creative Minds",
         description:
           "Storytelling, strategy, and creativity in a portfolio you can unfold by scrolling.",
+        imageSrc: "/assets/storybook/cover-en.png",
         imageAlt: "Portfolio cover inspired by Vietnamese storybooks - Tam Sac Ben",
         nextAria: "Scroll to the introduction page",
         nextLabel: "Turn page",
@@ -1440,20 +1550,20 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
       {
         id: "brand-story",
         fieldId: "creative-copywriter",
-        title: "Brand Story",
+        title: "Câu chuyện thương hiệu",
         eyebrow: "Dự án",
-        category: "Brand Story",
+        category: "Câu chuyện thương hiệu",
         summary: "Câu chuyện thương hiệu cho dòng sản phẩm chăm sóc da thảo mộc.",
         client: "XYZ Skincare",
         year: "2024",
-        scope: ["Brand Story", "Website Copy", "Key Messages"],
+        scope: ["Câu chuyện thương hiệu", "Copy website", "Thông điệp chủ đạo"],
         overview:
           "Dự án viết lại câu chuyện thương hiệu từ góc nhìn nguyên liệu, nhịp sống chậm và sự chăm sóc dịu dàng.",
         objective:
           "Giúp thương hiệu có một câu chuyện rõ ràng, khác biệt và dễ mở rộng sang nhiều kênh.",
         solution:
           "Xây dựng hệ thông điệp theo ba tầng: nguồn gốc, cảm nhận sản phẩm và lời hứa chăm sóc.",
-        results: ["Hoàn thiện brand story", "12 thông điệp chủ đạo", "Tạo website copy framework"],
+        results: ["Hoàn thiện câu chuyện thương hiệu", "12 thông điệp chủ đạo", "Khung nội dung website"],
         thumbnail: { col: 0, row: 0 },
       },
       {
@@ -1462,18 +1572,18 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         title: "AXE",
         eyebrow: "Dự án",
         category: "Chiến dịch",
-        summary: "Một case campaign đậm chất proposal, tập trung vào attraction, confidence và visual storytelling.",
+        summary: "Một case chiến dịch đậm chất proposal, xoay quanh sức hút, sự tự tin và kể chuyện bằng hình ảnh.",
         client: "AXE",
         year: "2024",
-        scope: ["Big Idea", "Campaign Proposal", "Creative Copy"],
-        overview: AXE_CONTEXT,
+        scope: ["Ý tưởng lớn", "Proposal chiến dịch", "Copy sáng tạo"],
+        overview: AXE_CONTEXT_VI,
         objective:
           "Làm cho trang case study có cảm giác như một proposal deck hoàn chỉnh thay vì bài viết nhiều chữ.",
         solution:
-          "Dùng cover lớn, một trang summary riêng và carousel sẵn sàng nhận ảnh upload cho full proposal.",
-        results: ["Trang detail thiên về hình ảnh", "Cấu trúc media sẵn sàng upload", "Carousel proposal"],
+          "Dùng cover lớn, một trang tóm tắt riêng và carousel để trình bày trọn vẹn proposal.",
+        results: ["Trang chi tiết thiên về hình ảnh", "Cấu trúc media sẵn sàng upload", "Carousel proposal đầy đủ"],
         thumbnail: { col: 1, row: 0 },
-        media: AXE_PROJECT_MEDIA,
+        media: AXE_PROJECT_MEDIA_VI,
       },
       {
         id: "samsung",
@@ -1481,17 +1591,17 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         title: "Samsung",
         eyebrow: "Dự án",
         category: "Kịch bản video social",
-        summary: "Kịch bản TikTok video cho các chiến dịch Samsung Galaxy với nhiều creator voice khác nhau.",
+        summary: "Kịch bản TikTok video cho các chiến dịch Samsung Galaxy với nhiều giọng kể creator khác nhau.",
         client: "Samsung",
         year: "2025",
-        scope: ["Kịch bản TikTok video", "Điều chỉnh giọng KOL", "Chiến dịch Galaxy"],
+        scope: ["Kịch bản video TikTok", "Điều chỉnh giọng KOL", "Chiến dịch Galaxy"],
         overview:
           "Cùng một thông điệp có thể nghe rất khác nhau tùy vào người kể nó.\n\nQua nhiều chiến dịch sản phẩm Galaxy, mình viết kịch bản TikTok video cho các KOL và creator có cá tính rất khác nhau. Mỗi creator có một phong cách, một nhóm khán giả và một cách kể chuyện riêng, nên mỗi kịch bản cũng cần có tính cách riêng nhưng vẫn đưa sản phẩm về đúng vị trí trung tâm.",
         objective:
           "Chuyển thông điệp chiến dịch Galaxy thành các kịch bản video sẵn sàng cho creator, tự nhiên với cá tính và tệp khán giả của từng KOL.",
         solution:
           "Xây dựng từng kịch bản theo nhịp kể chuyện riêng của creator, đồng thời giữ lợi ích sản phẩm Galaxy rõ ràng và nổi bật.",
-        results: ["Kịch bản riêng theo từng creator", "Storytelling sản phẩm Galaxy", "Hai nhóm mini-campaign"],
+        results: ["Kịch bản riêng theo từng creator", "Kể chuyện sản phẩm Galaxy", "Hai nhóm chiến dịch nhỏ"],
         thumbnail: { col: 0, row: 0 },
         media: SAMSUNG_PROJECT_MEDIA_VI,
       },
@@ -1501,17 +1611,17 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         title: "Tesla Education",
         eyebrow: "Dự án",
         category: "Kịch bản video social",
-        summary: "Creative concept và kịch bản đầy đủ cho video giới thiệu thương hiệu truyền cảm hứng của Tesla Education.",
+        summary: "Ý tưởng sáng tạo và kịch bản hoàn chỉnh cho video giới thiệu thương hiệu truyền cảm hứng của Tesla Education.",
         client: "Tesla Education",
         year: "2026",
-        scope: ["Video giới thiệu thương hiệu", "Creative concept", "Kịch bản đầy đủ"],
+        scope: ["Video giới thiệu thương hiệu", "Ý tưởng sáng tạo", "Kịch bản hoàn chỉnh"],
         overview:
-          "Mỗi ngôi trường đều có một câu chuyện. Thử thách là kể câu chuyện đó theo cách người xem thật sự cảm được.\n\nVai trò của mình là phát triển creative concept và viết toàn bộ kịch bản cho một video giới thiệu thương hiệu truyền cảm hứng, kết nối tiếng nói của giáo viên, đội ngũ lãnh đạo và những nhà giáo dục đang định hình hành trình học tập mỗi ngày.\n\nThay vì chỉ liệt kê thành tích hay cơ sở vật chất, video tập trung vào niềm tin đứng phía sau những điều đó - biến giá trị giáo dục thành một câu chuyện chân thật, con người và đáng nhớ.",
+          "Mỗi ngôi trường đều có một câu chuyện. Thử thách là kể câu chuyện đó theo cách người xem thật sự cảm được.\n\nVai trò của mình là phát triển ý tưởng sáng tạo và viết toàn bộ kịch bản cho một video giới thiệu thương hiệu truyền cảm hứng, kết nối tiếng nói của giáo viên, đội ngũ lãnh đạo và những nhà giáo dục đang định hình hành trình học tập mỗi ngày.\n\nThay vì chỉ liệt kê thành tích hay cơ sở vật chất, video tập trung vào niềm tin đứng phía sau những điều đó - biến giá trị giáo dục thành một câu chuyện chân thật, con người và đáng nhớ.",
         objective:
           "Biến câu chuyện của Tesla Education thành một video giới thiệu thương hiệu có cảm xúc, truyền cảm hứng và rõ tinh thần con người.",
         solution:
-          "Xây dựng concept và kịch bản xoay quanh những niềm tin phía sau ngôi trường, kết nối nhiều tiếng nói của đội ngũ giáo dục thay vì chỉ liệt kê cơ sở vật chất hay thành tích.",
-        results: ["Creative concept", "Kịch bản video thương hiệu", "Storytelling giá trị giáo dục"],
+          "Xây dựng ý tưởng và kịch bản xoay quanh những niềm tin phía sau ngôi trường, kết nối nhiều tiếng nói của đội ngũ giáo dục thay vì chỉ liệt kê cơ sở vật chất hay thành tích.",
+        results: ["Ý tưởng sáng tạo", "Kịch bản video thương hiệu", "Kể chuyện về giá trị giáo dục"],
         thumbnail: { col: 1, row: 0 },
         media: TESLA_EDUCATION_PROJECT_MEDIA_VI,
       },
@@ -1521,13 +1631,13 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         title: "Acecook",
         eyebrow: "Dự án",
         category: "Nội dung fanpage always-on",
-        summary: "Nội dung football always-on và copy key visual cho chiến dịch đội tuyển quốc gia của Acecook.",
+        summary: "Nội dung bóng đá always-on và copy key visual cho chiến dịch đội tuyển quốc gia của Acecook.",
         client: "Acecook",
         year: "2025",
         scope: ["Nội dung always-on", "Caption social", "Copy key visual"],
         campaignTitle: "Bền Chí Kiên Tâm\nVững Vàng Tạo Kỳ Tích",
         closingNote:
-          "Little flex: before I joined, most always-on content needed 5-6 rounds of feedback, then mine usually called it a day after 1 or 2.",
+          "Khoe nhẹ một chút: trước khi mình tham gia, phần lớn nội dung always-on thường cần 5-6 vòng feedback; còn bài của mình thường chốt sau 1-2 vòng.",
         overview:
           "Có những chiến dịch nói về sản phẩm. Chiến dịch này nói về niềm tự hào dân tộc.\n\nVới vai trò nhà tài trợ chính của Đội tuyển Bóng đá Quốc gia Việt Nam, Acecook ra mắt Việt Nam Quyết Tiến – Khởi Sắc Vinh Quang để tôn vinh hành trình của đội tuyển và thắp lên niềm tự hào của hàng triệu người hâm mộ Việt Nam.\n\nVai trò của mình là phát triển nội dung always-on xuyên suốt chiến dịch, từ social captions đến copy key visual, để mọi điểm chạm đều giữ chung một tinh thần cổ vũ hào hùng. Vì khi bóng đá gắn kết cả một quốc gia, từng câu chữ cũng cần vang lên như một phần của bài ca chiến thắng.",
         objective:
@@ -1536,7 +1646,7 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
           "Phát triển caption và copy key visual theo giọng điệu nâng tinh thần, hào hùng, để mỗi bài đăng đều thuộc về cùng một lời cổ vũ quốc gia.",
         results: ["Định hướng nội dung always-on", "Hệ caption social", "Copy key visual"],
         thumbnail: { col: 0, row: 0 },
-        media: ACECOOK_PROJECT_MEDIA,
+        media: ACECOOK_PROJECT_MEDIA_VI,
       },
       {
         id: "weshare",
@@ -1544,17 +1654,17 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         title: "WeShare",
         eyebrow: "Dự án",
         category: "Nội dung fanpage always-on",
-        summary: "Nội dung social always-on và storytelling chiến dịch cho một nền tảng charity-tech gần gũi với Gen Z.",
+        summary: "Nội dung social always-on và storytelling chiến dịch cho một nền tảng công nghệ thiện nguyện gần gũi với Gen Z.",
         client: "WeShare",
         year: "2025",
-        scope: ["Nội dung always-on", "Brand voice", "Chiến dịch chuyển đổi"],
+        scope: ["Nội dung always-on", "Giọng thương hiệu", "Chiến dịch thúc đẩy chuyển đổi"],
         overview:
-          "Làm điều tốt không nên là một chuyện phức tạp.\n\nWeShare được xây dựng để việc đóng góp trở nên dễ dàng hơn, cho phép người dùng trích một phần hoa hồng mua sắm để gửi trực tiếp đến những tổ chức thiện nguyện mà họ quan tâm.\n\nVới vai trò Marketing Acting Lead, mình dẫn dắt team định hình một brand voice gần với Gen Z hơn là một nền tảng charity-tech thông thường. Thông qua nội dung bắt trend, storytelling gần gũi và các chiến dịch hướng đến chuyển đổi, tụi mình biến việc cho đi thành một trải nghiệm dễ tiếp cận, dễ chia sẻ và cuốn hút hơn.",
+          "Làm điều tốt không nên là một chuyện phức tạp.\n\nWeShare được xây dựng để việc đóng góp trở nên dễ dàng hơn, cho phép người dùng trích một phần hoa hồng mua sắm để gửi trực tiếp đến những tổ chức thiện nguyện mà họ quan tâm.\n\nTrong vai trò Acting Lead Marketing, mình dẫn dắt team định hình một giọng thương hiệu gần với Gen Z hơn một nền tảng công nghệ thiện nguyện thông thường. Thông qua nội dung bắt xu hướng, lối kể chuyện gần gũi và các chiến dịch hướng đến chuyển đổi, tụi mình biến việc cho đi thành một trải nghiệm dễ tiếp cận, dễ chia sẻ và cuốn hút hơn.",
         objective:
           "Làm cho WeShare trở nên gần gũi với người dùng trẻ, đồng thời giữ cơ chế đóng góp của nền tảng rõ ràng và có sức thúc đẩy hành động.",
         solution:
-          "Xây dựng giọng nội dung always-on dựa trên trend, câu chuyện đời thường và thông điệp chiến dịch khiến việc đóng góp trở nên dễ tham gia.",
-        results: ["Brand voice gần với Gen Z", "Định hướng nội dung always-on", "Thông điệp campaign hướng chuyển đổi"],
+          "Xây dựng giọng nội dung always-on dựa trên xu hướng, câu chuyện đời thường và thông điệp chiến dịch khiến việc đóng góp trở nên dễ tham gia.",
+        results: ["Giọng thương hiệu gần với Gen Z", "Định hướng nội dung always-on", "Thông điệp chiến dịch hướng chuyển đổi"],
         thumbnail: { col: 1, row: 0 },
         media: WESHARE_PROJECT_MEDIA_VI,
       },
@@ -1564,20 +1674,20 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         title: "Panasonic",
         eyebrow: "Dự án",
         category: "Nội dung fanpage always-on",
-        summary: "Copy-on-visual cho các digital ads trong chiến dịch CRM Promote của Panasonic.",
+        summary: "Copy trên visual cho các quảng cáo digital trong chiến dịch CRM Promote của Panasonic.",
         client: "Panasonic",
         year: "2025",
-        scope: ["Copy-on-visual", "Digital ads", "Headline khuyến mãi"],
+        scope: ["Copy trên visual", "Quảng cáo digital", "Headline khuyến mãi"],
         campaignTitle: "CRM Promote",
         overview:
-          "Trong quảng cáo, từng chữ đều phải tự chứng minh giá trị của mình.\n\nVới chiến dịch CRM Promote ads của Panasonic, mình phát triển copy-on-visual cho các digital advertising assets, biến lợi ích sản phẩm và thông điệp khuyến mãi thành những headline ngắn, bắt tai và có thể thu hút sự chú ý chỉ trong vài giây.",
+          "Trong quảng cáo, từng chữ đều phải tự chứng minh giá trị của mình.\n\nVới chiến dịch quảng cáo CRM Promote của Panasonic, mình phát triển copy trên visual cho các tài sản quảng cáo digital, biến lợi ích sản phẩm và thông điệp khuyến mãi thành những headline ngắn, bắt tai và có thể thu hút sự chú ý chỉ trong vài giây.",
         objective:
-          "Chuyển lợi ích sản phẩm và thông điệp khuyến mãi thành copy quảng cáo ngắn gọn, đủ nhanh để bắt sự chú ý trong các placement digital.",
+          "Chuyển lợi ích sản phẩm và thông điệp khuyến mãi thành copy quảng cáo ngắn gọn, đủ nhanh để bắt sự chú ý trong các vị trí hiển thị digital.",
         solution:
-          "Viết headline ngắn theo từng visual asset, giữ thông điệp rõ lợi ích và đủ sắc trong bối cảnh người xem lướt rất nhanh.",
-        results: ["Copy-on-visual cho digital ads", "Headline khuyến mãi ngắn gọn", "Điều chỉnh thông điệp CRM Promote"],
+          "Viết headline ngắn theo từng mẫu visual, giữ thông điệp rõ lợi ích và đủ sắc trong bối cảnh người xem lướt rất nhanh.",
+        results: ["Copy trên visual cho digital ads", "Headline khuyến mãi ngắn gọn", "Điều chỉnh thông điệp CRM Promote"],
         thumbnail: { col: 2, row: 0 },
-        media: PANASONIC_PROJECT_MEDIA,
+        media: PANASONIC_PROJECT_MEDIA_VI,
       },
       {
         id: "social-outreach",
@@ -1585,17 +1695,17 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         title: "Social Outreach",
         eyebrow: "Phạm vi",
         category: "Social outreach",
-        summary: "Nội dung outreach đi vào cộng đồng, hot page và những góc meme/niche trên social.",
+        summary: "Nội dung outreach đi vào cộng đồng, hot page và những góc meme/ngách trên social.",
         client: "Social Outreach",
         year: "2025",
-        scope: ["Community seeding", "Điều chỉnh giọng viết", "Social outreach"],
+        scope: ["Seeding cộng đồng", "Điều chỉnh giọng viết", "Social outreach"],
         overview:
-          "Không phải nội dung nào cũng ở lại trên fanpage của thương hiệu.\n\nCó nội dung đi vào cộng đồng. Có nội dung khơi gợi cuộc trò chuyện trên hot page. Có nội dung tìm đường vào những nhóm niche, nơi khán giả nói bằng một ngôn ngữ rất khác.\n\nĐó là lúc social outreach xuất hiện.\n\nTừ những cộng đồng trang trọng, học thuật đến các góc internet sống bằng meme, mỗi nhóm khán giả đều cần một cách khác nhau để bước vào cuộc trò chuyện.",
+          "Không phải nội dung nào cũng ở lại trên fanpage của thương hiệu.\n\nCó nội dung đi vào cộng đồng. Có nội dung khơi gợi cuộc trò chuyện trên hot page. Có nội dung tìm đường vào những nhóm ngách, nơi khán giả nói bằng một ngôn ngữ rất khác.\n\nĐó là lúc social outreach xuất hiện.\n\nTừ những cộng đồng trang trọng, học thuật đến các góc internet sống bằng meme, mỗi nhóm khán giả đều cần một cách khác nhau để bước vào cuộc trò chuyện.",
         objective:
-          "Điều chỉnh thông điệp chiến dịch để có thể đi vào cộng đồng, hot page và nhóm niche mà không nghe như copy từ fanpage thương hiệu.",
+          "Điều chỉnh thông điệp chiến dịch để có thể đi vào cộng đồng, hot page và nhóm ngách mà không nghe như copy từ fanpage thương hiệu.",
         solution:
           "Chuyển đổi giọng điệu và góc tiếp cận theo từng tệp khán giả, từ thảo luận chỉn chu, ngữ cảnh học thuật đến cuộc trò chuyện bằng meme, nhưng vẫn giữ lõi thông điệp.",
-        results: ["Bài outreach cho cộng đồng formal", "Bài outreach theo meme voice", "Điều chỉnh giọng viết theo từng nhóm khán giả"],
+        results: ["Bài outreach cho cộng đồng chỉn chu", "Bài outreach theo giọng meme", "Điều chỉnh giọng viết theo từng nhóm khán giả"],
         thumbnail: { col: 2, row: 1 },
         media: SOCIAL_OUTREACH_PROJECT_MEDIA_VI,
       },
@@ -1605,94 +1715,94 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         title: "TikTok",
         eyebrow: "Dự án",
         category: "Nội dung website",
-        summary: "Nội dung website và naming cho sáng kiến Tết to the Top của TikTok.",
+        summary: "Nội dung website và đặt tên cho sáng kiến Tết to the Top của TikTok.",
         client: "TikTok",
         year: "2025",
-        scope: ["Naming", "Website Content", "Key Messaging"],
+        scope: ["Đặt tên", "Nội dung website", "Thông điệp chính"],
         overview:
-          "Mỗi năm khi Tết đến gần, TikTok triển khai một trong những sáng kiến thương mại và sáng tạo lớn nhất để giúp SMEs mở khóa tăng trưởng trong mùa mua sắm quan trọng nhất năm. Năm 2025, mình tham gia dự án với vai trò Copywriter, đóng góp vào concept nội dung của sự kiện - từ naming đến website content và key messaging.",
+          "Mỗi năm khi Tết đến gần, TikTok triển khai một trong những sáng kiến thương mại và sáng tạo lớn nhất để giúp các doanh nghiệp nhỏ và vừa mở khóa tăng trưởng trong mùa mua sắm quan trọng nhất năm. Năm 2025, mình tham gia dự án với vai trò copywriter, đóng góp vào ý tưởng nội dung của sự kiện - từ đặt tên đến nội dung website và thông điệp chính.",
         objective:
-          "Tạo một concept nội dung vừa có không khí Tết, vừa thể hiện rõ tinh thần tăng trưởng và bứt phá doanh số cho SMEs.",
+          "Tạo một ý tưởng nội dung vừa có không khí Tết, vừa thể hiện rõ tinh thần tăng trưởng và bứt phá doanh số cho doanh nghiệp nhỏ và vừa.",
         solution:
           "Phát triển tên gọi Tet to the Top từ tinh thần mùa lễ hội và ý niệm đi lên trong tăng trưởng, rồi mở rộng thông điệp đó xuyên suốt website.",
-        results: ["Naming Tet to the Top", "Định hướng nội dung website", "Hệ thông điệp chính"],
+        results: ["Tên gọi Tet to the Top", "Định hướng nội dung website", "Hệ thông điệp chính"],
         thumbnail: { col: 2, row: 0 },
-        media: TIKTOK_PROJECT_MEDIA,
+        media: TIKTOK_PROJECT_MEDIA_VI,
         namingRationale: TIKTOK_NAMING_RATIONALE_VI,
       },
       {
         id: "tvc-script",
         fieldId: "creative-copywriter",
-        title: "TVC Script",
+        title: "Kịch bản TVC",
         eyebrow: "Dự án",
-        category: "Content",
+        category: "Nội dung",
         summary: "Kịch bản TVC ngắn cho sản phẩm đời sống.",
         client: "Home Light",
         year: "2024",
-        scope: ["Script", "VO", "Scene Beat"],
+        scope: ["Kịch bản", "Lời bình", "Nhịp cảnh"],
         overview:
           "Kịch bản kể về một khoảnh khắc đời thường được soi sáng bằng chi tiết nhỏ và lời thoại tiết chế.",
         objective:
           "Tạo kịch bản ngắn gọn, dễ sản xuất và có điểm nhớ cảm xúc.",
         solution: "Dựng nhịp ba hồi trong 30 giây: thiếu vắng, xuất hiện, ấm lại.",
-        results: ["2 bản script", "Shot beat rõ ràng", "VO dễ thu âm"],
+        results: ["2 bản kịch bản", "Nhịp cảnh rõ ràng", "Lời bình sẵn sàng thu âm"],
         thumbnail: { col: 2, row: 0 },
       },
       {
         id: "print-ad",
         fieldId: "creative-copywriter",
-        title: "Print Ad",
+        title: "Quảng cáo in",
         eyebrow: "Dự án",
-        category: "Campaign",
+        category: "Chiến dịch",
         summary: "Headline và body copy cho bộ quảng cáo in.",
         client: "Mộc Market",
         year: "2023",
-        scope: ["Headline", "Body Copy", "Message Matrix"],
+        scope: ["Headline", "Body copy", "Ma trận thông điệp"],
         overview:
           "Bộ quảng cáo tập trung vào cảm giác chạm vào nguyên liệu thật và lựa chọn chậm rãi.",
         objective:
           "Tạo headline ngắn, có hình ảnh và phù hợp với nhịp đọc của ấn phẩm in.",
         solution:
           "Phát triển nhiều lớp câu chữ từ trực diện đến giàu ẩn dụ, sau đó chọn hướng cân bằng nhất.",
-        results: ["18 headline options", "4 mẫu body copy", "Thông điệp nhất quán"],
+        results: ["18 lựa chọn headline", "4 mẫu body copy", "Thông điệp nhất quán"],
         thumbnail: { col: 0, row: 1 },
       },
       {
         id: "website-copy",
         fieldId: "creative-copywriter",
-        title: "Website Copy",
+        title: "Copy website",
         eyebrow: "Dự án",
-        category: "Content",
+        category: "Nội dung",
         summary: "Nội dung website cho dịch vụ sáng tạo boutique.",
         client: "Atelier Nine",
         year: "2023",
-        scope: ["Landing Copy", "UX Writing", "CTA System"],
+        scope: ["Copy landing page", "UX writing", "Hệ CTA"],
         overview:
           "Dự án tinh chỉnh ngôn ngữ website để thương hiệu nghe rõ ràng, cao cấp nhưng không xa cách.",
         objective:
           "Tăng độ rõ của đề xuất giá trị và giúp người xem đi từ tò mò đến liên hệ.",
         solution:
           "Viết lại cấu trúc nội dung theo từng lớp: lời hứa, bằng chứng, quy trình và lời mời.",
-        results: ["Hoàn thiện landing copy", "CTA thống nhất", "Giảm đoạn copy dư thừa"],
+        results: ["Hoàn thiện copy landing page", "Hệ CTA thống nhất", "Giảm nội dung trùng lặp"],
         thumbnail: { col: 1, row: 1 },
       },
       {
         id: "slogan-series",
         fieldId: "creative-copywriter",
-        title: "Slogan Series",
+        title: "Chuỗi slogan",
         eyebrow: "Dự án",
-        category: "Brand Story",
+        category: "Câu chuyện thương hiệu",
         summary: "Chuỗi slogan theo mùa cho thương hiệu hạt giống.",
         client: "Seed Garden",
         year: "2023",
-        scope: ["Slogan", "Tone System", "Seasonal Copy"],
+        scope: ["Slogan", "Hệ giọng điệu", "Copy theo mùa"],
         overview:
           "Chuỗi slogan nối hình ảnh gieo trồng với cảm giác bắt đầu lại của người trẻ.",
         objective:
           "Tạo bộ câu ngắn dễ nhớ, có thể dùng linh hoạt trên social, bao bì và activation.",
         solution:
           "Khai thác ẩn dụ hạt giống như một lời hứa nhỏ, rồi phát triển thành nhiều biến thể theo mùa.",
-        results: ["24 slogan options", "6 câu được chọn", "Tone mềm mại nhưng rõ nét"],
+        results: ["24 lựa chọn slogan", "6 câu được chọn", "Giọng viết mềm mại nhưng rõ nét"],
         thumbnail: { col: 2, row: 1 },
       },
     ],
@@ -1703,6 +1813,7 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         title: "Portfolio - Cổ tích Việt Nam cho dân sáng tạo",
         description:
           "Storytelling, strategy, creativity. Một cuốn portfolio được lật mở bằng nhịp cuộn.",
+        imageSrc: "/assets/storybook/cover.png",
         imageAlt: "Bìa portfolio Cổ tích Việt Nam cho dân sáng tạo - Tâm Sắc Bén",
         nextAria: "Cuộn đến trang giới thiệu",
         nextLabel: "Lật trang",

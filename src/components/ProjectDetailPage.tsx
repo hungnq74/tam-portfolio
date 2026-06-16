@@ -30,29 +30,13 @@ import {
 } from "@/data/portfolio"
 import { LocaleToggle } from "@/components/LocaleToggle"
 import { useLocale } from "@/hooks/useLocale"
+import { getPortfolioGalleryHref } from "@/lib/portfolio-route-state"
 import { cn } from "@/lib/utils"
 
 const MEDIA_RAIL_CLASS =
   "relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 sm:w-[calc(100vw-3rem)] lg:w-[min(calc(100vw-6rem),1440px)]"
 const CAROUSEL_RAIL_CLASS =
   "relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 sm:w-[calc(100vw-3rem)] lg:w-[min(calc(100vw-10rem),1440px)] xl:w-[min(calc(100vw-18rem),1440px)]"
-
-function getPortfolioBackHref(project: Project) {
-  if (project.id === "social-outreach") {
-    const params = new URLSearchParams({
-      field: project.fieldId,
-    })
-
-    return `/?${params.toString()}#gallery`
-  }
-
-  const params = new URLSearchParams({
-    field: project.fieldId,
-    project: project.id,
-  })
-
-  return `/?${params.toString()}#gallery`
-}
 
 export function ProjectDetailPage({
   projectId,
@@ -82,6 +66,7 @@ export function ProjectDetailPage({
       {project.media ? (
         <MediaProjectPage
           ui={ui}
+          field={field}
           project={project}
         />
       ) : (
@@ -97,15 +82,17 @@ export function ProjectDetailPage({
 
 function ProjectChrome({
   ui,
+  field,
   project,
 }: {
   ui: PortfolioUi
+  field: Field
   project: Project
 }) {
   return (
     <div className="mb-5 flex flex-wrap items-center gap-4">
       <Link
-        href={getPortfolioBackHref(project)}
+        href={getPortfolioGalleryHref(project, field)}
         className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-clay transition hover:text-moss focus:outline-none focus:ring-2 focus:ring-clay"
       >
         <ArrowLeft className="h-4 w-4" />
@@ -158,9 +145,11 @@ function getSlideRangeLabel(startIndex: number, visibleCount: number, totalSlide
 
 function MediaProjectPage({
   ui,
+  field,
   project,
 }: {
   ui: PortfolioUi
+  field: Field
   project: Project
 }) {
   const media = project.media
@@ -204,6 +193,7 @@ function MediaProjectPage({
     return (
       <ProjectSocialOutreachPage
         ui={ui}
+        field={field}
         project={project}
         sections={outreachSections}
       />
@@ -213,7 +203,7 @@ function MediaProjectPage({
   return (
     <main className="relative min-h-screen px-4 pb-24 pt-20 sm:px-6 sm:py-20 lg:px-10">
       <div className="mx-auto w-full max-w-7xl">
-        <ProjectChrome ui={ui} project={project} />
+        <ProjectChrome ui={ui} field={field} project={project} />
 
         <article className="space-y-10 sm:space-y-14">
           {usesSplitCoverIntro ? (
@@ -468,17 +458,19 @@ function ProjectSplitCoverIntro({
 
 function ProjectSocialOutreachPage({
   ui,
+  field,
   project,
   sections,
 }: {
   ui: PortfolioUi
+  field: Field
   project: Project
   sections: ProjectOutreachSection[]
 }) {
   return (
     <main className="relative min-h-screen px-4 pb-24 pt-20 sm:px-6 sm:py-20 lg:px-10">
       <div className="mx-auto w-full max-w-7xl">
-        <ProjectChrome ui={ui} project={project} />
+        <ProjectChrome ui={ui} field={field} project={project} />
 
         <article className="space-y-12 sm:space-y-16">
           <section
@@ -1496,7 +1488,7 @@ function TextProjectPage({
   return (
     <main className="relative flex min-h-screen items-center px-4 pb-24 pt-20 sm:px-6 sm:py-20 lg:px-10">
       <div className="mx-auto w-full max-w-6xl">
-        <ProjectChrome ui={ui} project={project} />
+        <ProjectChrome ui={ui} field={field} project={project} />
         <StoryFrame className="overflow-hidden p-5 sm:p-7 lg:p-9">
           <div className="grid gap-8 lg:grid-cols-[0.95fr_1.05fr] lg:gap-10">
             <article className="flex flex-col justify-between">

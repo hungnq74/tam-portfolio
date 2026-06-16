@@ -61,7 +61,7 @@ function renderForm(options: {
     mode = "edit",
     blobConfigured = true,
     manifestError,
-    fields = [createFieldOptions()[0]],
+    fields = createFieldOptions(),
   } = options
   const media = "media" in options ? options.media : testMedia
   const project = mode === "edit" ? createLocalizedProject(media) : undefined
@@ -127,13 +127,14 @@ describe("AdminProjectForm basics", () => {
     expect(screen.getByLabelText("Project id")).toHaveValue("manual-id")
   })
 
-  it("uses the provided Thinking-only field options", () => {
+  it("uses the provided admin field options", () => {
     renderForm()
 
     const fieldSelect = screen.getByLabelText("Field") as HTMLSelectElement
 
     expect(Array.from(fieldSelect.options).map((option) => option.value)).toEqual([
       "social-planner",
+      "creative-copywriter",
     ])
     expect(fieldSelect).toHaveValue("social-planner")
   })
@@ -260,7 +261,7 @@ describe("AdminProjectForm basics", () => {
       thumbnail: { col: 2, row: 0 },
       media: testMedia,
     })
-    expect(requestBody.locales.en).toEqual({
+    expect(requestBody.locales.en).toMatchObject({
       title: "Signal Launch",
       eyebrow: "Project",
       category: "Content Plan",
@@ -272,7 +273,7 @@ describe("AdminProjectForm basics", () => {
       solution: "English solution",
       results: ["Lift", "Reach"],
     })
-    expect(requestBody.locales.vi).toEqual({
+    expect(requestBody.locales.vi).toMatchObject({
       title: "Ra mắt tín hiệu",
       eyebrow: "Du an",
       category: "Kế hoạch nội dung",
@@ -283,6 +284,70 @@ describe("AdminProjectForm basics", () => {
       objective: "Mục tiêu tiếng Việt",
       solution: "Giải pháp tiếng Việt",
       results: ["Tăng trưởng", "Tiếp cận"],
+    })
+    expect(requestBody.locales.en.media).toEqual(testMedia)
+    expect(requestBody.locales.vi.media).toEqual(testMedia)
+  })
+
+  it("submits optional copy and locale-specific media text", async () => {
+    const user = userEvent.setup()
+    const fetch = vi.fn().mockResolvedValue(jsonResponse({ ok: true, etag: "etag-2" }))
+    vi.stubGlobal("fetch", fetch)
+    renderForm()
+
+    await user.click(screen.getByRole("tab", { name: "English" }))
+    await user.type(screen.getByLabelText("Campaign title"), "English campaign")
+    await user.type(screen.getByLabelText("Closing note"), "English closing")
+    await user.type(screen.getByLabelText("Naming eyebrow"), "Naming")
+    await user.type(screen.getByLabelText("Naming title"), "Why this name")
+    await user.type(screen.getByLabelText("Naming items"), "Tet: Seasonal lift")
+    await user.type(screen.getByLabelText("Naming note"), "English naming note")
+    await user.type(screen.getByLabelText("Cover caption"), "English cover caption")
+    await user.clear(screen.getByLabelText("Cover CTA label"))
+    await user.type(screen.getByLabelText("Cover CTA label"), "View English")
+
+    await user.click(screen.getByRole("tab", { name: "Vietnamese" }))
+    await user.type(screen.getByLabelText("Campaign title"), "Chiến dịch tiếng Việt")
+    await user.type(screen.getByLabelText("Closing note"), "Ghi chú tiếng Việt")
+    await user.type(screen.getByLabelText("Naming eyebrow"), "Tên gọi")
+    await user.type(screen.getByLabelText("Naming title"), "Vì sao chọn tên này")
+    await user.type(screen.getByLabelText("Naming items"), "Tết: Sức bật mùa lễ hội")
+    await user.type(screen.getByLabelText("Naming note"), "Ghi chú tên gọi tiếng Việt")
+    await user.type(screen.getByLabelText("Cover caption"), "Caption bìa tiếng Việt")
+    await user.clear(screen.getByLabelText("Cover CTA label"))
+    await user.type(screen.getByLabelText("Cover CTA label"), "Xem tiếng Việt")
+
+    await user.click(screen.getByRole("button", { name: /save project/i }))
+    await screen.findByText("Project saved.")
+
+    const requestBody = JSON.parse(fetch.mock.calls[0][1].body)
+    expect(requestBody.locales.en).toMatchObject({
+      campaignTitle: "English campaign",
+      closingNote: "English closing",
+      namingRationale: {
+        eyebrow: "Naming",
+        title: "Why this name",
+        items: [{ term: "Tet", definition: "Seasonal lift" }],
+        note: "English naming note",
+      },
+    })
+    expect(requestBody.locales.vi).toMatchObject({
+      campaignTitle: "Chiến dịch tiếng Việt",
+      closingNote: "Ghi chú tiếng Việt",
+      namingRationale: {
+        eyebrow: "Tên gọi",
+        title: "Vì sao chọn tên này",
+        items: [{ term: "Tết", definition: "Sức bật mùa lễ hội" }],
+        note: "Ghi chú tên gọi tiếng Việt",
+      },
+    })
+    expect(requestBody.locales.en.media.cover).toMatchObject({
+      caption: "English cover caption",
+      ctaLabel: "View English",
+    })
+    expect(requestBody.locales.vi.media.cover).toMatchObject({
+      caption: "Caption bìa tiếng Việt",
+      ctaLabel: "Xem tiếng Việt",
     })
   })
 })

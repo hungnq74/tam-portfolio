@@ -47,10 +47,12 @@ import { getLenis } from "@/components/LenisProvider"
 import { LocaleToggle } from "@/components/LocaleToggle"
 import { useLocale } from "@/hooks/useLocale"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
-import { resolvePortfolioRouteState } from "@/lib/portfolio-route-state"
+import {
+  getPortfolioGalleryHref,
+  resolvePortfolioRouteState,
+} from "@/lib/portfolio-route-state"
 import { cn } from "@/lib/utils"
 
-const COVER_IMAGE = "/assets/storybook/cover.png"
 const REVEAL_EASE = [0.22, 1, 0.36, 1] as const
 const LOCKED_FIELD_GATE_SECTIONS = new Set<SectionId>(["gallery", "detail"])
 const LOCKED_SCOPE_GATE_SECTIONS = new Set<SectionId>(["detail"])
@@ -123,6 +125,12 @@ function replacePortfolioGalleryUrl({
 
   const search = params.toString()
   const nextUrl = search ? `/?${search}#gallery` : "/"
+
+  replacePortfolioUrl(nextUrl)
+}
+
+function replacePortfolioUrl(nextUrl: string) {
+  if (typeof window === "undefined") return
 
   window.history.replaceState(window.history.state, "", nextUrl)
 }
@@ -540,7 +548,16 @@ export function StoryPortfolio({
   }, [applyRouteState, locale])
 
   useEffect(() => {
-    const syncFromHistory = () => {
+    const syncFromHistory = (event: Event) => {
+      if (
+        event.type === "pageshow" &&
+        "persisted" in event &&
+        event.persisted === true &&
+        !hasExplicitPortfolioTarget()
+      ) {
+        return
+      }
+
       applyRouteStateRef.current({ reveal: true, scroll: true })
     }
 
@@ -851,7 +868,7 @@ function CoverAboutTransition({
           <h1 className="sr-only">{ui.cover.title}</h1>
           <p className="sr-only">{ui.cover.description}</p>
           <img
-            src={COVER_IMAGE}
+            src={ui.cover.imageSrc}
             alt={ui.cover.imageAlt}
             className="sr-only"
           />
@@ -867,6 +884,7 @@ function CoverAboutTransition({
             />
             <SplitCoverPanel
               side="left"
+              coverImageSrc={ui.cover.imageSrc}
               x={leftX}
               rotateY={leftRotateY}
               opacity={panelOpacity}
@@ -875,6 +893,7 @@ function CoverAboutTransition({
             />
             <SplitCoverPanel
               side="right"
+              coverImageSrc={ui.cover.imageSrc}
               x={rightX}
               rotateY={rightRotateY}
               opacity={panelOpacity}
@@ -915,13 +934,13 @@ function StaticFullBleedCover({ ui, onNext }: { ui: PortfolioUi; onNext: () => v
       <h1 className="sr-only">{ui.cover.title}</h1>
       <p className="sr-only">{ui.cover.description}</p>
       <img
-        src={COVER_IMAGE}
+        src={ui.cover.imageSrc}
         alt=""
         aria-hidden="true"
         className="absolute inset-0 h-full w-full scale-110 object-cover opacity-45 blur-xl lg:hidden"
       />
       <img
-        src={COVER_IMAGE}
+        src={ui.cover.imageSrc}
         alt={ui.cover.imageAlt}
         className="absolute left-0 top-0 h-auto w-full max-w-none object-contain lg:inset-0 lg:h-full lg:w-full lg:object-cover"
       />
@@ -944,6 +963,7 @@ function StaticFullBleedCover({ ui, onNext }: { ui: PortfolioUi; onNext: () => v
 
 function SplitCoverPanel({
   side,
+  coverImageSrc,
   x,
   rotateY,
   opacity,
@@ -951,6 +971,7 @@ function SplitCoverPanel({
   insideOpacity,
 }: {
   side: "left" | "right"
+  coverImageSrc: string
   x: MotionValue<string>
   rotateY: MotionValue<string>
   opacity: MotionValue<number>
@@ -969,7 +990,7 @@ function SplitCoverPanel({
       style={{ x, rotateY, opacity }}
     >
       <img
-        src={COVER_IMAGE}
+        src={coverImageSrc}
         alt=""
         className={cn(
           "absolute top-0 h-auto w-screen max-w-none object-contain lg:inset-y-0 lg:h-full lg:object-cover",
@@ -1322,13 +1343,28 @@ function GallerySection({
                 preset="card-cascade"
                 stagger={0.07}
               >
-                {scopeCards.map((scope) => (
-                  <ScopeCard
-                    key={scope.id}
-                    scope={scope}
-                    onSelect={() => onFilter(scope.category)}
-                  />
-                ))}
+                {scopeCards.map((scope) => {
+                  const scopeHref = scope.landingProjectId
+                    ? getProjectHref(scope.landingProjectId)
+                    : undefined
+                  const landingProject = scope.landingProjectId
+                    ? filteredProjects.find((project) => project.id === scope.landingProjectId) ?? null
+                    : null
+
+                  return (
+                    <ScopeCard
+                      key={scope.id}
+                      scope={scope}
+                      href={scopeHref}
+                      onNavigate={
+                        landingProject
+                          ? () => replacePortfolioUrl(getPortfolioGalleryHref(landingProject, activeField))
+                          : undefined
+                      }
+                      onSelect={() => onFilter(scope.category)}
+                    />
+                  )
+                })}
               </RevealGroup>
             ) : filteredProjects.length === 0 ? (
               <ScrollReveal preset="page-rise" amount={0.16}>
@@ -1357,12 +1393,7 @@ function GallerySection({
                     project={project}
                     active={project.id === selectedProjectId}
                     href={getProjectHref(project.id)}
-                    onNavigate={() =>
-                      replacePortfolioGalleryUrl({
-                        fieldId: activeField.id,
-                        projectId: project.id,
-                      })
-                    }
+                    onNavigate={() => replacePortfolioUrl(getPortfolioGalleryHref(project, activeField))}
                   />
                 ))}
               </RevealGroup>
@@ -2216,9 +2247,13 @@ function FieldCard({
 
 function ScopeCard({
   scope,
+  href,
+  onNavigate,
   onSelect,
 }: {
   scope: FieldScopeCard
+  href?: string
+  onNavigate?: () => void
   onSelect: () => void
 }) {
   const content = (
@@ -2255,10 +2290,11 @@ function ScopeCard({
   const className =
     "group story-frame relative block min-h-[230px] w-full overflow-hidden rounded-[8px] text-left shadow-story transition duration-300 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-gold focus:ring-offset-4 focus:ring-offset-moss sm:aspect-[2/1] motion-reduce:hover:translate-y-0"
 
-  if (scope.landingProjectId) {
+  if (href) {
     return (
       <Link
-        href={getProjectHref(scope.landingProjectId)}
+        href={href}
+        onClick={onNavigate}
         className={className}
       >
         {content}

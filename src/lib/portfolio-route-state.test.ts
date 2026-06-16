@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest"
 import { PORTFOLIO_CONTENT } from "@/data/portfolio"
-import { resolvePortfolioRouteState } from "@/lib/portfolio-route-state"
+import {
+  getPortfolioGalleryHref,
+  projectReturnsToScopeHub,
+  resolvePortfolioRouteState,
+} from "@/lib/portfolio-route-state"
 
 function resolveEn(search = "", hash = "") {
   const content = PORTFOLIO_CONTENT.en
@@ -24,6 +28,17 @@ function resolveVi(search = "", hash = "") {
     projects: content.projects,
     search,
   })
+}
+
+function getEnProjectWithField(projectId: string) {
+  const content = PORTFOLIO_CONTENT.en
+  const project = content.projects.find((item) => item.id === projectId)
+  if (!project) throw new Error(`Missing test project ${projectId}`)
+
+  const field = content.fields.find((item) => item.id === project.fieldId)
+  if (!field) throw new Error(`Missing field for test project ${projectId}`)
+
+  return { field, project }
 }
 
 describe("resolvePortfolioRouteState", () => {
@@ -110,5 +125,25 @@ describe("resolvePortfolioRouteState", () => {
       selectedProjectId: null,
       targetSection: "fields",
     })
+  })
+})
+
+describe("portfolio gallery href helpers", () => {
+  it("returns a field and project gallery URL for standard projects", () => {
+    const { field, project } = getEnProjectWithField("weshare")
+
+    expect(projectReturnsToScopeHub(project, field)).toBe(false)
+    expect(getPortfolioGalleryHref(project, field)).toBe(
+      "/?field=creative-copywriter&project=weshare#gallery",
+    )
+  })
+
+  it("returns a field-only gallery URL for scope landing projects", () => {
+    const { field, project } = getEnProjectWithField("social-outreach")
+
+    expect(projectReturnsToScopeHub(project, field)).toBe(true)
+    expect(getPortfolioGalleryHref(project, field)).toBe(
+      "/?field=creative-copywriter#gallery",
+    )
   })
 })
