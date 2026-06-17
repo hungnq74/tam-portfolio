@@ -12,6 +12,7 @@ import {
   useState,
 } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import {
   motion,
   type MotionValue,
@@ -48,7 +49,10 @@ import { LocaleToggle } from "@/components/LocaleToggle"
 import { useLocale } from "@/hooks/useLocale"
 import { useReducedMotion } from "@/hooks/useReducedMotion"
 import {
-  getPortfolioGalleryHref,
+  getContentHref,
+  getContentScopeHref,
+  getProjectReturnHref,
+  projectReturnsToScopeHub,
   resolvePortfolioRouteState,
 } from "@/lib/portfolio-route-state"
 import { cn } from "@/lib/utils"
@@ -109,37 +113,12 @@ function hasExplicitPortfolioTarget() {
   return Boolean(params.get("field") || params.get("project") || window.location.hash === "#gallery")
 }
 
-function replacePortfolioGalleryUrl({
-  fieldId,
-  projectId,
-}: {
-  fieldId?: FieldId | null
-  projectId?: string | null
-}) {
-  if (typeof window === "undefined") return
-
-  const params = new URLSearchParams()
-
-  if (fieldId) params.set("field", fieldId)
-  if (projectId) params.set("project", projectId)
-
-  const search = params.toString()
-  const nextUrl = search ? `/?${search}#gallery` : "/"
-
-  replacePortfolioUrl(nextUrl)
-}
-
-function replacePortfolioUrl(nextUrl: string) {
-  if (typeof window === "undefined") return
-
-  window.history.replaceState(window.history.state, "", nextUrl)
-}
-
 export function StoryPortfolio({
   contentByLocale,
 }: {
   contentByLocale: PortfolioContentByLocale
 }) {
+  const router = useRouter()
   const { locale, setLocale } = useLocale()
   const content = useMemo(() => contentByLocale[locale], [contentByLocale, locale])
   const { author, chapters: contentChapters, fields, projects, ui } = content
@@ -528,7 +507,6 @@ export function StoryPortfolio({
 
   const returnToFieldsGate = useCallback(
     (options: ScrollToOptions = {}) => {
-      replacePortfolioGalleryUrl({})
       setFieldGateLocked(true)
       setSelectedFieldId(null)
       setActiveFilter(ui.allFilter)
@@ -574,24 +552,15 @@ export function StoryPortfolio({
 
   const selectField = (fieldId: FieldId) => {
     const field = fields.find((item) => item.id === fieldId)
-    const firstProject = projects.find((project) => project.fieldId === fieldId)
-    const hasScopeHub = Boolean(field?.scopeCards?.length)
-    if (!field || (!firstProject && !hasScopeHub)) return
+    if (!field) return
 
-    replacePortfolioGalleryUrl({ fieldId })
-    startChoiceAdvance()
-    setFieldGateLocked(false)
-    setSelectedFieldId(fieldId)
-    setActiveFilter(ui.allFilter)
-    setSelectedProjectId(hasScopeHub ? null : firstProject?.id ?? null)
-    window.setTimeout(() => scrollTo("gallery", { force: true }), 90)
+    router.push(getContentHref(field))
   }
 
   const selectFilter = (filter: string) => {
     setActiveFilter(filter)
 
     if (filter === ui.allFilter) {
-      replacePortfolioGalleryUrl({ fieldId: activeField?.id ?? selectedFieldId })
       setSelectedProjectId(null)
       return
     }
@@ -599,10 +568,6 @@ export function StoryPortfolio({
     const firstMatchingProject = activeProjects.find(
       (project) => project.category === filter,
     )
-    replacePortfolioGalleryUrl({
-      fieldId: activeField?.id ?? selectedFieldId,
-      projectId: firstMatchingProject?.id ?? null,
-    })
     setSelectedProjectId(firstMatchingProject?.id ?? null)
   }
 
@@ -662,6 +627,148 @@ export function StoryPortfolio({
               onFilter={selectFilter}
               onChooseField={() => returnToFieldsGate({ immediate: true })}
             />
+          </main>
+        </div>
+      </RouteRestoreContext.Provider>
+    </MotionPreferenceContext.Provider>
+  )
+}
+
+export type PortfolioContentRoute = {
+  fieldId?: FieldId | null
+  scopeId?: string | null
+  projectId?: string | null
+}
+
+export function PortfolioContentPage({
+  contentByLocale,
+  route = {},
+}: {
+  contentByLocale: PortfolioContentByLocale
+  route?: PortfolioContentRoute
+}) {
+  const router = useRouter()
+  const { locale, setLocale } = useLocale()
+  const reducedMotion = useReducedMotion()
+  const content = useMemo(() => contentByLocale[locale], [contentByLocale, locale])
+  const { fields, projects, ui } = content
+  const activeField = route.fieldId
+    ? fields.find((field) => field.id === route.fieldId) ?? null
+    : null
+  const activeProjects = useMemo(
+    () =>
+      activeField
+        ? projects.filter((project) => project.fieldId === activeField.id)
+        : [],
+    [activeField, projects],
+  )
+  const activeScope =
+    activeField && route.scopeId
+      ? activeField.scopeCards?.find((scope) => scope.id === route.scopeId) ?? null
+      : null
+  const selectedProject = route.projectId
+    ? activeProjects.find((project) => project.id === route.projectId) ?? null
+    : null
+  const activeFilter = activeField
+    ? activeScope?.category ??
+      (selectedProject && activeField.filters.includes(selectedProject.category)
+        ? selectedProject.category
+        : ui.allFilter)
+    : ui.allFilter
+  const filteredProjects = useMemo(() => {
+    if (activeFilter === ui.allFilter) return activeProjects
+
+    return activeProjects.filter((project) => project.category === activeFilter)
+  }, [activeFilter, activeProjects, ui.allFilter])
+  const selectedProjectId =
+    selectedProject && activeField && !projectReturnsToScopeHub(selectedProject, activeField)
+      ? selectedProject.id
+      : null
+  const setSectionRef = useCallback((_node: HTMLElement | null) => {}, [])
+  const goToContentEntry = useCallback(() => {
+    router.push(getContentHref())
+  }, [router])
+  const chooseField = useCallback(
+    (fieldId: FieldId) => {
+      router.push(getContentHref(fieldId))
+    },
+    [router],
+  )
+  const chooseFilter = useCallback(
+    (filter: string) => {
+      if (!activeField) {
+        goToContentEntry()
+        return
+      }
+
+      if (filter === ui.allFilter) {
+        router.push(getContentHref(activeField))
+        return
+      }
+
+      const scope = activeField.scopeCards?.find((item) => item.category === filter)
+      if (scope) {
+        router.push(getContentScopeHref({ field: activeField, scope }))
+        return
+      }
+
+      const firstMatchingProject = activeProjects.find(
+        (project) => project.category === filter,
+      )
+
+      router.push(
+        firstMatchingProject
+          ? getProjectReturnHref(firstMatchingProject, activeField)
+          : getContentHref(activeField),
+      )
+    },
+    [activeField, activeProjects, goToContentEntry, router, ui.allFilter],
+  )
+  const getScopeHref = useCallback(
+    (scope: FieldScopeCard) => {
+      if (!activeField) return undefined
+      if (scope.landingProjectId) return getProjectHref(scope.landingProjectId)
+
+      return getContentScopeHref({ field: activeField, scope })
+    },
+    [activeField],
+  )
+
+  return (
+    <MotionPreferenceContext.Provider value={reducedMotion}>
+      <RouteRestoreContext.Provider value={0}>
+        <div className="story-texture min-h-screen overflow-x-clip">
+          <LocaleToggle
+            locale={locale}
+            ariaLabel={ui.languageToggleAria}
+            onLocaleChange={setLocale}
+            className="fixed left-4 top-4 z-[60]"
+          />
+          <main className="pb-24 lg:px-[5.5rem] lg:pb-0">
+            {activeField ? (
+              <GallerySection
+                ui={ui}
+                refSetter={setSectionRef}
+                activeField={activeField}
+                activeFilter={activeFilter}
+                filteredProjects={filteredProjects}
+                selectedProjectId={selectedProjectId}
+                onBack={goToContentEntry}
+                onFilter={chooseFilter}
+                onChooseField={goToContentEntry}
+                getScopeHref={getScopeHref}
+              />
+            ) : (
+              <FieldsSection
+                fields={fields}
+                ui={ui}
+                refSetter={setSectionRef}
+                selectedFieldId={null}
+                gateLocked
+                gateNudgeKey={0}
+                onSelectField={chooseField}
+              />
+            )}
           </main>
         </div>
       </RouteRestoreContext.Provider>
@@ -1216,6 +1323,7 @@ function GallerySection({
   onBack,
   onFilter,
   onChooseField,
+  getScopeHref,
 }: {
   ui: PortfolioUi
   refSetter: (node: HTMLElement | null) => void
@@ -1226,6 +1334,7 @@ function GallerySection({
   onBack: () => void
   onFilter: (filter: string) => void
   onChooseField: () => void
+  getScopeHref?: (scope: FieldScopeCard) => string | undefined
 }) {
   if (!activeField) {
     return (
@@ -1344,23 +1453,17 @@ function GallerySection({
                 stagger={0.07}
               >
                 {scopeCards.map((scope) => {
-                  const scopeHref = scope.landingProjectId
-                    ? getProjectHref(scope.landingProjectId)
-                    : undefined
-                  const landingProject = scope.landingProjectId
-                    ? filteredProjects.find((project) => project.id === scope.landingProjectId) ?? null
-                    : null
+                  const scopeHref = getScopeHref
+                    ? getScopeHref(scope)
+                    : scope.landingProjectId
+                      ? getProjectHref(scope.landingProjectId)
+                      : undefined
 
                   return (
                     <ScopeCard
                       key={scope.id}
                       scope={scope}
                       href={scopeHref}
-                      onNavigate={
-                        landingProject
-                          ? () => replacePortfolioUrl(getPortfolioGalleryHref(landingProject, activeField))
-                          : undefined
-                      }
                       onSelect={() => onFilter(scope.category)}
                     />
                   )
@@ -1393,7 +1496,6 @@ function GallerySection({
                     project={project}
                     active={project.id === selectedProjectId}
                     href={getProjectHref(project.id)}
-                    onNavigate={() => replacePortfolioUrl(getPortfolioGalleryHref(project, activeField))}
                   />
                 ))}
               </RevealGroup>

@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest"
 import { PORTFOLIO_CONTENT } from "@/data/portfolio"
 import {
+  getContentHref,
+  getContentScopeHref,
+  getLegacyPortfolioTargetHref,
   getPortfolioGalleryHref,
+  getProjectReturnHref,
   projectReturnsToScopeHub,
   resolvePortfolioRouteState,
 } from "@/lib/portfolio-route-state"
@@ -129,19 +133,74 @@ describe("resolvePortfolioRouteState", () => {
 })
 
 describe("portfolio gallery href helpers", () => {
-  it("returns a field and project gallery URL for standard projects", () => {
+  it("returns canonical content routes for scoped projects", () => {
     const { field, project } = getEnProjectWithField("weshare")
+    const tiktok = getEnProjectWithField("tiktok")
 
     expect(projectReturnsToScopeHub(project, field)).toBe(false)
+    expect(getProjectReturnHref(project, field)).toBe(
+      "/content/creative-copywriter/scope/fanpage-always-on-content?project=weshare",
+    )
+    expect(getProjectReturnHref(tiktok.project, tiktok.field)).toBe(
+      "/content/creative-copywriter/scope/website-content?project=tiktok",
+    )
+  })
+
+  it("returns the field hub route for scope landing projects", () => {
+    const { field, project } = getEnProjectWithField("social-outreach")
+
+    expect(projectReturnsToScopeHub(project, field)).toBe(true)
+    expect(getProjectReturnHref(project, field)).toBe("/content/creative-copywriter")
+  })
+
+  it("builds content entry and scope URLs from stable ids", () => {
+    expect(getContentHref()).toBe("/content")
+    expect(getContentHref("creative-copywriter")).toBe("/content/creative-copywriter")
+    expect(
+      getContentScopeHref({
+        field: "creative-copywriter",
+        scope: "website-content",
+        projectId: "tiktok",
+      }),
+    ).toBe("/content/creative-copywriter/scope/website-content?project=tiktok")
+  })
+
+  it("maps legacy gallery URLs to canonical content routes", () => {
+    const content = PORTFOLIO_CONTENT.en
+    const resolveLegacy = (search: string, hash = "#gallery") =>
+      getLegacyPortfolioTargetHref({
+        allFilter: content.ui.allFilter,
+        fields: content.fields,
+        hash,
+        projects: content.projects,
+        search,
+      })
+
+    expect(resolveLegacy("?field=creative-copywriter&project=weshare")).toBe(
+      "/content/creative-copywriter/scope/fanpage-always-on-content?project=weshare",
+    )
+    expect(resolveLegacy("?field=creative-copywriter&project=social-outreach")).toBe(
+      "/content/creative-copywriter",
+    )
+    expect(resolveLegacy("?project=missing")).toBe("/content")
+    expect(resolveLegacy("?field=creative-copywriter&project=missing")).toBe(
+      "/content/creative-copywriter",
+    )
+    expect(resolveLegacy("")).toBe("/content")
+    expect(resolveLegacy("", "")).toBeNull()
+  })
+
+  it("keeps legacy gallery URLs available for old links", () => {
+    const { field, project } = getEnProjectWithField("weshare")
+
     expect(getPortfolioGalleryHref(project, field)).toBe(
       "/?field=creative-copywriter&project=weshare#gallery",
     )
   })
 
-  it("returns a field-only gallery URL for scope landing projects", () => {
+  it("keeps field-only legacy gallery URLs for scope landing projects", () => {
     const { field, project } = getEnProjectWithField("social-outreach")
 
-    expect(projectReturnsToScopeHub(project, field)).toBe(true)
     expect(getPortfolioGalleryHref(project, field)).toBe(
       "/?field=creative-copywriter#gallery",
     )

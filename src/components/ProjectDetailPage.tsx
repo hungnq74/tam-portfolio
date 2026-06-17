@@ -30,7 +30,7 @@ import {
 } from "@/data/portfolio"
 import { LocaleToggle } from "@/components/LocaleToggle"
 import { useLocale } from "@/hooks/useLocale"
-import { getPortfolioGalleryHref } from "@/lib/portfolio-route-state"
+import { getProjectReturnHref } from "@/lib/portfolio-route-state"
 import { cn } from "@/lib/utils"
 
 const MEDIA_RAIL_CLASS =
@@ -92,7 +92,7 @@ function ProjectChrome({
   return (
     <div className="mb-5 flex flex-wrap items-center gap-4">
       <Link
-        href={getPortfolioGalleryHref(project, field)}
+        href={getProjectReturnHref(project, field)}
         className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.18em] text-clay transition hover:text-moss focus:outline-none focus:ring-2 focus:ring-clay"
       >
         <ArrowLeft className="h-4 w-4" />

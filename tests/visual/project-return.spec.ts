@@ -1,14 +1,17 @@
 import { expect, type Page, test } from "@playwright/test"
 
 const LOCALE_STORAGE_KEY = "tam-portfolio-locale"
+type MotionMode = "default" | "reduced"
 
-async function openEnglishPage(page: Page, path: string) {
+async function openEnglishPage(page: Page, path: string, motionMode: MotionMode = "default") {
   await page.addInitScript((localeKey) => {
     window.localStorage.setItem(localeKey, "en")
     document.documentElement.style.scrollBehavior = "auto"
   }, LOCALE_STORAGE_KEY)
 
-  await page.emulateMedia({ reducedMotion: "reduce" })
+  await page.emulateMedia({
+    reducedMotion: motionMode === "reduced" ? "reduce" : "no-preference",
+  })
   await page.goto(path, { waitUntil: "domcontentloaded" })
   await expect(page.getByRole("button", { name: "English" })).toHaveAttribute(
     "aria-pressed",
@@ -16,8 +19,31 @@ async function openEnglishPage(page: Page, path: string) {
   )
 }
 
-async function expectGalleryRestored(page: Page, heading: string) {
+async function expectContentGallery(
+  page: Page,
+  heading: string,
+  { atTop = true }: { atTop?: boolean } = {},
+) {
   const gallerySection = page.locator('[data-section-id="gallery"]')
+
+  await expect(gallerySection).toHaveCount(1)
+  await expect(gallerySection.getByRole("heading", { name: heading })).toBeAttached()
+  await expect(page.locator('[data-section-id="cover"]')).toHaveCount(0)
+
+  if (!atTop) {
+    await page.waitForFunction(
+      () => {
+        const gallery = document.querySelector('[data-section-id="gallery"]')
+        if (!gallery) return false
+
+        const rect = gallery.getBoundingClientRect()
+        return rect.top < window.innerHeight && rect.bottom > 0
+      },
+      undefined,
+      { timeout: 10_000 },
+    )
+    return
+  }
 
   await page.waitForFunction(
     () => {
@@ -27,67 +53,113 @@ async function expectGalleryRestored(page: Page, heading: string) {
     undefined,
     { timeout: 10_000 },
   )
-  await expect(gallerySection.getByRole("heading", { name: heading })).toBeVisible()
 
   const position = await page.evaluate(() => {
-    const cover = document.querySelector('[data-section-id="cover"]')
     const gallery = document.querySelector('[data-section-id="gallery"]')
 
     return {
-      coverTop: cover?.getBoundingClientRect().top ?? null,
       galleryTop: gallery?.getBoundingClientRect().top ?? null,
     }
   })
 
   expect(Math.abs(position.galleryTop ?? Number.POSITIVE_INFINITY)).toBeLessThanOrEqual(4)
-  expect(position.coverTop ?? 0).toBeLessThan(0)
 }
 
-async function expectWritingScopeHub(page: Page) {
-  await expectGalleryRestored(page, "Writing with Intent")
+async function expectWritingScopeHub(page: Page, options?: { atTop?: boolean }) {
+  await expectContentGallery(page, "Writing with Intent", options)
   await expect(
     page.locator('[data-section-id="gallery"]').getByText("Social Outreach", { exact: true }),
-  ).toBeVisible()
-  expect(page.url()).toContain("field=creative-copywriter")
-  expect(page.url()).not.toContain("project=social-outreach")
+  ).toBeAttached()
+  expect(new URL(page.url()).pathname).toBe("/content/creative-copywriter")
 }
 
 test.describe("project return navigation", () => {
-  test("browser Back from a content project restores the exact gallery state", async ({ page }) => {
-    await openEnglishPage(page, "/?field=creative-copywriter&project=weshare#gallery")
-    await expectGalleryRestored(page, "Fanpage Always-on Content")
+  test("cold visits to the home page still start at the cover", async ({ page }) => {
+    await openEnglishPage(page, "/")
 
-    await page.locator('a[href="/work/weshare"]').click()
-    await page.waitForURL("**/work/weshare")
-    await page.goBack({ waitUntil: "domcontentloaded" })
+    await expect(page.locator('[data-section-id="cover"]')).toHaveCount(1)
+    await expect(
+      page.getByRole("img", { name: /Portfolio cover inspired by Vietnamese storybooks/i }),
+    ).toBeAttached()
 
-    await expectGalleryRestored(page, "Fanpage Always-on Content")
-    expect(page.url()).toContain("field=creative-copywriter")
-    expect(page.url()).toContain("project=weshare")
+    const position = await page.evaluate(() => ({
+      scrollY: window.scrollY,
+      coverTop:
+        document.querySelector('[data-section-id="cover"]')?.getBoundingClientRect().top ?? null,
+    }))
+
+    expect(position.scrollY).toBe(0)
+    expect(position.coverTop).toBe(0)
   })
 
-  test("project Back link restores the matching content scope", async ({ page }) => {
-    await openEnglishPage(page, "/work/tiktok")
+  for (const motionMode of ["default", "reduced"] as const) {
+    test.describe(`${motionMode} motion`, () => {
+      test("browser Back from a content project restores the exact content route", async ({
+        page,
+      }) => {
+        await openEnglishPage(
+          page,
+          "/content/creative-copywriter/scope/fanpage-always-on-content?project=weshare",
+          motionMode,
+        )
+        await expectContentGallery(page, "Fanpage Always-on Content")
 
-    await page.getByRole("link", { name: "Back" }).click()
+        await page.locator('a[href="/work/weshare"]').click()
+        await page.waitForURL("**/work/weshare")
+        await page.goBack({ waitUntil: "domcontentloaded" })
 
-    await expectGalleryRestored(page, "Website Content")
-    expect(page.url()).toContain("field=creative-copywriter")
-    expect(page.url()).toContain("project=tiktok")
-  })
+        await expectContentGallery(page, "Fanpage Always-on Content", { atTop: false })
+        const url = new URL(page.url())
+        expect(url.pathname).toBe(
+          "/content/creative-copywriter/scope/fanpage-always-on-content",
+        )
+        expect(url.searchParams.get("project")).toBe("weshare")
+      })
 
-  test("scope landing projects return to the scope hub from both exit paths", async ({ page }) => {
-    await openEnglishPage(page, "/?field=creative-copywriter#gallery")
-    await expectWritingScopeHub(page)
+      test("project Back link restores the matching content scope", async ({ page }) => {
+        await openEnglishPage(page, "/work/tiktok", motionMode)
 
-    await page.locator('a[href="/work/social-outreach"]').click()
-    await page.waitForURL("**/work/social-outreach")
-    await page.goBack({ waitUntil: "domcontentloaded" })
-    await expectWritingScopeHub(page)
+        await page.getByRole("link", { name: "Back" }).click()
 
-    await page.locator('a[href="/work/social-outreach"]').click()
-    await page.waitForURL("**/work/social-outreach")
-    await page.getByRole("link", { name: "Back" }).click()
-    await expectWritingScopeHub(page)
-  })
+        await expectContentGallery(page, "Website Content")
+        const url = new URL(page.url())
+        expect(url.pathname).toBe("/content/creative-copywriter/scope/website-content")
+        expect(url.searchParams.get("project")).toBe("tiktok")
+      })
+
+      test("scope landing projects return to the scope hub from both exit paths", async ({
+        page,
+      }) => {
+        await openEnglishPage(page, "/content/creative-copywriter", motionMode)
+        await expectWritingScopeHub(page)
+
+        await page.locator('a[href="/work/social-outreach"]').click()
+        await page.waitForURL("**/work/social-outreach")
+        await page.goBack({ waitUntil: "domcontentloaded" })
+        await expectWritingScopeHub(page, { atTop: false })
+
+        await page.locator('a[href="/work/social-outreach"]').click()
+        await page.waitForURL("**/work/social-outreach")
+        await page.getByRole("link", { name: "Back" }).click()
+        await expectWritingScopeHub(page)
+      })
+
+      test("legacy gallery URLs redirect to content routes without rendering the cover", async ({
+        page,
+      }) => {
+        await openEnglishPage(
+          page,
+          "/?field=creative-copywriter&project=weshare#gallery",
+          motionMode,
+        )
+
+        await expectContentGallery(page, "Fanpage Always-on Content")
+        const url = new URL(page.url())
+        expect(url.pathname).toBe(
+          "/content/creative-copywriter/scope/fanpage-always-on-content",
+        )
+        expect(url.searchParams.get("project")).toBe("weshare")
+      })
+    })
+  }
 })
