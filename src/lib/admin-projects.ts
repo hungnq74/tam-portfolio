@@ -119,19 +119,15 @@ export const portfolioManifestSchema = z.object({
 
 const adminLocaleProjectSchema = z.object({
   title: z.string().min(1).max(120),
-  eyebrow: z.string().min(1).max(80),
   category: z.string().min(1).max(80),
   summary: z.string().min(1).max(280),
   client: z.string().min(1).max(120),
   scope: z.array(z.string().min(1).max(80)).min(1).max(12),
-  campaignTitle: z.string().min(1).max(160).optional(),
-  closingNote: z.string().min(1).max(320).optional(),
   overview: z.string().min(1).max(900),
   objective: z.string().min(1).max(900),
   solution: z.string().min(1).max(900),
   results: z.array(z.string().min(1).max(120)).min(1).max(12),
   media: projectMediaSchema.optional(),
-  namingRationale: projectNamingRationaleSchema.optional(),
 })
 
 export const adminProjectSaveSchema = z.object({
@@ -270,26 +266,33 @@ export function validateAdminProjectPayload(
   }
 }
 
-export function createLocalizedProjects(payload: AdminProjectSavePayload) {
+function getDefaultEyebrow(locale: Locale) {
+  return locale === "vi" ? "Dự án" : "Project"
+}
+
+export function createLocalizedProjects(
+  payload: AdminProjectSavePayload,
+  existingProjects?: Partial<Record<Locale, Project>>,
+) {
   const createProject = (locale: Locale): Project => ({
     id: payload.shared.id,
     fieldId: payload.shared.fieldId,
     title: payload.locales[locale].title,
-    eyebrow: payload.locales[locale].eyebrow,
+    eyebrow: existingProjects?.[locale]?.eyebrow ?? getDefaultEyebrow(locale),
     category: payload.locales[locale].category,
     summary: payload.locales[locale].summary,
     client: payload.locales[locale].client,
     year: payload.shared.year,
     scope: payload.locales[locale].scope,
-    campaignTitle: payload.locales[locale].campaignTitle,
-    closingNote: payload.locales[locale].closingNote,
+    campaignTitle: existingProjects?.[locale]?.campaignTitle,
+    closingNote: existingProjects?.[locale]?.closingNote,
     overview: payload.locales[locale].overview,
     objective: payload.locales[locale].objective,
     solution: payload.locales[locale].solution,
     results: payload.locales[locale].results,
     thumbnail: payload.shared.thumbnail,
     media: getLocaleMedia(payload, locale),
-    namingRationale: payload.locales[locale].namingRationale,
+    namingRationale: existingProjects?.[locale]?.namingRationale,
   })
 
   return {

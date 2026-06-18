@@ -3,7 +3,7 @@ import {
   createLocalizedProjects,
   validateAdminProjectPayload,
 } from "@/lib/admin-projects"
-import { createAdminPayload, testMedia } from "@/test/factories"
+import { createAdminPayload, createProject, testMedia } from "@/test/factories"
 
 describe("validateAdminProjectPayload", () => {
   it("requires media when creating a project", () => {
@@ -142,6 +142,7 @@ describe("createLocalizedProjects", () => {
       id: "demo-project",
       fieldId: "social-planner",
       title: "Demo project",
+      eyebrow: "Project",
       category: "Campaign",
       year: "2026",
       media: testMedia,
@@ -149,60 +150,70 @@ describe("createLocalizedProjects", () => {
     expect(projects.vi).toMatchObject({
       id: "demo-project",
       title: "Du an demo",
+      eyebrow: "Dự án",
       category: "Chiến dịch",
       scope: ["Chien luoc", "Ke hoach noi dung"],
       thumbnail: { col: 0, row: 1 },
     })
+    expect(projects.en.campaignTitle).toBeUndefined()
+    expect(projects.en.closingNote).toBeUndefined()
+    expect(projects.en.namingRationale).toBeUndefined()
   })
 
-  it("preserves optional copy and locale-specific media text", () => {
+  it("preserves hidden optional copy and media text from existing projects on update", () => {
+    const mediaWithText = {
+      ...testMedia,
+      cover: {
+        ...testMedia.cover,
+        alt: "Existing cover alt",
+        caption: "Existing cover caption",
+        ctaLabel: "View existing",
+      },
+    }
+    const existingEn = createProject("demo-project", {
+      eyebrow: "Scope",
+      campaignTitle: "Existing campaign",
+      closingNote: "Existing closing note",
+      media: mediaWithText,
+      namingRationale: {
+        eyebrow: "Naming",
+        title: "Why this name",
+        items: [{ term: "Tet", definition: "Seasonal context" }],
+        note: "English note",
+      },
+    })
+    const existingVi = createProject("demo-project", {
+      eyebrow: "Phạm vi",
+      campaignTitle: "Chiến dịch hiện có",
+      closingNote: "Ghi chú hiện có",
+      media: mediaWithText,
+      namingRationale: {
+        eyebrow: "Tên gọi",
+        title: "Vì sao chọn tên này",
+        items: [{ term: "Tết", definition: "Bối cảnh mùa lễ hội" }],
+        note: "Ghi chú tiếng Việt",
+      },
+    })
     const projects = createLocalizedProjects(
       createAdminPayload({
-        locales: {
-          en: {
-            campaignTitle: "English campaign",
-            closingNote: "English closing note",
-            media: {
-              ...testMedia,
-              cover: {
-                ...testMedia.cover,
-                alt: "English cover alt",
-                caption: "English cover caption",
-              },
-            },
-            namingRationale: {
-              eyebrow: "Naming",
-              title: "Why this name",
-              items: [{ term: "Tet", definition: "Seasonal context" }],
-              note: "English note",
-            },
-          },
-          vi: {
-            campaignTitle: "Chiến dịch tiếng Việt",
-            closingNote: "Ghi chú kết tiếng Việt",
-            media: {
-              ...testMedia,
-              cover: {
-                ...testMedia.cover,
-                alt: "Alt bìa tiếng Việt",
-                caption: "Caption bìa tiếng Việt",
-              },
-            },
-            namingRationale: {
-              eyebrow: "Tên gọi",
-              title: "Vì sao chọn tên này",
-              items: [{ term: "Tết", definition: "Bối cảnh mùa lễ hội" }],
-              note: "Ghi chú tiếng Việt",
-            },
-          },
+        shared: {
+          media: mediaWithText,
         },
       }),
+      {
+        en: existingEn,
+        vi: existingVi,
+      },
     )
 
-    expect(projects.en.campaignTitle).toBe("English campaign")
-    expect(projects.vi.campaignTitle).toBe("Chiến dịch tiếng Việt")
-    expect(projects.en.media?.cover.caption).toBe("English cover caption")
-    expect(projects.vi.media?.cover.caption).toBe("Caption bìa tiếng Việt")
+    expect(projects.en.eyebrow).toBe("Scope")
+    expect(projects.vi.eyebrow).toBe("Phạm vi")
+    expect(projects.en.campaignTitle).toBe("Existing campaign")
+    expect(projects.vi.campaignTitle).toBe("Chiến dịch hiện có")
+    expect(projects.en.closingNote).toBe("Existing closing note")
+    expect(projects.vi.closingNote).toBe("Ghi chú hiện có")
+    expect(projects.en.media?.cover.caption).toBe("Existing cover caption")
+    expect(projects.vi.media?.cover.ctaLabel).toBe("View existing")
     expect(projects.en.namingRationale?.items[0]).toEqual({
       term: "Tet",
       definition: "Seasonal context",

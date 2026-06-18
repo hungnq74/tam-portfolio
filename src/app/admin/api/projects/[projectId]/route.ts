@@ -95,7 +95,11 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   }
 
   try {
-    const projects = createLocalizedProjects(parsed.payload)
+    const [existingEn, existingVi] = existingProjects
+    const projects = createLocalizedProjects(parsed.payload, {
+      en: existingEn,
+      vi: existingVi,
+    })
     const nextManifest = replaceProjectInManifest(snapshot.manifest, projects)
     const saved = await savePortfolioManifest(nextManifest, snapshot.etag)
     const unusedUrls = getUnusedOwnedBlobUrls({

@@ -177,6 +177,60 @@ describe("admin project update API", () => {
     expect(revalidatePath).toHaveBeenCalledWith("/")
     expect(revalidatePath).toHaveBeenCalledWith("/work/demo-project")
   })
+
+  it("preserves hidden optional project fields when saving simplified admin updates", async () => {
+    mocks.readAdminPortfolioSnapshot.mockResolvedValue(
+      createSnapshot({
+        projects: [
+          createProject("demo-project", {
+            eyebrow: "Scope",
+            campaignTitle: "Existing campaign",
+            closingNote: "Existing closing",
+            namingRationale: {
+              eyebrow: "Naming",
+              title: "Why this name",
+              items: [{ term: "Tet", definition: "Seasonal context" }],
+              note: "Existing note",
+            },
+          }),
+        ],
+        viProjects: [
+          createProject("demo-project", {
+            eyebrow: "Phạm vi",
+            campaignTitle: "Chiến dịch hiện có",
+            closingNote: "Ghi chú hiện có",
+            namingRationale: {
+              eyebrow: "Tên gọi",
+              title: "Vì sao chọn tên này",
+              items: [{ term: "Tết", definition: "Bối cảnh mùa lễ hội" }],
+              note: "Ghi chú hiện có",
+            },
+          }),
+        ],
+      }),
+    )
+
+    const response = await PUT(request("PUT", createAdminPayload()), context)
+
+    expect(response.status).toBe(200)
+    expect(mocks.replaceProjectInManifest).toHaveBeenCalledWith(
+      expect.objectContaining({ revision: "revision-1" }),
+      {
+        en: expect.objectContaining({
+          eyebrow: "Scope",
+          campaignTitle: "Existing campaign",
+          closingNote: "Existing closing",
+          namingRationale: expect.objectContaining({ title: "Why this name" }),
+        }),
+        vi: expect.objectContaining({
+          eyebrow: "Phạm vi",
+          campaignTitle: "Chiến dịch hiện có",
+          closingNote: "Ghi chú hiện có",
+          namingRationale: expect.objectContaining({ title: "Vì sao chọn tên này" }),
+        }),
+      },
+    )
+  })
 })
 
 describe("admin project delete API", () => {

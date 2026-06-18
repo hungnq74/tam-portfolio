@@ -129,7 +129,6 @@ function createLocalePayload(locale: Locale) {
   return locale === "en"
     ? {
         title: "Demo project",
-        eyebrow: "Project",
         category: "Campaign",
         summary: "Short project summary",
         client: "Demo Client",
@@ -141,7 +140,6 @@ function createLocalePayload(locale: Locale) {
       }
     : {
         title: "Du an demo",
-        eyebrow: "Du an",
         category: "Chiến dịch",
         summary: "Tom tat du an ngan",
         client: "Khach hang demo",

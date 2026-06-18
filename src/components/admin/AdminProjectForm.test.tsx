@@ -263,7 +263,6 @@ describe("AdminProjectForm basics", () => {
     })
     expect(requestBody.locales.en).toMatchObject({
       title: "Signal Launch",
-      eyebrow: "Project",
       category: "Content Plan",
       summary: "A sharp launch planning project.",
       client: "Signal Co",
@@ -275,7 +274,6 @@ describe("AdminProjectForm basics", () => {
     })
     expect(requestBody.locales.vi).toMatchObject({
       title: "Ra mắt tín hiệu",
-      eyebrow: "Du an",
       category: "Kế hoạch nội dung",
       summary: "Dự án lập kế hoạch ra mắt.",
       client: "Signal VN",
@@ -287,68 +285,25 @@ describe("AdminProjectForm basics", () => {
     })
     expect(requestBody.locales.en.media).toEqual(testMedia)
     expect(requestBody.locales.vi.media).toEqual(testMedia)
+    expect(requestBody.locales.en).not.toHaveProperty("eyebrow")
+    expect(requestBody.locales.en).not.toHaveProperty("campaignTitle")
+    expect(requestBody.locales.en).not.toHaveProperty("closingNote")
+    expect(requestBody.locales.en).not.toHaveProperty("namingRationale")
   })
 
-  it("submits optional copy and locale-specific media text", async () => {
+  it("hides custom optional fields and advanced media text controls", async () => {
     const user = userEvent.setup()
-    const fetch = vi.fn().mockResolvedValue(jsonResponse({ ok: true, etag: "etag-2" }))
-    vi.stubGlobal("fetch", fetch)
     renderForm()
 
     await user.click(screen.getByRole("tab", { name: "English" }))
-    await user.type(screen.getByLabelText("Campaign title"), "English campaign")
-    await user.type(screen.getByLabelText("Closing note"), "English closing")
-    await user.type(screen.getByLabelText("Naming eyebrow"), "Naming")
-    await user.type(screen.getByLabelText("Naming title"), "Why this name")
-    await user.type(screen.getByLabelText("Naming items"), "Tet: Seasonal lift")
-    await user.type(screen.getByLabelText("Naming note"), "English naming note")
-    await user.type(screen.getByLabelText("Cover caption"), "English cover caption")
-    await user.clear(screen.getByLabelText("Cover CTA label"))
-    await user.type(screen.getByLabelText("Cover CTA label"), "View English")
 
-    await user.click(screen.getByRole("tab", { name: "Vietnamese" }))
-    await user.type(screen.getByLabelText("Campaign title"), "Chiến dịch tiếng Việt")
-    await user.type(screen.getByLabelText("Closing note"), "Ghi chú tiếng Việt")
-    await user.type(screen.getByLabelText("Naming eyebrow"), "Tên gọi")
-    await user.type(screen.getByLabelText("Naming title"), "Vì sao chọn tên này")
-    await user.type(screen.getByLabelText("Naming items"), "Tết: Sức bật mùa lễ hội")
-    await user.type(screen.getByLabelText("Naming note"), "Ghi chú tên gọi tiếng Việt")
-    await user.type(screen.getByLabelText("Cover caption"), "Caption bìa tiếng Việt")
-    await user.clear(screen.getByLabelText("Cover CTA label"))
-    await user.type(screen.getByLabelText("Cover CTA label"), "Xem tiếng Việt")
-
-    await user.click(screen.getByRole("button", { name: /save project/i }))
-    await screen.findByText("Project saved.")
-
-    const requestBody = JSON.parse(fetch.mock.calls[0][1].body)
-    expect(requestBody.locales.en).toMatchObject({
-      campaignTitle: "English campaign",
-      closingNote: "English closing",
-      namingRationale: {
-        eyebrow: "Naming",
-        title: "Why this name",
-        items: [{ term: "Tet", definition: "Seasonal lift" }],
-        note: "English naming note",
-      },
-    })
-    expect(requestBody.locales.vi).toMatchObject({
-      campaignTitle: "Chiến dịch tiếng Việt",
-      closingNote: "Ghi chú tiếng Việt",
-      namingRationale: {
-        eyebrow: "Tên gọi",
-        title: "Vì sao chọn tên này",
-        items: [{ term: "Tết", definition: "Sức bật mùa lễ hội" }],
-        note: "Ghi chú tên gọi tiếng Việt",
-      },
-    })
-    expect(requestBody.locales.en.media.cover).toMatchObject({
-      caption: "English cover caption",
-      ctaLabel: "View English",
-    })
-    expect(requestBody.locales.vi.media.cover).toMatchObject({
-      caption: "Caption bìa tiếng Việt",
-      ctaLabel: "Xem tiếng Việt",
-    })
+    expect(screen.queryByLabelText("Eyebrow")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Campaign title")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Closing note")).not.toBeInTheDocument()
+    expect(screen.queryByText("Naming rationale")).not.toBeInTheDocument()
+    expect(screen.queryByText("Media text")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Cover caption")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Cover CTA label")).not.toBeInTheDocument()
   })
 })
 

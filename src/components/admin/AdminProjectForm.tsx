@@ -32,21 +32,14 @@ const PDF_RENDER_WIDTH = 1600
 
 type LocaleDraft = {
   title: string
-  eyebrow: string
   category: string
   summary: string
   client: string
   scopeText: string
-  campaignTitle: string
-  closingNote: string
   overview: string
   objective: string
   solution: string
   resultsText: string
-  namingRationaleEyebrow: string
-  namingRationaleTitle: string
-  namingRationaleItemsText: string
-  namingRationaleNote: string
 }
 
 type FieldOption = {
@@ -130,16 +123,6 @@ export function AdminProjectForm({
         ...current[locale],
         [key]: value,
       },
-    }))
-  }
-
-  const updateLocaleMedia = (
-    locale: Locale,
-    updater: (current: ProjectMedia | undefined) => ProjectMedia | undefined,
-  ) => {
-    setMediaByLocale((current) => ({
-      ...current,
-      [locale]: updater(current[locale]),
     }))
   }
 
@@ -456,10 +439,8 @@ export function AdminProjectForm({
             <LocaleEditor
               locale="en"
               draft={locales.en}
-              media={mediaByLocale.en}
               filters={selectedField.filters.en}
               onChange={updateLocale}
-              onMediaChange={(updater) => updateLocaleMedia("en", updater)}
             />
           ) : null}
 
@@ -467,10 +448,8 @@ export function AdminProjectForm({
             <LocaleEditor
               locale="vi"
               draft={locales.vi}
-              media={mediaByLocale.vi}
               filters={selectedField.filters.vi}
               onChange={updateLocale}
-              onMediaChange={(updater) => updateLocaleMedia("vi", updater)}
             />
           ) : null}
 
@@ -551,83 +530,29 @@ function createLocaleDraft(
 
   return {
     title: project?.title ?? "",
-    eyebrow: project?.eyebrow ?? (locale === "en" ? "Project" : "Dự án"),
     category: project?.category ?? field.filters[locale][0] ?? "",
     summary: project?.summary ?? "",
     client: project?.client ?? "",
     scopeText: project?.scope.join("\n") ?? "",
-    campaignTitle: project?.campaignTitle ?? "",
-    closingNote: project?.closingNote ?? "",
     overview: project?.overview ?? "",
     objective: project?.objective ?? "",
     solution: project?.solution ?? "",
     resultsText: project?.results.join("\n") ?? "",
-    namingRationaleEyebrow: project?.namingRationale?.eyebrow ?? "",
-    namingRationaleTitle: project?.namingRationale?.title ?? "",
-    namingRationaleItemsText:
-      project?.namingRationale?.items
-        .map((item) => `${item.term}: ${item.definition}`)
-        .join("\n") ?? "",
-    namingRationaleNote: project?.namingRationale?.note ?? "",
   }
 }
 
 function createLocalePayload(draft: LocaleDraft, media: ProjectMedia | undefined) {
-  const campaignTitle = draft.campaignTitle.trim()
-  const closingNote = draft.closingNote.trim()
-  const namingRationale = createNamingRationalePayload(draft)
-
   return {
     title: draft.title.trim(),
-    eyebrow: draft.eyebrow.trim(),
     category: draft.category,
     summary: draft.summary.trim(),
     client: draft.client.trim(),
     scope: normalizeListText(draft.scopeText),
-    ...(campaignTitle ? { campaignTitle } : {}),
-    ...(closingNote ? { closingNote } : {}),
     overview: draft.overview.trim(),
     objective: draft.objective.trim(),
     solution: draft.solution.trim(),
     results: normalizeListText(draft.resultsText),
     ...(media ? { media } : {}),
-    ...(namingRationale ? { namingRationale } : {}),
-  }
-}
-
-function createNamingRationalePayload(draft: LocaleDraft) {
-  const eyebrow = draft.namingRationaleEyebrow.trim()
-  const title = draft.namingRationaleTitle.trim()
-  const note = draft.namingRationaleNote.trim()
-  const items = draft.namingRationaleItemsText
-    .split(/\r?\n/)
-    .map((line) => parseNamingRationaleLine(line))
-    .filter((item) => item.term || item.definition)
-
-  if (!eyebrow && !title && !note && items.length === 0) return undefined
-
-  return {
-    eyebrow,
-    title,
-    items,
-    note,
-  }
-}
-
-function parseNamingRationaleLine(line: string) {
-  const trimmed = line.trim()
-  const separators = [": ", " — ", " – ", " - "]
-  const separator = separators.find((item) => trimmed.includes(item))
-
-  if (!separator) {
-    return { term: trimmed, definition: "" }
-  }
-
-  const [term, ...definitionParts] = trimmed.split(separator)
-
-  return {
-    term: term.trim(),
-    definition: definitionParts.join(separator).trim(),
   }
 }
 
@@ -659,19 +584,13 @@ function FormTabs({
 function LocaleEditor({
   locale,
   draft,
-  media,
   filters,
   onChange,
-  onMediaChange,
 }: {
   locale: Locale
   draft: LocaleDraft
-  media: ProjectMedia | undefined
   filters: string[]
   onChange: (locale: Locale, key: keyof LocaleDraft, value: string) => void
-  onMediaChange: (
-    updater: (current: ProjectMedia | undefined) => ProjectMedia | undefined,
-  ) => void
 }) {
   return (
     <section className="space-y-5">
@@ -683,11 +602,6 @@ function LocaleEditor({
           onChange={(value) => onChange(locale, "title", value)}
         />
         <div className="grid gap-4 md:grid-cols-2">
-          <TextField
-            label="Eyebrow"
-            value={draft.eyebrow}
-            onChange={(value) => onChange(locale, "eyebrow", value)}
-          />
           <label className="block">
             <AdminLabel>Category</AdminLabel>
             <select
@@ -721,18 +635,6 @@ function LocaleEditor({
           onChange={(value) => onChange(locale, "scopeText", value)}
         />
         <TextAreaField
-          label="Campaign title"
-          rows={2}
-          value={draft.campaignTitle}
-          onChange={(value) => onChange(locale, "campaignTitle", value)}
-        />
-        <TextAreaField
-          label="Closing note"
-          rows={3}
-          value={draft.closingNote}
-          onChange={(value) => onChange(locale, "closingNote", value)}
-        />
-        <TextAreaField
           label="Overview"
           rows={5}
           value={draft.overview}
@@ -757,356 +659,8 @@ function LocaleEditor({
           onChange={(value) => onChange(locale, "resultsText", value)}
         />
       </div>
-      <NamingRationaleEditor locale={locale} draft={draft} onChange={onChange} />
-      <MediaTextEditor
-        media={media}
-        onChange={(nextMedia) => onMediaChange(() => nextMedia)}
-      />
     </section>
   )
-}
-
-function NamingRationaleEditor({
-  locale,
-  draft,
-  onChange,
-}: {
-  locale: Locale
-  draft: LocaleDraft
-  onChange: (locale: Locale, key: keyof LocaleDraft, value: string) => void
-}) {
-  return (
-    <section className="space-y-4 rounded-[8px] border border-slate-200 bg-slate-50 p-4">
-      <SectionHeader title="Naming rationale" />
-      <div className="grid gap-4 md:grid-cols-2">
-        <TextField
-          label="Naming eyebrow"
-          value={draft.namingRationaleEyebrow}
-          onChange={(value) => onChange(locale, "namingRationaleEyebrow", value)}
-        />
-        <TextField
-          label="Naming title"
-          value={draft.namingRationaleTitle}
-          onChange={(value) => onChange(locale, "namingRationaleTitle", value)}
-        />
-      </div>
-      <TextAreaField
-        label="Naming items"
-        rows={4}
-        value={draft.namingRationaleItemsText}
-        onChange={(value) => onChange(locale, "namingRationaleItemsText", value)}
-      />
-      <TextAreaField
-        label="Naming note"
-        rows={3}
-        value={draft.namingRationaleNote}
-        onChange={(value) => onChange(locale, "namingRationaleNote", value)}
-      />
-    </section>
-  )
-}
-
-function MediaTextEditor({
-  media,
-  onChange,
-}: {
-  media: ProjectMedia | undefined
-  onChange: (media: ProjectMedia) => void
-}) {
-  if (!media) return null
-
-  const updateRootAsset = (
-    key: "cover" | "summary" | "websitePreview",
-    assetKey: AssetTextKey,
-    value: string,
-  ) => {
-    const asset = media[key]
-    if (!asset) return
-
-    onChange({
-      ...media,
-      [key]: updateAssetText(asset, assetKey, value),
-    })
-  }
-
-  const updateAssetArray = (
-    key: "proposalSlides" | "contentPosts",
-    index: number,
-    assetKey: AssetTextKey,
-    value: string,
-  ) => {
-    const assets = media[key]
-    if (!assets) return
-
-    onChange({
-      ...media,
-      [key]: assets.map((asset, assetIndex) =>
-        assetIndex === index ? updateAssetText(asset, assetKey, value) : asset,
-      ),
-    })
-  }
-
-  return (
-    <section className="space-y-4 rounded-[8px] border border-slate-200 bg-slate-50 p-4">
-      <SectionHeader title="Media text" />
-      <AssetTextFields
-        title="Cover"
-        asset={media.cover}
-        onChange={(key, value) => updateRootAsset("cover", key, value)}
-      />
-      {media.summary ? (
-        <AssetTextFields
-          title="Summary"
-          asset={media.summary}
-          onChange={(key, value) => updateRootAsset("summary", key, value)}
-        />
-      ) : null}
-      {media.websitePreview ? (
-        <AssetTextFields
-          title="Website preview"
-          asset={media.websitePreview}
-          onChange={(key, value) => updateRootAsset("websitePreview", key, value)}
-        />
-      ) : null}
-      {media.proposalSlides?.map((slide, index) => (
-        <AssetTextFields
-          key={`proposal-${slide.src}-${index}`}
-          title={`Proposal slide ${index + 1}`}
-          asset={slide}
-          onChange={(key, value) => updateAssetArray("proposalSlides", index, key, value)}
-        />
-      ))}
-      {media.contentPosts?.map((post, index) => (
-        <AssetTextFields
-          key={`content-post-${post.src}-${index}`}
-          title={`Content post ${index + 1}`}
-          asset={post}
-          onChange={(key, value) => updateAssetArray("contentPosts", index, key, value)}
-        />
-      ))}
-      {media.imageCampaigns?.map((campaign, campaignIndex) => (
-        <NestedMediaGroup key={`image-${campaignIndex}`} title={`Image campaign ${campaignIndex + 1}`}>
-          <TextField
-            label={`Image campaign ${campaignIndex + 1} title`}
-            value={campaign.title}
-            onChange={(value) =>
-              onChange({
-                ...media,
-                imageCampaigns: media.imageCampaigns?.map((item, index) =>
-                  index === campaignIndex ? { ...item, title: value } : item,
-                ),
-              })
-            }
-          />
-          <TextAreaField
-            label={`Image campaign ${campaignIndex + 1} description`}
-            rows={3}
-            value={campaign.description}
-            onChange={(value) =>
-              onChange({
-                ...media,
-                imageCampaigns: media.imageCampaigns?.map((item, index) =>
-                  index === campaignIndex ? { ...item, description: value } : item,
-                ),
-              })
-            }
-          />
-          {campaign.images.map((image, imageIndex) => (
-            <AssetTextFields
-              key={`image-${campaignIndex}-${image.src}-${imageIndex}`}
-              title={`Image campaign ${campaignIndex + 1} asset ${imageIndex + 1}`}
-              asset={image}
-              onChange={(key, value) =>
-                onChange({
-                  ...media,
-                  imageCampaigns: media.imageCampaigns?.map((item, index) =>
-                    index === campaignIndex
-                      ? {
-                          ...item,
-                          images: item.images.map((asset, assetIndex) =>
-                            assetIndex === imageIndex
-                              ? updateAssetText(asset, key, value)
-                              : asset,
-                          ),
-                        }
-                      : item,
-                  ),
-                })
-              }
-            />
-          ))}
-        </NestedMediaGroup>
-      ))}
-      {media.videoCampaigns?.map((campaign, campaignIndex) => (
-        <NestedMediaGroup key={`video-${campaignIndex}`} title={`Video campaign ${campaignIndex + 1}`}>
-          <TextField
-            label={`Video campaign ${campaignIndex + 1} title`}
-            value={campaign.title}
-            onChange={(value) =>
-              onChange({
-                ...media,
-                videoCampaigns: media.videoCampaigns?.map((item, index) =>
-                  index === campaignIndex ? { ...item, title: value } : item,
-                ),
-              })
-            }
-          />
-          <TextAreaField
-            label={`Video campaign ${campaignIndex + 1} description`}
-            rows={3}
-            value={campaign.description}
-            onChange={(value) =>
-              onChange({
-                ...media,
-                videoCampaigns: media.videoCampaigns?.map((item, index) =>
-                  index === campaignIndex ? { ...item, description: value } : item,
-                ),
-              })
-            }
-          />
-          {campaign.videos.map((video, videoIndex) => (
-            <AssetTextFields
-              key={`video-${campaignIndex}-${video.src}-${videoIndex}`}
-              title={`Video campaign ${campaignIndex + 1} asset ${videoIndex + 1}`}
-              asset={video}
-              onChange={(key, value) =>
-                onChange({
-                  ...media,
-                  videoCampaigns: media.videoCampaigns?.map((item, index) =>
-                    index === campaignIndex
-                      ? {
-                          ...item,
-                          videos: item.videos.map((asset, assetIndex) =>
-                            assetIndex === videoIndex
-                              ? updateAssetText(asset, key, value)
-                              : asset,
-                          ),
-                        }
-                      : item,
-                  ),
-                })
-              }
-            />
-          ))}
-        </NestedMediaGroup>
-      ))}
-      {media.outreachSections?.map((section, sectionIndex) => (
-        <NestedMediaGroup
-          key={`outreach-${sectionIndex}`}
-          title={`Outreach section ${sectionIndex + 1}`}
-        >
-          <TextField
-            label={`Outreach section ${sectionIndex + 1} title`}
-            value={section.title}
-            onChange={(value) =>
-              onChange({
-                ...media,
-                outreachSections: media.outreachSections?.map((item, index) =>
-                  index === sectionIndex ? { ...item, title: value } : item,
-                ),
-              })
-            }
-          />
-          <TextAreaField
-            label={`Outreach section ${sectionIndex + 1} description`}
-            rows={3}
-            value={section.description}
-            onChange={(value) =>
-              onChange({
-                ...media,
-                outreachSections: media.outreachSections?.map((item, index) =>
-                  index === sectionIndex ? { ...item, description: value } : item,
-                ),
-              })
-            }
-          />
-          {section.posts.map((post, postIndex) => (
-            <AssetTextFields
-              key={`outreach-${sectionIndex}-${post.src}-${postIndex}`}
-              title={`Outreach section ${sectionIndex + 1} post ${postIndex + 1}`}
-              asset={post}
-              onChange={(key, value) =>
-                onChange({
-                  ...media,
-                  outreachSections: media.outreachSections?.map((item, index) =>
-                    index === sectionIndex
-                      ? {
-                          ...item,
-                          posts: item.posts.map((asset, assetIndex) =>
-                            assetIndex === postIndex
-                              ? updateAssetText(asset, key, value)
-                              : asset,
-                          ),
-                        }
-                      : item,
-                  ),
-                })
-              }
-            />
-          ))}
-        </NestedMediaGroup>
-      ))}
-    </section>
-  )
-}
-
-type AssetTextKey = "alt" | "caption" | "ctaLabel"
-
-function AssetTextFields({
-  title,
-  asset,
-  onChange,
-}: {
-  title: string
-  asset: ProjectMediaAsset
-  onChange: (key: AssetTextKey, value: string) => void
-}) {
-  return (
-    <NestedMediaGroup title={title}>
-      <TextField
-        label={`${title} alt`}
-        value={asset.alt}
-        onChange={(value) => onChange("alt", value)}
-      />
-      <TextAreaField
-        label={`${title} caption`}
-        rows={3}
-        value={asset.caption ?? ""}
-        onChange={(value) => onChange("caption", value)}
-      />
-      <TextField
-        label={`${title} CTA label`}
-        value={asset.ctaLabel ?? ""}
-        onChange={(value) => onChange("ctaLabel", value)}
-      />
-    </NestedMediaGroup>
-  )
-}
-
-function NestedMediaGroup({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <div className="space-y-3 rounded-[8px] border border-slate-200 bg-white p-3">
-      <h3 className="text-sm font-semibold tracking-normal text-slate-900">{title}</h3>
-      <div className="grid gap-3">{children}</div>
-    </div>
-  )
-}
-
-function updateAssetText(
-  asset: ProjectMediaAsset,
-  key: AssetTextKey,
-  value: string,
-): ProjectMediaAsset {
-  const next = {
-    ...asset,
-    [key]: value,
-  }
-
-  if (key !== "alt" && !value.trim()) {
-    delete next[key]
-  }
-
-  return next
 }
 
 function TextField({
