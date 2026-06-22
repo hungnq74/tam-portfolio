@@ -116,8 +116,13 @@ describe("AdminProjectForm basics", () => {
       screen.getByRole("tab", { name: "CTA & Credits" }),
     ).toBeInTheDocument()
     expect(screen.getByLabelText("Project id")).toBeInTheDocument()
-    expect(screen.getByLabelText("EN title")).toBeInTheDocument()
-    expect(screen.getByLabelText("VI summary")).toBeInTheDocument()
+    expect(screen.getByLabelText("Title")).toBeInTheDocument()
+    expect(screen.getByLabelText("Summary")).toBeInTheDocument()
+    expect(screen.getByText("Readiness")).toBeInTheDocument()
+    expect(screen.getByText("Media stack")).toBeInTheDocument()
+    expect(screen.getByText("Ready to save changes.")).toBeInTheDocument()
+    expect(screen.queryByLabelText("VI summary")).not.toBeInTheDocument()
+    expect(screen.queryByText("Vietnamese content")).not.toBeInTheDocument()
     expect(
       screen.queryByRole("tab", { name: "Overview" }),
     ).not.toBeInTheDocument()
@@ -139,7 +144,7 @@ describe("AdminProjectForm basics", () => {
     const user = userEvent.setup()
     renderForm({ mode: "create", media: undefined })
 
-    await user.type(screen.getByLabelText("EN title"), "Fresh Launch")
+    await user.type(screen.getByLabelText("Title"), "Fresh Launch")
 
     await waitFor(() => {
       expect(screen.getByLabelText("Project id")).toHaveValue("fresh-launch")
@@ -147,8 +152,8 @@ describe("AdminProjectForm basics", () => {
 
     await user.clear(screen.getByLabelText("Project id"))
     await user.type(screen.getByLabelText("Project id"), "manual-id")
-    await user.clear(screen.getByLabelText("EN title"))
-    await user.type(screen.getByLabelText("EN title"), "Another Title")
+    await user.clear(screen.getByLabelText("Title"))
+    await user.type(screen.getByLabelText("Title"), "Another Title")
 
     expect(screen.getByLabelText("Project id")).toHaveValue("manual-id")
   })
@@ -159,18 +164,14 @@ describe("AdminProjectForm basics", () => {
 
     await user.click(screen.getByRole("tab", { name: "CTA & Credits" }))
 
-    expect(screen.getByLabelText("EN CTA label")).toHaveValue(
+    expect(screen.getByLabelText("CTA label")).toHaveValue(
       "View full portfolio",
     )
-    expect(screen.getByLabelText("VI CTA label")).toHaveValue(
-      "Coi full portfolio",
-    )
-    expect(screen.getByLabelText("EN credit intro")).toHaveValue(
+    expect(screen.getByLabelText("Credit intro")).toHaveValue(
       "Shout out to the friends who built this proposal with me.",
     )
-    expect(screen.getByLabelText("VI credit intro")).toHaveValue(
-      "Shout out những người đã cùng làm proposal với tôi.",
-    )
+    expect(screen.queryByLabelText("VI CTA label")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("VI credit intro")).not.toBeInTheDocument()
     expect(screen.getByLabelText("Collaborator names")).toHaveValue(
       "Minh Anh\nHoàng Linh\nBảo Trân",
     )
@@ -219,7 +220,7 @@ describe("AdminProjectForm basics", () => {
     ).toBeInTheDocument()
   })
 
-  it("submits edited content, CTA copy, and collaborator chips", async () => {
+  it("submits edited English content while preserving hidden Vietnamese content", async () => {
     const user = userEvent.setup()
     const router = getMockRouter()
     const fetch = vi
@@ -228,43 +229,23 @@ describe("AdminProjectForm basics", () => {
     vi.stubGlobal("fetch", fetch)
     renderForm()
 
-    await user.clear(screen.getByLabelText("EN title"))
-    await user.type(screen.getByLabelText("EN title"), "Signal Launch")
-    await user.clear(screen.getByLabelText("EN summary"))
+    await user.clear(screen.getByLabelText("Title"))
+    await user.type(screen.getByLabelText("Title"), "Signal Launch")
+    await user.clear(screen.getByLabelText("Summary"))
     await user.type(
-      screen.getByLabelText("EN summary"),
+      screen.getByLabelText("Summary"),
       "A sharp launch planning project.",
     )
-    await user.clear(screen.getByLabelText("EN overview"))
-    await user.type(screen.getByLabelText("EN overview"), "English overview")
-
-    await user.clear(screen.getByLabelText("VI title"))
-    await user.type(screen.getByLabelText("VI title"), "Ra mắt tín hiệu")
-    await user.clear(screen.getByLabelText("VI summary"))
-    await user.type(
-      screen.getByLabelText("VI summary"),
-      "Dự án lập kế hoạch ra mắt.",
-    )
-    await user.clear(screen.getByLabelText("VI overview"))
-    await user.type(
-      screen.getByLabelText("VI overview"),
-      "Tổng quan tiếng Việt",
-    )
+    await user.clear(screen.getByLabelText("Overview"))
+    await user.type(screen.getByLabelText("Overview"), "English overview")
 
     await user.click(screen.getByRole("tab", { name: "CTA & Credits" }))
-    await user.clear(screen.getByLabelText("EN CTA label"))
-    await user.type(screen.getByLabelText("EN CTA label"), "View deck")
-    await user.clear(screen.getByLabelText("VI CTA label"))
-    await user.type(screen.getByLabelText("VI CTA label"), "Coi deck")
-    await user.clear(screen.getByLabelText("EN credit intro"))
+    await user.clear(screen.getByLabelText("CTA label"))
+    await user.type(screen.getByLabelText("CTA label"), "View deck")
+    await user.clear(screen.getByLabelText("Credit intro"))
     await user.type(
-      screen.getByLabelText("EN credit intro"),
+      screen.getByLabelText("Credit intro"),
       "Built with these friends.",
-    )
-    await user.clear(screen.getByLabelText("VI credit intro"))
-    await user.type(
-      screen.getByLabelText("VI credit intro"),
-      "Làm cùng các bạn này.",
     )
     await user.clear(screen.getByLabelText("Collaborator names"))
     await user.type(
@@ -302,15 +283,47 @@ describe("AdminProjectForm basics", () => {
       },
     })
     expect(requestBody.locales.vi).toEqual({
-      title: "Ra mắt tín hiệu",
-      summary: "Dự án lập kế hoạch ra mắt.",
-      overview: "Tổng quan tiếng Việt",
+      title: "Du an demo",
+      summary: "Tom tat tieng Viet",
+      overview: "Tong quan tieng Viet",
       proposalCta: {
-        label: "Coi deck",
-        credit: "Làm cùng các bạn này.",
+        label: "Coi full portfolio",
+        credit: "Shout out những người đã cùng làm proposal với tôi.",
       },
     })
     expect(router.refresh).toHaveBeenCalled()
+  })
+
+  it("mirrors English fields into hidden Vietnamese payload when creating", async () => {
+    const user = userEvent.setup()
+    const fetch = vi
+      .fn()
+      .mockResolvedValue(jsonResponse({ ok: true, etag: "etag-2" }))
+    vi.stubGlobal("fetch", fetch)
+    renderForm({ mode: "create" })
+
+    await user.type(screen.getByLabelText("Title"), "Launch Proposal")
+    await user.type(screen.getByLabelText("Summary"), "English summary.")
+    await user.type(screen.getByLabelText("Overview"), "English overview.")
+    await user.click(screen.getByRole("tab", { name: "CTA & Credits" }))
+    await user.clear(screen.getByLabelText("CTA label"))
+    await user.type(screen.getByLabelText("CTA label"), "View deck")
+    await user.clear(screen.getByLabelText("Credit intro"))
+    await user.type(screen.getByLabelText("Credit intro"), "Built together.")
+
+    await user.click(screen.getByRole("button", { name: /save project/i }))
+    await screen.findByText("Project saved.")
+
+    const requestBody = JSON.parse(fetch.mock.calls[0][1].body)
+    expect(requestBody.locales.vi).toEqual({
+      title: "Launch Proposal",
+      summary: "English summary.",
+      overview: "English overview.",
+      proposalCta: {
+        label: "View deck",
+        credit: "Built together.",
+      },
+    })
   })
 })
 
@@ -416,7 +429,7 @@ describe("AdminProjectForm uploads", () => {
     vi.stubGlobal("fetch", fetch)
     renderForm({ mode: "create", media: undefined })
 
-    await user.type(screen.getByLabelText("EN title"), "Demo Project")
+    await user.type(screen.getByLabelText("Title"), "Demo Project")
     await waitFor(() => {
       expect(screen.getByLabelText("Project id")).toHaveValue("demo-project")
     })
@@ -482,10 +495,16 @@ describe("AdminProjectForm uploads", () => {
       )
     })
 
-    fireEvent.change(screen.getByLabelText(/Cover focal X/), {
+    expect(screen.getByText("Adjust cover crop")).toBeInTheDocument()
+    expect(screen.queryByText(/Cover focal/)).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: "Left" }))
+    await user.click(screen.getByRole("button", { name: "Bottom" }))
+
+    fireEvent.change(screen.getByLabelText(/Move focus left or right/), {
       target: { value: "30" },
     })
-    fireEvent.change(screen.getByLabelText(/Cover focal Y/), {
+    fireEvent.change(screen.getByLabelText(/Move focus up or down/), {
       target: { value: "70" },
     })
 

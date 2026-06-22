@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Circle } from "lucide-react"
 import type { ReactNode } from "react"
 
 export function AdminPageShell({
@@ -12,6 +12,23 @@ export function AdminPageShell({
   return (
     <main className="admin-app">
       <section className={narrow ? "admin-container max-w-md" : "admin-container"}>
+        <div className="admin-command">
+          <div className="admin-brand">
+            <span className="admin-brand-mark" aria-hidden="true">
+              MT
+            </span>
+            <div className="min-w-0">
+              <p className="admin-kicker">Proposal CMS</p>
+              <p className="truncate text-sm font-semibold text-[rgb(var(--ink))]">
+                Minh Tam Portfolio
+              </p>
+            </div>
+          </div>
+          <span className="admin-status-chip" data-tone="ready">
+            <Circle className="h-3 w-3 fill-current" />
+            English-only
+          </span>
+        </div>
         {children}
       </section>
     </main>
@@ -34,25 +51,25 @@ export function AdminPageHeader({
   backLabel?: string
 }) {
   return (
-    <header className="mb-8 flex flex-col gap-4 border-b border-slate-200 pb-6 md:flex-row md:items-end md:justify-between">
+    <header className="admin-card mb-6 flex flex-col gap-4 p-4 sm:p-5 md:flex-row md:items-end md:justify-between">
       <div className="min-w-0">
         {backHref ? (
           <Link
             href={backHref}
-            className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-slate-500 transition hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-300"
+            className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-200"
           >
             <ArrowLeft className="h-4 w-4" />
             {backLabel}
           </Link>
         ) : null}
         {eyebrow ? (
-          <p className="mb-2 text-sm font-medium text-slate-500">{eyebrow}</p>
+          <p className="admin-kicker mb-2">{eyebrow}</p>
         ) : null}
-        <h1 className="text-3xl font-semibold tracking-normal text-slate-950 sm:text-4xl">
+        <h1 className="text-3xl font-semibold tracking-normal text-[rgb(var(--ink))] sm:text-4xl">
           {title}
         </h1>
         {description ? (
-          <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-500">
+          <p className="admin-subtle mt-2 max-w-2xl text-sm leading-6">
             {description}
           </p>
         ) : null}

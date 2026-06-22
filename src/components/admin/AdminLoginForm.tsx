@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react"
 import { useRouter } from "next/navigation"
-import { LogIn } from "lucide-react"
+import { LogIn, ShieldCheck } from "lucide-react"
 
 export function AdminLoginForm() {
   const router = useRouter()
@@ -40,34 +40,48 @@ export function AdminLoginForm() {
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
-      <div>
-        <p className="mb-2 text-sm font-medium text-slate-500">Private admin</p>
-        <h1 className="text-3xl font-semibold tracking-normal text-slate-950">Sign in</h1>
-        <p className="mt-3 text-sm leading-6 text-slate-500">
-          Manage portfolio projects, media decks, and runtime content.
-        </p>
+      <div className="flex items-start gap-3">
+        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] border border-slate-200 bg-slate-50 text-slate-700">
+          <ShieldCheck className="h-5 w-5" />
+        </span>
+        <div>
+          <p className="admin-kicker mb-2">Private admin</p>
+          <h1 className="text-3xl font-semibold tracking-normal text-[rgb(var(--ink))]">
+            Sign in
+          </h1>
+          <p className="admin-subtle mt-3 text-sm leading-6">
+            Manage proposal projects, media decks, and public portfolio copy.
+          </p>
+        </div>
       </div>
 
-      <label className="block">
-        <span className="admin-label">Username</span>
-        <input
-          value={username}
-          onChange={(event) => setUsername(event.target.value)}
-          autoComplete="username"
-          className="admin-input"
-        />
-      </label>
+      <div className="space-y-4 rounded-[8px] border border-slate-200 bg-slate-50 p-4">
+        <label className="block">
+          <span className="admin-label">Username</span>
+          <input
+            value={username}
+            onChange={(event) => setUsername(event.target.value)}
+            autoComplete="username"
+            className="admin-input"
+          />
+        </label>
 
-      <label className="block">
-        <span className="admin-label">Password</span>
-        <input
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          type="password"
-          autoComplete="current-password"
-          className="admin-input"
-        />
-      </label>
+        <label className="block">
+          <span className="admin-label">Password</span>
+          <input
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            type="password"
+            autoComplete="current-password"
+            className="admin-input"
+          />
+        </label>
+
+        <p className="text-xs leading-5 text-slate-500">
+          English-only editing is enabled. Existing Vietnamese data is preserved
+          behind the scenes.
+        </p>
+      </div>
 
       {error ? <p className="admin-notice admin-notice-error">{error}</p> : null}
 

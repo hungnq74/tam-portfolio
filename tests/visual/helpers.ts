@@ -107,12 +107,15 @@ export async function expectCustomerScreenshot(page: Page, name: string) {
   })
 }
 
-async function assertLocaleLoaded(page: Page, locale: VisualLocale) {
-  const localeButtonName = locale === "en" ? "English" : "Tiếng Việt"
-  await expect(page.getByRole("button", { name: localeButtonName })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  )
+async function assertLocaleLoaded(page: Page, _locale: VisualLocale) {
+  await expect(page.getByRole("button", { name: "English" })).toHaveCount(0)
+  await expect(page.getByRole("button", { name: "Tiếng Việt" })).toHaveCount(0)
+  await expect
+    .poll(() =>
+      page.evaluate((localeKey) => window.localStorage.getItem(localeKey), LOCALE_STORAGE_KEY),
+    )
+    .toBe("en")
+  await expect.poll(() => page.evaluate(() => document.documentElement.lang)).toBe("en")
 }
 
 async function loadLazyImages(page: Page) {

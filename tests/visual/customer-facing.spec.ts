@@ -34,24 +34,6 @@ const highRiskRoutes: CustomerRoute[] = [
     ],
   },
   {
-    slug: "home-vi",
-    path: "/",
-    locale: "vi",
-    anchors: [
-      {
-        kind: "image",
-        name: /Bìa portfolio Cổ tích Việt Nam/i,
-        label: "Vietnamese portfolio cover art",
-      },
-      {
-        kind: "role",
-        role: "button",
-        name: "Cuộn đến trang giới thiệu",
-        label: "Vietnamese cover next control",
-      },
-    ],
-  },
-  {
     slug: "myth-en",
     path: "/myth",
     locale: "en",
@@ -74,30 +56,6 @@ const highRiskRoutes: CustomerRoute[] = [
     ],
   },
   {
-    slug: "myth-vi",
-    path: "/myth",
-    locale: "vi",
-    anchors: [
-      {
-        kind: "role",
-        role: "heading",
-        name: "Câu chuyện phía sau Minh Tâm",
-        label: "Vietnamese myth heading",
-      },
-      {
-        kind: "image",
-        name: "Minh Tâm mỉm cười giữa những chiếc lá xanh lớn",
-        label: "Vietnamese myth portrait",
-      },
-      {
-        kind: "role",
-        role: "link",
-        name: /Về Portfolio/i,
-        label: "Vietnamese myth portfolio CTA",
-      },
-    ],
-  },
-  {
     slug: "work-axe-en",
     path: "/work/axe",
     locale: "en",
@@ -116,28 +74,6 @@ const highRiskRoutes: CustomerRoute[] = [
         kind: "region",
         name: /AXE proposal carousel/i,
         label: "AXE proposal carousel",
-      },
-    ],
-  },
-  {
-    slug: "work-axe-vi",
-    path: "/work/axe",
-    locale: "vi",
-    anchors: [
-      {
-        kind: "image",
-        name: "Ảnh bìa proposal chiến dịch AXE",
-        label: "AXE Vietnamese cover",
-      },
-      {
-        kind: "image",
-        name: "Trang tóm tắt proposal AXE",
-        label: "AXE Vietnamese summary page",
-      },
-      {
-        kind: "region",
-        name: /AXE carousel proposal/i,
-        label: "AXE Vietnamese proposal carousel",
       },
     ],
   },
@@ -169,28 +105,6 @@ const highRiskRoutes: CustomerRoute[] = [
     ],
   },
   {
-    slug: "work-tiktok-vi",
-    path: "/work/tiktok",
-    locale: "vi",
-    anchors: [
-      {
-        kind: "image",
-        name: "Ảnh bìa website Tết to the Top của TikTok",
-        label: "TikTok Vietnamese cover",
-      },
-      {
-        kind: "text",
-        value: "Giải thích tên gọi",
-        label: "TikTok Vietnamese naming rationale",
-      },
-      {
-        kind: "region",
-        name: "Xem trước website",
-        label: "TikTok Vietnamese website preview",
-      },
-    ],
-  },
-  {
     slug: "work-social-outreach-en",
     path: "/work/social-outreach",
     locale: "en",
@@ -210,30 +124,6 @@ const highRiskRoutes: CustomerRoute[] = [
         kind: "region",
         name: "Formal & Academic Voice posts",
         label: "formal outreach carousel",
-      },
-    ],
-  },
-  {
-    slug: "work-social-outreach-vi",
-    path: "/work/social-outreach",
-    locale: "vi",
-    anchors: [
-      {
-        kind: "role",
-        role: "heading",
-        name: "Social Outreach",
-        label: "Vietnamese Social Outreach heading",
-      },
-      {
-        kind: "text",
-        value:
-          "Một không gian cho những thảo luận chỉn chu và câu chữ được chọn kỹ.",
-        label: "Vietnamese formal outreach description",
-      },
-      {
-        kind: "region",
-        name: "Giọng meme và hài hước posts",
-        label: "Vietnamese meme outreach carousel",
       },
     ],
   },
@@ -520,4 +410,25 @@ test.describe("customer-facing mobile visual regression", () => {
       await expectCustomerScreenshot(page, route.slug)
     })
   }
+
+  test("stale Vietnamese locale storage still renders English-only UI", async ({ page }) => {
+    await openCustomerPage(page, "/work/axe", "vi")
+    await assertVisualIntegrity(page, [
+      {
+        kind: "image",
+        name: "AXE generated project cover artwork",
+        label: "AXE English cover with stale locale",
+      },
+      {
+        kind: "region",
+        name: /AXE proposal carousel/i,
+        label: "AXE English carousel with stale locale",
+      },
+      {
+        kind: "text",
+        value: "View full portfolio",
+        label: "English CTA with stale locale",
+      },
+    ])
+  })
 })

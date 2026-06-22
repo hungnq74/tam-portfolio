@@ -1,39 +1,28 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import {
-  DEFAULT_LOCALE,
-  LOCALE_STORAGE_KEY,
-  type Locale,
-  isLocale,
-} from "@/data/portfolio"
+import { useCallback, useEffect, useState } from "react"
+import { DEFAULT_LOCALE, LOCALE_STORAGE_KEY, type Locale } from "@/data/portfolio"
 
-function syncLocale(locale: Locale) {
-  document.documentElement.lang = locale
-  window.localStorage.setItem(LOCALE_STORAGE_KEY, locale)
+function syncEnglishLocale() {
+  document.documentElement.lang = DEFAULT_LOCALE
+  window.localStorage.setItem(LOCALE_STORAGE_KEY, DEFAULT_LOCALE)
 }
 
 export function useLocale() {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE)
-  const [loaded, setLoaded] = useState(false)
 
   useEffect(() => {
-    const storedLocale = window.localStorage.getItem(LOCALE_STORAGE_KEY)
-    const nextLocale = isLocale(storedLocale) ? storedLocale : DEFAULT_LOCALE
-
-    setLocaleState(nextLocale)
-    syncLocale(nextLocale)
-    setLoaded(true)
+    setLocaleState(DEFAULT_LOCALE)
+    syncEnglishLocale()
   }, [])
 
-  useEffect(() => {
-    if (!loaded) return
-
-    syncLocale(locale)
-  }, [loaded, locale])
+  const setLocale = useCallback((_locale: Locale) => {
+    setLocaleState(DEFAULT_LOCALE)
+    syncEnglishLocale()
+  }, [])
 
   return {
     locale,
-    setLocale: setLocaleState,
+    setLocale,
   }
 }

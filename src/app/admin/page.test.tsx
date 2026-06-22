@@ -45,6 +45,7 @@ describe("AdminPage", () => {
     expect(mocks.requireAdmin).toHaveBeenCalled()
     expect(screen.getByText("1 project")).toBeInTheDocument()
     expect(screen.getByText("Thinking Launch")).toBeInTheDocument()
+    expect(screen.queryByText("Dự án Thinking")).not.toBeInTheDocument()
     expect(screen.queryByText("Writing Draft")).not.toBeInTheDocument()
     expect(screen.queryByText(/Bản nháp Writing/)).not.toBeInTheDocument()
     expect(screen.queryByText("social-planner")).not.toBeInTheDocument()

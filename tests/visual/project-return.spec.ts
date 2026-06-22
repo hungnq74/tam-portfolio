@@ -13,10 +13,13 @@ async function openEnglishPage(page: Page, path: string, motionMode: MotionMode 
     reducedMotion: motionMode === "reduced" ? "reduce" : "no-preference",
   })
   await page.goto(path, { waitUntil: "domcontentloaded" })
-  await expect(page.getByRole("button", { name: "English" })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  )
+  await expect(page.getByRole("button", { name: "English" })).toHaveCount(0)
+  await expect(page.getByRole("button", { name: "Tiếng Việt" })).toHaveCount(0)
+  await expect
+    .poll(() =>
+      page.evaluate((localeKey) => window.localStorage.getItem(localeKey), LOCALE_STORAGE_KEY),
+    )
+    .toBe("en")
 }
 
 async function expectContentGallery(

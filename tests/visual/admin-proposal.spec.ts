@@ -1,6 +1,7 @@
 import { expect, type Page, test } from "@playwright/test"
 import { existsSync, readFileSync } from "node:fs"
 import { join } from "node:path"
+import { stabilizeVisualPage } from "./helpers"
 
 const LOCALE_STORAGE_KEY = "tam-portfolio-locale"
 
@@ -17,11 +18,30 @@ async function login(page: Page) {
   if (!credentials) throw new Error("Admin credentials are not configured.")
 
   await page.goto("/admin/login", { waitUntil: "domcontentloaded" })
-  await page.getByLabel("Username").fill(credentials.username)
-  await page.getByLabel("Password").fill(credentials.password)
-  await page.getByRole("button", { name: /sign in/i }).click()
-  await page.waitForURL("**/admin", { timeout: 15_000 })
+  await submitLogin(page)
+
+  if (await page.getByText(/invalid username or password/i).isVisible().catch(() => false)) {
+    await submitLogin(page)
+  }
+
   await expect(page.getByRole("heading", { name: "Projects" })).toBeVisible()
+}
+
+async function submitLogin(page: Page) {
+  if (!credentials) throw new Error("Admin credentials are not configured.")
+
+  const username = page.getByLabel("Username")
+  const password = page.getByLabel("Password")
+
+  await expect(username).toBeVisible()
+  await username.fill(credentials.username)
+  await expect(username).toHaveValue(credentials.username)
+  await password.fill(credentials.password)
+  await expect(password).toHaveValue(credentials.password)
+  await Promise.all([
+    page.waitForURL("**/admin", { timeout: 15_000 }).catch(() => null),
+    page.getByRole("button", { name: /sign in/i }).click(),
+  ])
 }
 
 async function openEnglishCustomerPage(page: Page, path: string) {
@@ -31,10 +51,28 @@ async function openEnglishCustomerPage(page: Page, path: string) {
   }, LOCALE_STORAGE_KEY)
   await page.emulateMedia({ reducedMotion: "reduce" })
   await page.goto(path, { waitUntil: "domcontentloaded" })
-  await expect(page.getByRole("button", { name: "English" })).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  )
+  await expect(page.getByRole("button", { name: "English" })).toHaveCount(0)
+  await expect(page.getByRole("button", { name: "Tiếng Việt" })).toHaveCount(0)
+  await expect
+    .poll(() =>
+      page.evaluate((localeKey) => window.localStorage.getItem(localeKey), LOCALE_STORAGE_KEY),
+    )
+    .toBe("en")
+}
+
+async function expectAdminScreenshot(page: Page, name: string) {
+  await stabilizeVisualPage(page)
+  await page.evaluate(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" })
+  })
+  await page.waitForTimeout(150)
+
+  await expect(page).toHaveScreenshot(`${name}.png`, {
+    animations: "disabled",
+    caret: "hide",
+    fullPage: true,
+    scale: "css",
+  })
 }
 
 test.describe("admin proposal project flow", () => {
@@ -94,8 +132,10 @@ test.describe("admin proposal project flow", () => {
     await expect(page.getByRole("tab", { name: "Media" })).toBeVisible()
     await expect(page.getByRole("tab", { name: "CTA & Credits" })).toBeVisible()
     await expect(page.getByLabel("Project id")).toHaveValue("axe")
-    await expect(page.getByLabel("EN title")).toBeVisible()
-    await expect(page.getByLabel("VI summary")).toBeVisible()
+    await expect(page.getByLabel("Title")).toBeVisible()
+    await expect(page.getByLabel("Summary")).toBeVisible()
+    await expect(page.getByLabel("VI summary")).toHaveCount(0)
+    await expect(page.getByText("Vietnamese content")).toHaveCount(0)
     await expect(page.getByLabel("Field")).toHaveCount(0)
     await expect(page.getByLabel("Year")).toHaveCount(0)
     await expect(page.getByLabel("Category")).toHaveCount(0)
@@ -109,6 +149,11 @@ test.describe("admin proposal project flow", () => {
     await expect(page.getByLabel(/upload cover image/i)).toBeVisible()
     await expect(page.getByLabel(/upload main image/i)).toBeVisible()
     await expect(page.getByLabel(/upload proposal PDF/i)).toBeVisible()
+    await expect(page.getByText("Adjust cover crop")).toBeVisible()
+    await expect(page.getByRole("button", { name: "Center" })).toBeVisible()
+    await expect(page.getByLabel(/Move focus left or right/)).toBeVisible()
+    await expect(page.getByLabel(/Move focus up or down/)).toBeVisible()
+    await expect(page.getByText(/Cover focal/)).toHaveCount(0)
     await expect(
       page.locator("p").filter({ hasText: /^Main image$/ }),
     ).toBeVisible()
@@ -117,12 +162,11 @@ test.describe("admin proposal project flow", () => {
     ).toBeVisible()
 
     await page.getByRole("tab", { name: "CTA & Credits" }).click()
-    await expect(page.getByLabel("EN CTA label")).toHaveValue(
+    await expect(page.getByLabel("CTA label")).toHaveValue(
       "View full portfolio",
     )
-    await expect(page.getByLabel("VI CTA label")).toHaveValue(
-      "Coi full portfolio",
-    )
+    await expect(page.getByLabel("VI CTA label")).toHaveCount(0)
+    await expect(page.getByLabel("VI credit intro")).toHaveCount(0)
     await expect(page.getByLabel("Collaborator names")).toContainText(
       "Minh Anh",
     )
@@ -146,18 +190,16 @@ test.describe("admin proposal project flow", () => {
     await expect(
       page.getByRole("heading", { name: "New project" }),
     ).toBeVisible()
-    await page.getByLabel("EN title").fill("Summer Proposal 2026")
+    await page.getByLabel("Title").fill("Summer Proposal 2026")
     await expect(page.getByLabel("Project id")).toHaveValue(
       "summer-proposal-2026",
     )
 
     await page.getByRole("tab", { name: "CTA & Credits" }).click()
-    await expect(page.getByLabel("EN CTA label")).toHaveValue(
+    await expect(page.getByLabel("CTA label")).toHaveValue(
       "View full portfolio",
     )
-    await expect(page.getByLabel("VI CTA label")).toHaveValue(
-      "Coi full portfolio",
-    )
+    await expect(page.getByLabel("VI CTA label")).toHaveCount(0)
     await expect(page.getByLabel("Collaborator names")).toHaveValue(
       "Minh Anh\nHoàng Linh\nBảo Trân",
     )
@@ -179,6 +221,37 @@ test.describe("admin proposal project flow", () => {
     await expect(
       page.getByRole("heading", { name: "Edit project" }),
     ).toHaveCount(0)
+  })
+})
+
+test.describe("admin editorial CMS visuals", () => {
+  test("captures the login page", async ({ page }) => {
+    await page.goto("/admin/login", { waitUntil: "domcontentloaded" })
+    await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible()
+
+    await expectAdminScreenshot(page, "admin-login")
+  })
+
+  test("captures the project list", async ({ page }) => {
+    await login(page)
+
+    await expectAdminScreenshot(page, "admin-list")
+  })
+
+  test("captures the AXE project editor", async ({ page }) => {
+    await login(page)
+    await page.goto("/admin/projects/axe", { waitUntil: "domcontentloaded" })
+    await expect(page.getByRole("heading", { name: "Edit project" })).toBeVisible()
+
+    await expectAdminScreenshot(page, "admin-edit-axe")
+  })
+
+  test("captures the new project editor", async ({ page }) => {
+    await login(page)
+    await page.goto("/admin/projects/new", { waitUntil: "domcontentloaded" })
+    await expect(page.getByRole("heading", { name: "New project" })).toBeVisible()
+
+    await expectAdminScreenshot(page, "admin-new-project")
   })
 })
 

@@ -6,7 +6,7 @@ Admin now manages only `Thinking` proposal projects. Writing/custom projects can
 
 ## What You Can Edit
 
-Admin edits these project parts in English and Vietnamese:
+Admin edits these English project parts:
 
 - Project ID
 - Project title
@@ -46,7 +46,6 @@ Each project row includes:
 - Cover preview
 - Media status
 - English title
-- Vietnamese title
 - `Edit`
 - `Delete`
 
@@ -94,16 +93,16 @@ Rules:
 
 - Use lowercase letters, numbers, and hyphens.
 - Do not use spaces.
-- Do not use Vietnamese accents.
+- Do not use accent marks.
 - Keep it short and stable.
 
 After a project is created, the project ID cannot be changed in admin.
 
-### EN/VI Title
+### Title
 
 Use the project or campaign name.
 
-### EN/VI Summary
+### Summary
 
 Use one short context sentence. This appears near the top of the detail page and should explain the project quickly.
 
@@ -113,7 +112,7 @@ Example:
 Context: Make AXE Vietnam the top #1 brand discussed by Gen Z on social media and distribute 2M product samples.
 ```
 
-### EN/VI Overview
+### Overview
 
 Use a short paragraph with the broader project explanation. Keep it easy to scan.
 
@@ -134,13 +133,18 @@ The `Media` tab controls the visual flow:
 
 The cover image appears at the top of the public project page.
 
-### Cover Focal Point
+### Adjust Cover Crop
 
-Use `Cover focal X` and `Cover focal Y` if the cover crop looks wrong.
+Use `Adjust cover crop` only when the cover preview cuts off an important part
+of the image.
 
-- X moves focus left/right.
-- Y moves focus up/down.
-- 50/50 means center.
+1. Try the quick position buttons first: `Center`, `Top`, `Bottom`, `Left`, or
+   `Right`.
+2. Check the crop preview beside the controls.
+3. If the image still needs a small adjustment, use the two fine-tune sliders:
+   `Move focus left or right` and `Move focus up or down`.
+
+Tip: most covers should stay on `Center`.
 
 ### Upload Main Image
 
@@ -174,10 +178,11 @@ This tab controls the bridge around the proposal carousel.
 
 The CTA button appears before the PDF carousel and scrolls down to the carousel.
 
-Default labels:
+Default label:
 
-- EN: `View full portfolio`
-- VI: `Coi full portfolio`
+```text
+View full portfolio
+```
 
 You can edit the wording if needed, but keep it short.
 
@@ -187,8 +192,9 @@ The credit intro appears after the PDF carousel.
 
 Default copy:
 
-- EN: `Shout out to the friends who built this proposal with me.`
-- VI: `Shout out những người đã cùng làm proposal với tôi.`
+```text
+Shout out to the friends who built this proposal with me.
+```
 
 ### Collaborator Names
 
@@ -208,7 +214,7 @@ Admin will show these as small name chips on the public page.
 
 1. Click `New project`.
 2. Fill `Project id`.
-3. Fill EN and VI title, summary, and overview.
+3. Fill title, summary, and overview.
 4. Open `Media`.
 5. Upload cover image.
 6. Upload main image.
@@ -222,8 +228,7 @@ Admin will show these as small name chips on the public page.
 
 Before finishing, check:
 
-- English page has the right title, summary, overview, CTA, and credit text.
-- Vietnamese page reads naturally.
+- Public page has the right title, summary, overview, CTA, and credit text.
 - Cover is not awkwardly cropped.
 - Main image appears below the text section.
 - CTA appears before the PDF carousel.

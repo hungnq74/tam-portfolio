@@ -10,9 +10,13 @@ import {
 import { upload } from "@vercel/blob/client"
 import { useRouter } from "next/navigation"
 import {
+  CheckCircle2,
+  CircleAlert,
+  Eye,
   FileImage,
   FileText,
   FileUp,
+  ListChecks,
   Loader2,
   Save,
   UploadCloud,
@@ -49,6 +53,14 @@ const FORM_TABS: Array<{ id: AdminProjectTab; label: string }> = [
   { id: "content", label: "Content" },
   { id: "media", label: "Media" },
   { id: "credits", label: "CTA & Credits" },
+]
+
+const COVER_POSITION_PRESETS = [
+  { label: "Center", x: 50, y: 50 },
+  { label: "Top", x: 50, y: 22 },
+  { label: "Bottom", x: 50, y: 78 },
+  { label: "Left", x: 22, y: 50 },
+  { label: "Right", x: 78, y: 50 },
 ]
 
 export function AdminProjectForm({
@@ -89,6 +101,21 @@ export function AdminProjectForm({
 
   const uploading = Boolean(coverProgress || mainImageProgress || pdfProgress)
   const creditNames = normalizeListText(creditNamesText)
+  const readinessItems = getReadinessItems({
+    projectId,
+    draft: locales.en,
+    media,
+    creditNames,
+  })
+  const saveStatus = getSaveStatus({
+    blobConfigured,
+    manifestError,
+    uploading,
+    saving,
+    message,
+    progress:
+      coverProgress ?? mainImageProgress ?? pdfProgress,
+  })
 
   useEffect(() => {
     if (mode === "edit" || idTouched) return
@@ -291,6 +318,20 @@ export function AdminProjectForm({
     })
   }
 
+  const updateCoverPosition = (x: number, y: number) => {
+    setMedia((current) => {
+      if (!current?.cover) return current
+
+      return {
+        ...current,
+        cover: {
+          ...current.cover,
+          focalPoint: { x, y },
+        },
+      }
+    })
+  }
+
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setSaving(true)
@@ -307,7 +348,7 @@ export function AdminProjectForm({
         },
         locales: {
           en: createLocalePayload(locales.en),
-          vi: createLocalePayload(locales.vi),
+          vi: createHiddenViPayload(locales.en, project?.vi),
         },
       }
       const response = await fetch(
@@ -363,53 +404,50 @@ export function AdminProjectForm({
       {error ? <AdminNotice tone="error" message={error} /> : null}
       {message ? <AdminNotice tone="success" message={message} /> : null}
 
-      <section className="admin-card overflow-hidden">
-        <FormTabs activeTab={activeTab} onTabChange={setActiveTab} />
-        <div className="p-4 sm:p-6">
-          {activeTab === "content" ? (
-            <div className="space-y-5">
-              <SectionHeader
-                icon={<FileText className="h-4 w-4" />}
-                title="Content"
-                description="AXE-style proposal content for English and Vietnamese."
-              />
-              <label className="block max-w-xl">
-                <AdminLabel>Project id</AdminLabel>
-                <input
-                  value={projectId}
-                  onChange={(event) => {
-                    setIdTouched(true)
-                    setProjectId(
-                      slugify(event.target.value, { trimEdges: false }),
-                    )
-                  }}
-                  disabled={mode === "edit"}
-                  className="admin-input"
+      <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_23rem]">
+        <section className="admin-card overflow-hidden">
+          <FormTabs activeTab={activeTab} onTabChange={setActiveTab} />
+          <div className="p-4 sm:p-6">
+            {activeTab === "content" ? (
+              <div className="space-y-5">
+                <SectionHeader
+                  icon={<FileText className="h-4 w-4" />}
+                  title="Content"
+                  description="AXE-style proposal content for the English-only portfolio."
                 />
-              </label>
-              <div className="grid gap-5 lg:grid-cols-2">
+                <label className="block max-w-xl">
+                  <AdminLabel>Project id</AdminLabel>
+                  <input
+                    aria-label="Project id"
+                    value={projectId}
+                    onChange={(event) => {
+                      setIdTouched(true)
+                      setProjectId(
+                        slugify(event.target.value, { trimEdges: false }),
+                      )
+                    }}
+                    disabled={mode === "edit"}
+                    className="admin-input"
+                  />
+                  <FieldHelp>
+                    Lowercase URL slug for the public project page.
+                  </FieldHelp>
+                </label>
                 <LocaleContentFields
                   locale="en"
                   draft={locales.en}
                   onChange={updateLocale}
                 />
-                <LocaleContentFields
-                  locale="vi"
-                  draft={locales.vi}
-                  onChange={updateLocale}
-                />
               </div>
-            </div>
-          ) : null}
+            ) : null}
 
-          {activeTab === "media" ? (
-            <div className="space-y-5">
-              <SectionHeader
-                icon={<FileUp className="h-4 w-4" />}
-                title="Media"
-                description="Cover, main image, and proposal PDF slides are shared by both locales."
-              />
-              <div className="grid gap-5 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+            {activeTab === "media" ? (
+              <div className="space-y-5">
+                <SectionHeader
+                  icon={<FileUp className="h-4 w-4" />}
+                  title="Media"
+                  description="Upload the public cover, the main detail image, and the full proposal PDF."
+                />
                 <div className="space-y-4">
                   <UploadControl
                     icon={<FileImage className="h-4 w-4" />}
@@ -418,6 +456,7 @@ export function AdminProjectForm({
                     disabled={!blobConfigured || uploading || saving}
                     progress={coverProgress}
                     onChange={onCoverChange}
+                    helper="Top visual for the project page and admin cards."
                   />
                   <UploadControl
                     icon={<FileImage className="h-4 w-4" />}
@@ -428,6 +467,7 @@ export function AdminProjectForm({
                     }
                     progress={mainImageProgress}
                     onChange={onMainImageChange}
+                    helper="The large image shown between overview text and CTA."
                   />
                   <UploadControl
                     icon={<UploadCloud className="h-4 w-4" />}
@@ -438,129 +478,78 @@ export function AdminProjectForm({
                     }
                     progress={pdfProgress}
                     onChange={onPdfChange}
+                    helper="Pages are converted into carousel slides automatically."
                   />
                   {media?.cover ? (
-                    <div className="grid gap-3 rounded-[8px] border border-slate-200 bg-slate-50 p-4 md:grid-cols-2">
-                      <RangeField
-                        label="Cover focal X"
-                        value={media.cover.focalPoint?.x ?? 50}
-                        onChange={(value) => updateCoverFocalPoint("x", value)}
-                      />
-                      <RangeField
-                        label="Cover focal Y"
-                        value={media.cover.focalPoint?.y ?? 50}
-                        onChange={(value) => updateCoverFocalPoint("y", value)}
-                      />
-                    </div>
+                    <CoverPositionControl
+                      cover={media.cover}
+                      onPreset={(x, y) => updateCoverPosition(x, y)}
+                      onFineTune={updateCoverFocalPoint}
+                    />
                   ) : null}
                 </div>
-
-                <MediaPreview media={media} />
               </div>
-            </div>
-          ) : null}
+            ) : null}
 
-          {activeTab === "credits" ? (
-            <div className="space-y-5">
-              <SectionHeader
-                icon={<Users className="h-4 w-4" />}
-                title="CTA & Credits"
-                description="Small bridge copy before and after the proposal carousel."
-              />
-              <div className="grid gap-5 lg:grid-cols-2">
-                <section className="space-y-4 rounded-[8px] border border-slate-200 bg-slate-50 p-4">
-                  <h3 className="text-sm font-semibold tracking-normal text-slate-950">
+            {activeTab === "credits" ? (
+              <div className="space-y-5">
+                <SectionHeader
+                  icon={<Users className="h-4 w-4" />}
+                  title="CTA & Credits"
+                  description="Editorial bridge copy before the proposal carousel and quiet credits after it."
+                />
+                <section className="admin-card-soft space-y-4 p-4">
+                  <h3 className="text-sm font-semibold tracking-normal text-[rgb(var(--ink))]">
                     English
                   </h3>
                   <TextField
-                    label="EN CTA label"
+                    label="CTA label"
                     value={locales.en.ctaLabel}
                     onChange={(value) => updateLocale("en", "ctaLabel", value)}
+                    hint="Button text that jumps to the proposal carousel."
+                    maxLength={80}
+                    showCount
                   />
                   <TextAreaField
-                    label="EN credit intro"
+                    label="Credit intro"
                     rows={3}
                     value={locales.en.credit}
                     onChange={(value) => updateLocale("en", "credit", value)}
+                    hint="Short thank-you line shown after the carousel."
+                    maxLength={220}
+                    showCount
                   />
                 </section>
-                <section className="space-y-4 rounded-[8px] border border-slate-200 bg-slate-50 p-4">
-                  <h3 className="text-sm font-semibold tracking-normal text-slate-950">
-                    Vietnamese
-                  </h3>
-                  <TextField
-                    label="VI CTA label"
-                    value={locales.vi.ctaLabel}
-                    onChange={(value) => updateLocale("vi", "ctaLabel", value)}
-                  />
-                  <TextAreaField
-                    label="VI credit intro"
-                    rows={3}
-                    value={locales.vi.credit}
-                    onChange={(value) => updateLocale("vi", "credit", value)}
-                  />
-                </section>
+                <TextAreaField
+                  label="Collaborator names"
+                  rows={4}
+                  value={creditNamesText}
+                  onChange={setCreditNamesText}
+                  hint="One name per line, or comma-separated."
+                />
+                <CreditPreview
+                  ctaLabel={locales.en.ctaLabel}
+                  credit={locales.en.credit}
+                  creditNames={creditNames}
+                />
               </div>
-              <TextAreaField
-                label="Collaborator names"
-                rows={4}
-                value={creditNamesText}
-                onChange={setCreditNamesText}
-              />
-              <div className="rounded-[8px] border border-slate-200 bg-white p-4">
-                <p className="mb-3 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
-                  Chip preview
-                </p>
-                <div className="flex flex-wrap gap-2">
-                  {creditNames.length ? (
-                    creditNames.map((name) => (
-                      <span
-                        key={name}
-                        className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-sm font-semibold text-slate-700"
-                      >
-                        {name}
-                      </span>
-                    ))
-                  ) : (
-                    <span className="text-sm font-medium text-slate-500">
-                      Add one name per line or comma-separated.
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-          ) : null}
-        </div>
-      </section>
+            ) : null}
+          </div>
+        </section>
 
-      <div className="sticky bottom-4 z-20 flex flex-col gap-3 rounded-[8px] border border-slate-200 bg-white/95 p-3 shadow-lg shadow-slate-950/5 backdrop-blur-xl sm:flex-row sm:items-center sm:justify-between">
-        <p className="text-sm font-medium text-slate-500">
-          {!blobConfigured
-            ? "Blob token required to save or upload."
-            : manifestError
-              ? "Resolve the manifest issue before saving."
-              : uploading
-                ? (coverProgress?.label ??
-                  mainImageProgress?.label ??
-                  pdfProgress?.label ??
-                  "Uploading media.")
-                : "Ready to save changes."}
-        </p>
-        <button
-          type="submit"
-          disabled={
-            !blobConfigured || saving || uploading || Boolean(manifestError)
-          }
-          className="admin-button admin-button-primary sm:min-w-36"
-        >
-          {saving ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            <Save className="h-4 w-4" />
-          )}
-          {saving ? "Saving" : "Save project"}
-        </button>
+        <aside className="admin-inspector self-start p-4 xl:sticky xl:top-5">
+          <div className="space-y-4">
+            <AdminReadinessPanel items={readinessItems} />
+            <AdminMediaPreviewPanel media={media} />
+          </div>
+        </aside>
       </div>
+
+      <AdminSaveBar
+        status={saveStatus}
+        disabled={!blobConfigured || saving || uploading || Boolean(manifestError)}
+        saving={saving}
+      />
     </form>
   )
 }
@@ -594,6 +583,20 @@ function createLocalePayload(draft: LocaleDraft) {
       credit: draft.credit.trim(),
     },
   }
+}
+
+function createHiddenViPayload(enDraft: LocaleDraft, existingVi?: Project) {
+  if (existingVi) {
+    return createLocalePayload(createLocaleDraft("vi", existingVi))
+  }
+
+  return createLocalePayload({
+    title: enDraft.title,
+    summary: enDraft.summary,
+    overview: enDraft.overview,
+    ctaLabel: enDraft.ctaLabel,
+    credit: enDraft.credit,
+  })
 }
 
 function getInitialCreditNames(project: Record<Locale, Project> | undefined) {
@@ -644,29 +647,36 @@ function LocaleContentFields({
   draft: LocaleDraft
   onChange: (locale: Locale, key: keyof LocaleDraft, value: string) => void
 }) {
-  const prefix = locale === "en" ? "EN" : "VI"
-
   return (
-    <section className="space-y-4 rounded-[8px] border border-slate-200 bg-slate-50 p-4">
-      <h3 className="text-sm font-semibold tracking-normal text-slate-950">
-        {locale === "en" ? "English content" : "Vietnamese content"}
+    <section className="admin-card-soft space-y-4 p-4">
+      <h3 className="text-sm font-semibold tracking-normal text-[rgb(var(--ink))]">
+        English content
       </h3>
       <TextField
-        label={`${prefix} title`}
+        label="Title"
         value={draft.title}
         onChange={(value) => onChange(locale, "title", value)}
+        hint="Public project name used on cards and detail pages."
+        maxLength={120}
+        showCount
       />
       <TextAreaField
-        label={`${prefix} summary`}
+        label="Summary"
         rows={3}
         value={draft.summary}
         onChange={(value) => onChange(locale, "summary", value)}
+        hint="Short context line near the top of the project page."
+        maxLength={280}
+        showCount
       />
       <TextAreaField
-        label={`${prefix} overview`}
+        label="Overview"
         rows={6}
         value={draft.overview}
         onChange={(value) => onChange(locale, "overview", value)}
+        hint="Longer project setup before the main image."
+        maxLength={900}
+        showCount
       />
     </section>
   )
@@ -676,19 +686,28 @@ function TextField({
   label,
   value,
   onChange,
+  hint,
+  maxLength,
+  showCount = false,
 }: {
   label: string
   value: string
   onChange: (value: string) => void
+  hint?: string
+  maxLength?: number
+  showCount?: boolean
 }) {
   return (
     <label className="block">
       <AdminLabel>{label}</AdminLabel>
       <input
+        aria-label={label}
         value={value}
+        maxLength={maxLength}
         onChange={(event) => onChange(event.target.value)}
         className="admin-input"
       />
+      <FieldFooter hint={hint} value={value} maxLength={maxLength} showCount={showCount} />
     </label>
   )
 }
@@ -698,27 +717,70 @@ function TextAreaField({
   value,
   rows,
   onChange,
+  hint,
+  maxLength,
+  showCount = false,
 }: {
   label: string
   value: string
   rows: number
   onChange: (value: string) => void
+  hint?: string
+  maxLength?: number
+  showCount?: boolean
 }) {
   return (
     <label className="block">
       <AdminLabel>{label}</AdminLabel>
       <textarea
+        aria-label={label}
         value={value}
         rows={rows}
+        maxLength={maxLength}
         onChange={(event) => onChange(event.target.value)}
         className="admin-input resize-y"
       />
+      <FieldFooter hint={hint} value={value} maxLength={maxLength} showCount={showCount} />
     </label>
   )
 }
 
 function AdminLabel({ children }: { children: ReactNode }) {
   return <span className="admin-label">{children}</span>
+}
+
+function FieldHelp({ children }: { children: ReactNode }) {
+  return (
+    <p className="admin-subtle mt-2 text-xs leading-5">
+      {children}
+    </p>
+  )
+}
+
+function FieldFooter({
+  hint,
+  value,
+  maxLength,
+  showCount,
+}: {
+  hint?: string
+  value: string
+  maxLength?: number
+  showCount: boolean
+}) {
+  if (!hint && !showCount) return null
+
+  return (
+    <div className="mt-2 flex flex-wrap items-center justify-between gap-2 text-xs leading-5">
+      {hint ? <span className="admin-subtle">{hint}</span> : <span />}
+      {showCount ? (
+        <span className="font-semibold text-[rgba(38,52,40,0.5)]">
+          {value.length}
+          {maxLength ? `/${maxLength}` : ""}
+        </span>
+      ) : null}
+    </div>
+  )
 }
 
 function SectionHeader({
@@ -733,7 +795,7 @@ function SectionHeader({
   return (
     <div className="flex items-start gap-3 border-b border-slate-200 pb-4">
       {icon ? (
-        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] border border-slate-200 bg-slate-50 text-slate-600">
+        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] border border-slate-200 bg-slate-50 text-slate-700">
           {icon}
         </span>
       ) : null}
@@ -754,6 +816,7 @@ function UploadControl({
   disabled,
   progress,
   onChange,
+  helper,
 }: {
   icon: ReactNode
   label: string
@@ -761,6 +824,7 @@ function UploadControl({
   disabled: boolean
   progress: UploadProgress
   onChange: (event: ChangeEvent<HTMLInputElement>) => void
+  helper?: string
 }) {
   return (
     <label
@@ -775,6 +839,11 @@ function UploadControl({
           Browse
         </span>
       </span>
+      {helper ? (
+        <span className="admin-subtle mt-2 block text-xs leading-5">
+          {helper}
+        </span>
+      ) : null}
       <input
         type="file"
         accept={accept}
@@ -800,20 +869,106 @@ function UploadControl({
   )
 }
 
+function CoverPositionControl({
+  cover,
+  onPreset,
+  onFineTune,
+}: {
+  cover: ProjectMediaAsset
+  onPreset: (x: number, y: number) => void
+  onFineTune: (axis: "x" | "y", value: number) => void
+}) {
+  const focalPoint = {
+    x: cover.focalPoint?.x ?? 50,
+    y: cover.focalPoint?.y ?? 50,
+  }
+  const activePreset = COVER_POSITION_PRESETS.find(
+    (preset) => preset.x === focalPoint.x && preset.y === focalPoint.y,
+  )
+
+  return (
+    <section className="rounded-[8px] border border-slate-200 bg-slate-50 p-4">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
+        <div className="space-y-4">
+          <div>
+            <h3 className="text-sm font-semibold text-slate-950">
+              Adjust cover crop
+            </h3>
+            <p className="admin-subtle mt-1 text-xs leading-5">
+              Choose which part of the cover should stay visible when the page
+              crops it on different screens.
+            </p>
+          </div>
+          <div>
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+              Quick position
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {COVER_POSITION_PRESETS.map((preset) => (
+                <button
+                  key={preset.label}
+                  type="button"
+                  aria-pressed={activePreset?.label === preset.label}
+                  onClick={() => onPreset(preset.x, preset.y)}
+                  className="rounded-[6px] border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-950 aria-pressed:border-slate-950 aria-pressed:bg-slate-950 aria-pressed:text-white"
+                >
+                  {preset.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="grid gap-3 md:grid-cols-2">
+            <RangeField
+              label="Move focus left or right"
+              value={focalPoint.x}
+              onChange={(value) => onFineTune("x", value)}
+              valueLabel={`${focalPoint.x}%`}
+            />
+            <RangeField
+              label="Move focus up or down"
+              value={focalPoint.y}
+              onChange={(value) => onFineTune("y", value)}
+              valueLabel={`${focalPoint.y}%`}
+            />
+          </div>
+        </div>
+        <div>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            Crop preview
+          </p>
+          <img
+            src={cover.src}
+            alt={cover.alt}
+            className="aspect-[16/9] w-full rounded-[6px] border border-slate-200 object-cover"
+            style={{
+              objectPosition: `${focalPoint.x}% ${focalPoint.y}%`,
+            }}
+          />
+          <p className="admin-subtle mt-2 text-xs leading-5">
+            This preview matches the public cover crop.
+          </p>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 function RangeField({
   label,
   value,
   onChange,
+  valueLabel,
 }: {
   label: string
   value: number
   onChange: (value: number) => void
+  valueLabel?: string
 }) {
   return (
     <label className="block">
       <span className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-600">
         <span>{label}</span>
-        <span>{value}</span>
+        <span>{valueLabel ?? value}</span>
       </span>
       <input
         type="range"
@@ -827,10 +982,77 @@ function RangeField({
   )
 }
 
-function MediaPreview({ media }: { media?: ProjectMedia }) {
+function AdminReadinessPanel({
+  items,
+}: {
+  items: Array<{ label: string; ready: boolean; detail: string }>
+}) {
+  const readyCount = items.filter((item) => item.ready).length
+
   return (
-    <div className="rounded-[8px] border border-slate-200 bg-slate-50 p-4">
-      <div className="grid gap-3 md:grid-cols-2">
+    <section className="space-y-3">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="admin-kicker">Readiness</p>
+          <h2 className="mt-1 text-lg font-semibold tracking-normal text-[rgb(var(--ink))]">
+            {readyCount}/{items.length} ready
+          </h2>
+        </div>
+        <span
+          className="admin-status-chip"
+          data-tone={readyCount === items.length ? "ready" : "warn"}
+        >
+          <ListChecks className="h-3.5 w-3.5" />
+          {readyCount === items.length ? "Ready" : "Draft"}
+        </span>
+      </div>
+      <div className="space-y-2">
+        {items.map((item) => (
+          <div
+            key={item.label}
+            className="flex gap-3 rounded-[8px] border border-slate-200 bg-white p-3"
+          >
+            <span
+              className={`mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
+                item.ready
+                  ? "bg-slate-100 text-slate-700"
+                  : "bg-orange-50 text-orange-700"
+              }`}
+            >
+              {item.ready ? (
+                <CheckCircle2 className="h-3.5 w-3.5" />
+              ) : (
+                <CircleAlert className="h-3.5 w-3.5" />
+              )}
+            </span>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-[rgb(var(--ink))]">
+                {item.label}
+              </p>
+              <p className="admin-subtle mt-0.5 text-xs leading-5">
+                {item.detail}
+              </p>
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+function AdminMediaPreviewPanel({ media }: { media?: ProjectMedia }) {
+  return (
+    <section className="space-y-3 border-t border-slate-200 pt-4">
+      <div className="flex items-center justify-between gap-3">
+        <div>
+          <p className="admin-kicker">Preview</p>
+          <h2 className="mt-1 text-lg font-semibold tracking-normal text-[rgb(var(--ink))]">
+            Media stack
+          </h2>
+        </div>
+        <Eye className="h-4 w-4 text-[rgba(38,52,40,0.52)]" />
+      </div>
+      <div className="grid gap-3">
         {media?.cover ? (
           <img
             src={media.cover.src}
@@ -853,7 +1075,7 @@ function MediaPreview({ media }: { media?: ProjectMedia }) {
           <PreviewPlaceholder>Main image preview</PreviewPlaceholder>
         )}
       </div>
-      <div className="mt-4 grid gap-3 text-sm text-slate-600 md:grid-cols-3">
+      <div className="grid gap-3 text-sm text-slate-600">
         <PreviewStat label="Cover" value={media?.cover ? "Ready" : "Missing"} />
         <PreviewStat
           label="Main image"
@@ -864,7 +1086,7 @@ function MediaPreview({ media }: { media?: ProjectMedia }) {
           value={String(media?.proposalSlides?.length ?? 0)}
         />
       </div>
-    </div>
+    </section>
   )
 }
 
@@ -879,8 +1101,87 @@ function PreviewPlaceholder({ children }: { children: ReactNode }) {
 function PreviewStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-[6px] border border-slate-200 bg-white p-3">
-      <p className="text-xs font-semibold text-slate-500">{label}</p>
-      <p className="mt-1 text-lg font-semibold text-slate-950">{value}</p>
+      <p className="text-xs font-semibold text-[rgba(38,52,40,0.54)]">
+        {label}
+      </p>
+      <p className="mt-1 text-lg font-semibold text-[rgb(var(--ink))]">
+        {value}
+      </p>
+    </div>
+  )
+}
+
+function CreditPreview({
+  ctaLabel,
+  credit,
+  creditNames,
+}: {
+  ctaLabel: string
+  credit: string
+  creditNames: string[]
+}) {
+  return (
+    <div className="admin-card-soft p-4">
+      <p className="admin-kicker mb-3">Public-page bridge preview</p>
+      <div className="rounded-[8px] border border-slate-200 bg-white p-4 text-center">
+        <span className="admin-button admin-button-secondary pointer-events-none">
+          {ctaLabel || "View full portfolio"}
+        </span>
+        <p className="admin-subtle mx-auto mt-4 max-w-xl text-sm leading-6">
+          {credit || "Credit intro will appear after the proposal carousel."}
+        </p>
+        <div className="mt-3 flex flex-wrap justify-center gap-2">
+          {creditNames.length ? (
+            creditNames.map((name) => (
+              <span
+                key={name}
+                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-sm font-semibold text-slate-800"
+              >
+                {name}
+              </span>
+            ))
+          ) : (
+            <span className="text-sm font-medium text-[rgba(38,52,40,0.52)]">
+              Add one name per line or comma-separated.
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function AdminSaveBar({
+  status,
+  disabled,
+  saving,
+}: {
+  status: { label: string; detail: string; tone: "ready" | "warn" }
+  disabled: boolean
+  saving: boolean
+}) {
+  return (
+    <div className="admin-save-bar">
+      <div className="min-w-0">
+        <span className="admin-status-chip" data-tone={status.tone}>
+          {status.label}
+        </span>
+        <p className="admin-subtle mt-1 text-sm font-medium">
+          {status.detail}
+        </p>
+      </div>
+      <button
+        type="submit"
+        disabled={disabled}
+        className="admin-button admin-button-primary sm:min-w-36"
+      >
+        {saving ? (
+          <Loader2 className="h-4 w-4 animate-spin" />
+        ) : (
+          <Save className="h-4 w-4" />
+        )}
+        {saving ? "Saving" : "Save project"}
+      </button>
     </div>
   )
 }
@@ -903,6 +1204,123 @@ function AdminNotice({
       {message}
     </div>
   )
+}
+
+function getReadinessItems({
+  projectId,
+  draft,
+  media,
+  creditNames,
+}: {
+  projectId: string
+  draft: LocaleDraft
+  media?: ProjectMedia
+  creditNames: string[]
+}) {
+  const hasText =
+    draft.title.trim() && draft.summary.trim() && draft.overview.trim()
+
+  return [
+    {
+      label: "Project identity",
+      ready: /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(projectId),
+      detail: projectId ? `/${projectId}` : "Add a URL-safe project id.",
+    },
+    {
+      label: "English content",
+      ready: Boolean(hasText),
+      detail: hasText
+        ? "Title, summary, and overview are filled."
+        : "Add title, summary, and overview.",
+    },
+    {
+      label: "Cover image",
+      ready: Boolean(media?.cover),
+      detail: media?.cover ? "Cover is ready." : "Upload a cover image.",
+    },
+    {
+      label: "Main image asset",
+      ready: Boolean(media?.summary),
+      detail: media?.summary ? "Main image is ready." : "Upload the main image.",
+    },
+    {
+      label: "Proposal PDF",
+      ready: Boolean(media?.proposalSlides?.length),
+      detail: media?.proposalSlides?.length
+        ? `${media.proposalSlides.length} slide${media.proposalSlides.length === 1 ? "" : "s"} ready.`
+        : "Upload a proposal PDF.",
+    },
+    {
+      label: "CTA & credits",
+      ready: Boolean(draft.ctaLabel.trim() && draft.credit.trim() && creditNames.length),
+      detail:
+        draft.ctaLabel.trim() && draft.credit.trim() && creditNames.length
+          ? `${creditNames.length} collaborator chip${creditNames.length === 1 ? "" : "s"}.`
+          : "Add CTA, credit intro, and collaborator names.",
+    },
+  ]
+}
+
+function getSaveStatus({
+  blobConfigured,
+  manifestError,
+  uploading,
+  saving,
+  message,
+  progress,
+}: {
+  blobConfigured: boolean
+  manifestError?: string
+  uploading: boolean
+  saving: boolean
+  message: string | null
+  progress: UploadProgress
+}) {
+  if (!blobConfigured) {
+    return {
+      label: "Blocked",
+      detail: "Blob token required to save or upload.",
+      tone: "warn" as const,
+    }
+  }
+
+  if (manifestError) {
+    return {
+      label: "Blocked",
+      detail: "Resolve the manifest issue before saving.",
+      tone: "warn" as const,
+    }
+  }
+
+  if (saving) {
+    return {
+      label: "Saving",
+      detail: "Writing project changes to the manifest.",
+      tone: "warn" as const,
+    }
+  }
+
+  if (uploading) {
+    return {
+      label: "Uploading",
+      detail: progress?.label ?? "Uploading media.",
+      tone: "warn" as const,
+    }
+  }
+
+  if (message) {
+    return {
+      label: "Saved",
+      detail: "Latest changes are stored.",
+      tone: "ready" as const,
+    }
+  }
+
+  return {
+    label: "Ready",
+    detail: "Ready to save changes.",
+    tone: "ready" as const,
+  }
 }
 
 function normalizeListText(value: string) {

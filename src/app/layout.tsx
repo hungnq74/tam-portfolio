@@ -26,11 +26,11 @@ const prose = Newsreader({
 export const metadata: Metadata = {
   title: "Minh Tam Portfolio",
   description:
-    "A bilingual Vietnamese storybook-inspired portfolio for social planning and creative copywriting.",
+    "An English-only Vietnamese storybook-inspired portfolio for social planning and creative copywriting.",
   openGraph: {
     title: "Minh Tam Portfolio",
     description:
-      "A bilingual Vietnamese storybook-inspired portfolio for social planning and creative copywriting.",
+      "An English-only Vietnamese storybook-inspired portfolio for social planning and creative copywriting.",
     type: "website",
   },
 }

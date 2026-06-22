@@ -130,7 +130,7 @@ describe("ProjectDetailPage", () => {
     )
   })
 
-  it("renders the localized proposal CTA bridge for Vietnamese", async () => {
+  it("ignores stale Vietnamese locale storage and renders the English proposal CTA", async () => {
     window.localStorage.setItem(LOCALE_STORAGE_KEY, "vi")
     const project = createProject("demo-project", {
       title: "Demo project",
@@ -160,16 +160,19 @@ describe("ProjectDetailPage", () => {
 
     render(<ProjectDetailPage contentByLocale={contentByLocale} projectId="demo-project" />)
 
-    const cta = await screen.findByRole("link", { name: "Coi full portfolio: Proposal đầy đủ" })
-    const carousel = screen.getByRole("region", {
-      name: /Dự án demo carousel proposal/i,
+    const cta = await screen.findByRole("link", {
+      name: "View full portfolio: Full proposal",
     })
-    const credit = screen.getByText("Shout out những người đã cùng làm proposal với tôi.")
+    const carousel = screen.getByRole("region", {
+      name: /Demo project proposal carousel/i,
+    })
+    const credit = screen.getByText("Shout out to the friends who built this proposal with me.")
 
     expect(cta).toHaveAttribute("href", "#demo-project-proposal-carousel")
     expect(screen.getByText("Minh Anh")).toBeInTheDocument()
     expect(screen.getByText("Hoàng Linh")).toBeInTheDocument()
     expect(screen.getByText("Bảo Trân")).toBeInTheDocument()
+    expect(window.localStorage.getItem(LOCALE_STORAGE_KEY)).toBe("en")
     expect(carousel.compareDocumentPosition(credit) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     )
