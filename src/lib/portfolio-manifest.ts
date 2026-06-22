@@ -62,6 +62,46 @@ function contentFromManifest(manifest: PortfolioManifest) {
   })
 }
 
+function hydrateProjectDefaults(project: Project, staticProject?: Project): Project {
+  const proposalCta = project.proposalCta
+    ? {
+        ...staticProject?.proposalCta,
+        ...project.proposalCta,
+        creditNames:
+          project.proposalCta.creditNames ?? staticProject?.proposalCta?.creditNames,
+      }
+    : staticProject?.proposalCta
+
+  return {
+    ...project,
+    proposalCta,
+  }
+}
+
+export function hydrateManifestProjectDefaults(manifest: PortfolioManifest): PortfolioManifest {
+  const staticProjectsByLocale = getStaticProjectsByLocale()
+
+  return {
+    ...manifest,
+    locales: {
+      en: {
+        projects: manifest.locales.en.projects.map((project) => {
+          const staticProject = staticProjectsByLocale.en.find((item) => item.id === project.id)
+
+          return hydrateProjectDefaults(project, staticProject)
+        }),
+      },
+      vi: {
+        projects: manifest.locales.vi.projects.map((project) => {
+          const staticProject = staticProjectsByLocale.vi.find((item) => item.id === project.id)
+
+          return hydrateProjectDefaults(project, staticProject)
+        }),
+      },
+    },
+  }
+}
+
 export async function readPortfolioSnapshot(): Promise<PortfolioSnapshot> {
   const seedManifest = getSeedManifest()
 
@@ -101,9 +141,11 @@ export async function readPortfolioSnapshot(): Promise<PortfolioSnapshot> {
       }
     }
 
+    const hydratedManifest = hydrateManifestProjectDefaults(parsed.data)
+
     return {
-      contentByLocale: contentFromManifest(parsed.data),
-      manifest: parsed.data,
+      contentByLocale: contentFromManifest(hydratedManifest),
+      manifest: hydratedManifest,
       etag: result.blob.etag,
       configured: true,
     }

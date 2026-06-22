@@ -5,7 +5,7 @@ import { AdminDeleteButton } from "@/components/admin/AdminDeleteButton"
 import { AdminLogoutButton } from "@/components/admin/AdminLogoutButton"
 import { AdminProjectForm } from "@/components/admin/AdminProjectForm"
 import { requireAdmin } from "@/lib/admin-auth"
-import { getAdminFieldOptions } from "@/lib/admin-form-options"
+import { isAdminManagedProject } from "@/lib/admin-projects"
 import { readAdminPortfolioSnapshot } from "@/lib/portfolio-manifest"
 
 type EditProjectPageProps = {
@@ -26,14 +26,20 @@ export async function generateMetadata({
   }
 }
 
-export default async function EditProjectPage({ params }: EditProjectPageProps) {
+export default async function EditProjectPage({
+  params,
+}: EditProjectPageProps) {
   await requireAdmin()
   const { projectId } = await params
   const snapshot = await readAdminPortfolioSnapshot()
-  const en = snapshot.contentByLocale.en.projects.find((project) => project.id === projectId)
-  const vi = snapshot.contentByLocale.vi.projects.find((project) => project.id === projectId)
+  const en = snapshot.contentByLocale.en.projects.find(
+    (project) => project.id === projectId,
+  )
+  const vi = snapshot.contentByLocale.vi.projects.find(
+    (project) => project.id === projectId,
+  )
 
-  if (!en || !vi) {
+  if (!en || !vi || !isAdminManagedProject(en) || !isAdminManagedProject(vi)) {
     notFound()
   }
 
@@ -61,7 +67,6 @@ export default async function EditProjectPage({ params }: EditProjectPageProps) 
         mode="edit"
         manifestEtag={snapshot.etag}
         project={{ en, vi }}
-        fields={getAdminFieldOptions()}
         blobConfigured={snapshot.configured}
         manifestError={snapshot.error}
       />

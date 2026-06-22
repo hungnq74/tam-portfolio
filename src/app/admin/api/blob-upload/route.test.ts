@@ -63,7 +63,9 @@ describe("admin Blob upload API", () => {
     const response = await POST(request("not json"))
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({ error: "Invalid upload request." })
+    await expect(response.json()).resolves.toEqual({
+      error: "Invalid upload request.",
+    })
   })
 
   it("generates upload options for allowed project image paths", async () => {
@@ -97,7 +99,7 @@ describe("admin Blob upload API", () => {
         "cover-payload",
       )
       const summaryOptions = await onBeforeGenerateToken(
-        "projects/demo-project/upload-id/summary.png",
+        "projects/demo-project/upload-id/summary.webp",
         "summary-payload",
       )
 
@@ -133,7 +135,10 @@ describe("admin Blob upload API", () => {
 
   it("rejects direct PDF uploads because proposal pages must be rendered images", async () => {
     mocks.handleUpload.mockImplementation(async ({ onBeforeGenerateToken }) => {
-      await onBeforeGenerateToken("projects/demo-project/upload-id/proposal.pdf", null)
+      await onBeforeGenerateToken(
+        "projects/demo-project/upload-id/proposal.pdf",
+        null,
+      )
     })
 
     const response = await POST(request(JSON.stringify({ type: "client" })))

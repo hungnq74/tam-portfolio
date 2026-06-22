@@ -6,6 +6,7 @@ import {
   assertExpectedEtag,
   getOwnedBlobUrls,
   getUnusedOwnedBlobUrls,
+  hydrateManifestProjectDefaults,
   ManifestConflictError,
   removeProjectFromManifest,
   replaceProjectInManifest,
@@ -71,6 +72,72 @@ describe("portfolio manifest mutation helpers", () => {
     expect(() => assertExpectedEtag(snapshot, "current-etag")).not.toThrow()
     expect(() => assertExpectedEtag(snapshot, "old-etag")).toThrow(ManifestConflictError)
     expect(() => assertExpectedEtag({ etag: null } as PortfolioSnapshot, null)).not.toThrow()
+  })
+
+  it("hydrates hidden static project defaults into older runtime manifests", () => {
+    const manifest = createManifestFromProjects({
+      en: [createProject("axe", { title: "Runtime AXE" })],
+      vi: [createProject("axe", { title: "Runtime AXE VI" })],
+    })
+
+    const hydrated = hydrateManifestProjectDefaults(manifest)
+
+    expect(hydrated.locales.en.projects[0].proposalCta).toEqual({
+      label: "View full portfolio",
+      credit: "Shout out to the friends who built this proposal with me.",
+      creditNames: ["Minh Anh", "Hoàng Linh", "Bảo Trân"],
+    })
+    expect(hydrated.locales.vi.projects[0].proposalCta).toEqual({
+      label: "Coi full portfolio",
+      credit: "Shout out những người đã cùng làm proposal với tôi.",
+      creditNames: ["Minh Anh", "Hoàng Linh", "Bảo Trân"],
+    })
+  })
+
+  it("hydrates credit names into older manifests that already have proposal CTA copy", () => {
+    const manifest = createManifestFromProjects({
+      en: [
+        createProject("axe", {
+          proposalCta: {
+            label: "View full portfolio",
+            credit: "Older credit copy",
+          },
+        }),
+      ],
+      vi: [
+        createProject("axe", {
+          proposalCta: {
+            label: "Coi full portfolio",
+            credit: "Credit cũ",
+          },
+        }),
+      ],
+    })
+
+    const hydrated = hydrateManifestProjectDefaults(manifest)
+
+    expect(hydrated.locales.en.projects[0].proposalCta).toEqual({
+      label: "View full portfolio",
+      credit: "Older credit copy",
+      creditNames: ["Minh Anh", "Hoàng Linh", "Bảo Trân"],
+    })
+    expect(hydrated.locales.vi.projects[0].proposalCta).toEqual({
+      label: "Coi full portfolio",
+      credit: "Credit cũ",
+      creditNames: ["Minh Anh", "Hoàng Linh", "Bảo Trân"],
+    })
+  })
+
+  it("does not add hidden defaults to projects missing from static content", () => {
+    const manifest = createManifestFromProjects({
+      en: [createProject("custom-project")],
+      vi: [createProject("custom-project")],
+    })
+
+    const hydrated = hydrateManifestProjectDefaults(manifest)
+
+    expect(hydrated.locales.en.projects[0].proposalCta).toBeUndefined()
+    expect(hydrated.locales.vi.projects[0].proposalCta).toBeUndefined()
   })
 })
 

@@ -83,6 +83,12 @@ export interface ProjectNamingRationale {
   note: string
 }
 
+export interface ProjectProposalCta {
+  label: string
+  credit: string
+  creditNames?: string[]
+}
+
 export interface Project {
   id: string
   fieldId: FieldId
@@ -105,6 +111,7 @@ export interface Project {
   }
   media?: ProjectMedia
   namingRationale?: ProjectNamingRationale
+  proposalCta?: ProjectProposalCta
 }
 
 export interface FieldScopeCard {
@@ -1141,6 +1148,11 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         results: ["Image-led detail page", "Upload-ready media structure", "Carousel proposal flow"],
         thumbnail: { col: 1, row: 0 },
         media: AXE_PROJECT_MEDIA,
+        proposalCta: {
+          label: "View full portfolio",
+          credit: "Shout out to the friends who built this proposal with me.",
+          creditNames: ["Minh Anh", "Hoàng Linh", "Bảo Trân"],
+        },
       },
       {
         id: "samsung",
@@ -1597,6 +1609,11 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         results: ["Trang chi tiết thiên về hình ảnh", "Cấu trúc media sẵn sàng upload", "Carousel proposal đầy đủ"],
         thumbnail: { col: 1, row: 0 },
         media: AXE_PROJECT_MEDIA_VI,
+        proposalCta: {
+          label: "Coi full portfolio",
+          credit: "Shout out những người đã cùng làm proposal với tôi.",
+          creditNames: ["Minh Anh", "Hoàng Linh", "Bảo Trân"],
+        },
       },
       {
         id: "samsung",

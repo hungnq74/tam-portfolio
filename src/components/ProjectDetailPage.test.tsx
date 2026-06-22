@@ -2,7 +2,11 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it } from "vitest"
 import { ProjectDetailPage } from "@/components/ProjectDetailPage"
-import { createPortfolioContentByLocale, type ProjectMedia } from "@/data/portfolio"
+import {
+  LOCALE_STORAGE_KEY,
+  createPortfolioContentByLocale,
+  type ProjectMedia,
+} from "@/data/portfolio"
 import { createProject } from "@/test/factories"
 
 const media: ProjectMedia = {
@@ -74,6 +78,101 @@ describe("ProjectDetailPage", () => {
 
     expect(screen.getByText("2 / 2")).toBeInTheDocument()
     expect(screen.getByAltText("Demo project proposal page 2")).toBeInTheDocument()
+  })
+
+  it("renders the proposal CTA before the carousel and the credit after it", () => {
+    const project = createProject("demo-project", {
+      title: "Demo project",
+      overview: "Admin-authored overview text.",
+      media,
+      proposalCta: {
+        label: "View full portfolio",
+        credit: "Shout out to the friends who built this proposal with me.",
+        creditNames: ["Minh Anh", "Hoàng Linh", "Bảo Trân"],
+      },
+    })
+    const contentByLocale = createPortfolioContentByLocale({
+      en: [project],
+      vi: [
+        createProject("demo-project", {
+          title: "Dự án demo",
+          category: "Chiến dịch",
+          overview: "Tổng quan do admin nhập.",
+          media,
+        }),
+      ],
+    })
+
+    render(<ProjectDetailPage contentByLocale={contentByLocale} projectId="demo-project" />)
+
+    const summaryImage = screen.getByAltText("Demo project proposal summary")
+    const cta = screen.getByRole("link", {
+      name: "View full portfolio: Full proposal",
+    })
+    const carousel = screen.getByRole("region", {
+      name: /Demo project proposal carousel/i,
+    })
+    const credit = screen.getByText("Shout out to the friends who built this proposal with me.")
+
+    expect(cta).toHaveAttribute("href", "#demo-project-proposal-carousel")
+    expect(carousel).toHaveAttribute("id", "demo-project-proposal-carousel")
+    expect(screen.getByText("Minh Anh")).toBeInTheDocument()
+    expect(screen.getByText("Hoàng Linh")).toBeInTheDocument()
+    expect(screen.getByText("Bảo Trân")).toBeInTheDocument()
+    expect(summaryImage.compareDocumentPosition(cta) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
+    expect(cta.compareDocumentPosition(carousel) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
+    expect(carousel.compareDocumentPosition(credit) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
+  })
+
+  it("renders the localized proposal CTA bridge for Vietnamese", async () => {
+    window.localStorage.setItem(LOCALE_STORAGE_KEY, "vi")
+    const project = createProject("demo-project", {
+      title: "Demo project",
+      media,
+      proposalCta: {
+        label: "View full portfolio",
+        credit: "Shout out to the friends who built this proposal with me.",
+        creditNames: ["Minh Anh", "Hoàng Linh", "Bảo Trân"],
+      },
+    })
+    const contentByLocale = createPortfolioContentByLocale({
+      en: [project],
+      vi: [
+        createProject("demo-project", {
+          title: "Dự án demo",
+          category: "Chiến dịch",
+          overview: "Tổng quan do admin nhập.",
+          media,
+          proposalCta: {
+            label: "Coi full portfolio",
+            credit: "Shout out những người đã cùng làm proposal với tôi.",
+            creditNames: ["Minh Anh", "Hoàng Linh", "Bảo Trân"],
+          },
+        }),
+      ],
+    })
+
+    render(<ProjectDetailPage contentByLocale={contentByLocale} projectId="demo-project" />)
+
+    const cta = await screen.findByRole("link", { name: "Coi full portfolio: Proposal đầy đủ" })
+    const carousel = screen.getByRole("region", {
+      name: /Dự án demo carousel proposal/i,
+    })
+    const credit = screen.getByText("Shout out những người đã cùng làm proposal với tôi.")
+
+    expect(cta).toHaveAttribute("href", "#demo-project-proposal-carousel")
+    expect(screen.getByText("Minh Anh")).toBeInTheDocument()
+    expect(screen.getByText("Hoàng Linh")).toBeInTheDocument()
+    expect(screen.getByText("Bảo Trân")).toBeInTheDocument()
+    expect(carousel.compareDocumentPosition(credit) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
   })
 
   it("renders content posts as a carousel from project media layout without requiring captions", () => {

@@ -5,7 +5,7 @@ import { requireAdminRequest } from "@/lib/admin-auth"
 import { hasBlobConfig } from "@/lib/portfolio-manifest"
 
 const PROJECT_UPLOAD_PATH =
-  /^projects\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9-]+\/(?:cover\.(?:png|jpe?g|webp)|summary\.png|proposal-\d{2,3}\.png)$/i
+  /^projects\/[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9-]+\/(?:cover\.(?:png|jpe?g|webp)|summary\.(?:png|jpe?g|webp)|proposal-\d{2,3}\.png)$/i
 
 export async function POST(request: NextRequest) {
   if (!requireAdminRequest(request)) {
@@ -19,10 +19,15 @@ export async function POST(request: NextRequest) {
     )
   }
 
-  const body = (await request.json().catch(() => null)) as HandleUploadBody | null
+  const body = (await request
+    .json()
+    .catch(() => null)) as HandleUploadBody | null
 
   if (!body) {
-    return NextResponse.json({ error: "Invalid upload request." }, { status: 400 })
+    return NextResponse.json(
+      { error: "Invalid upload request." },
+      { status: 400 },
+    )
   }
 
   try {
@@ -50,7 +55,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     return NextResponse.json(
       {
-        error: error instanceof Error ? error.message : "Unable to prepare upload.",
+        error:
+          error instanceof Error ? error.message : "Unable to prepare upload.",
       },
       { status: 400 },
     )

@@ -11,6 +11,7 @@ import {
 } from "react"
 import Link from "next/link"
 import {
+  ArrowDown,
   ArrowLeft,
   ArrowRight,
   ExternalLink,
@@ -26,6 +27,7 @@ import {
   type ProjectNamingRationale,
   type ProjectMediaAsset,
   type ProjectOutreachSection,
+  type ProjectProposalCta,
   type ProjectVideoCampaign,
 } from "@/data/portfolio"
 import { LocaleToggle } from "@/components/LocaleToggle"
@@ -161,6 +163,8 @@ function MediaProjectPage({
   const videoCampaigns = media?.videoCampaigns ?? []
   const outreachSections = media?.outreachSections ?? []
   const usesSplitCoverIntro = media?.introLayout === "split-cover"
+  const showsProposalCarousel = !websitePreview && slides.length > 0
+  const proposalCarouselId = `${project.id}-proposal-carousel`
   const slidesPerPage = useSlidesPerPage()
   const [activePageIndex, setActivePageIndex] = useState(0)
   const pageCount = Math.max(1, Math.ceil(slides.length / slidesPerPage))
@@ -250,14 +254,23 @@ function MediaProjectPage({
             />
           ) : null}
 
+          {project.proposalCta && showsProposalCarousel ? (
+            <ProjectProposalCtaButton
+              cta={project.proposalCta}
+              targetId={proposalCarouselId}
+              proposalLabel={ui.detail.proposal}
+            />
+          ) : null}
+
           {websitePreview ? (
             <ProjectWebsitePreview
               label={ui.detail.websitePreview}
               asset={websitePreview}
             />
-          ) : slides.length > 0 ? (
+          ) : showsProposalCarousel ? (
             <div
-              className={cn(CAROUSEL_RAIL_CLASS, "focus:outline-none")}
+              id={proposalCarouselId}
+              className={cn(CAROUSEL_RAIL_CLASS, "scroll-mt-24 focus:outline-none")}
               role="region"
               aria-label={`${project.title} ${ui.detail.proposalCarousel}`}
               aria-roledescription="carousel"
@@ -345,6 +358,10 @@ function MediaProjectPage({
             </div>
           ) : null}
 
+          {project.proposalCta && showsProposalCarousel ? (
+            <ProjectProposalCreditNote cta={project.proposalCta} />
+          ) : null}
+
           {contentPosts.length > 0 ? (
             <ProjectContentPostsGrid
               posts={contentPosts}
@@ -379,6 +396,63 @@ function MediaProjectPage({
         </article>
       </div>
     </main>
+  )
+}
+
+function ProjectProposalCtaButton({
+  cta,
+  targetId,
+  proposalLabel,
+}: {
+  cta: ProjectProposalCta
+  targetId: string
+  proposalLabel: string
+}) {
+  return (
+    <section className={cn(MEDIA_RAIL_CLASS, "py-1 text-center")} aria-label={cta.label}>
+      <div className="mx-auto max-w-3xl border-y border-gold/45 px-3 py-7 sm:py-8">
+        <div className="mx-auto mb-5 flex max-w-xs items-center justify-center gap-3 text-clay/72 sm:max-w-sm">
+          <span className="h-px flex-1 bg-gold/45" />
+          <span className="h-1.5 w-1.5 rotate-45 bg-gold/70" />
+          <span className="h-px flex-1 bg-gold/45" />
+        </div>
+
+        <a
+          href={`#${targetId}`}
+          aria-label={`${cta.label}: ${proposalLabel}`}
+          className="group inline-flex max-w-full flex-col items-center gap-2 rounded-[8px] border border-[rgba(116,63,36,0.24)] bg-paper/72 px-6 py-4 text-clay shadow-[0_14px_36px_rgba(45,32,21,0.1)] transition hover:-translate-y-0.5 hover:border-clay hover:bg-gold/16 hover:text-moss focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper motion-reduce:hover:translate-y-0 sm:px-8"
+        >
+          <span className="max-w-full break-words text-sm font-bold uppercase tracking-[0.16em] sm:text-base">
+            {cta.label}
+          </span>
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-gold/55 bg-gold/12 text-clay transition group-hover:border-moss group-hover:bg-moss group-hover:text-paper">
+            <ArrowDown className="h-4 w-4" />
+          </span>
+        </a>
+      </div>
+    </section>
+  )
+}
+
+function ProjectProposalCreditNote({ cta }: { cta: ProjectProposalCta }) {
+  return (
+    <aside className={cn(MEDIA_RAIL_CLASS, "border-t border-gold/45 pt-6 text-center")}>
+      <p className="font-prose mx-auto max-w-3xl px-3 text-sm italic leading-7 text-ink/66 sm:text-base">
+        {cta.credit}
+      </p>
+      {cta.creditNames?.length ? (
+        <div className="mx-auto mt-4 flex max-w-3xl flex-wrap justify-center gap-2 px-3">
+          {cta.creditNames.map((name) => (
+            <span
+              key={name}
+              className="inline-flex rounded-full border border-gold/45 bg-paper/72 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-clay shadow-[0_8px_20px_rgba(45,32,21,0.08)]"
+            >
+              {name}
+            </span>
+          ))}
+        </div>
+      ) : null}
+    </aside>
   )
 }
 

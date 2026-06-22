@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache"
 import { NextRequest, NextResponse } from "next/server"
 import {
   createLocalizedProjects,
+  isAdminManagedProject,
   validateAdminProjectPayload,
 } from "@/lib/admin-projects"
 import { requireAdminRequest } from "@/lib/admin-auth"
@@ -52,6 +53,7 @@ function findLocalizedProjects(
   const vi = snapshot.manifest.locales.vi.projects.find((project) => project.id === projectId)
 
   if (!en || !vi) return null
+  if (!isAdminManagedProject(en) || !isAdminManagedProject(vi)) return null
 
   return [en, vi]
 }

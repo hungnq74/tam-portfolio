@@ -9,9 +9,16 @@ import {
 
 export const ADMIN_PROJECT_PAGE_LIMIT = 50
 export const ADMIN_PROJECT_PDF_SIZE_LIMIT = 150 * 1024 * 1024
+export const ADMIN_PROPOSAL_FIELD_ID = "social-planner" as const
+export const DEFAULT_PROPOSAL_CREDIT_NAMES = [
+  "Minh Anh",
+  "Hoàng Linh",
+  "Bảo Trân",
+] as const
 
 const FIELD_IDS = ["social-planner", "creative-copywriter"] as const
-export const ADMIN_MANAGED_FIELD_IDS = FIELD_IDS
+export const ADMIN_MANAGED_FIELD_IDS = [ADMIN_PROPOSAL_FIELD_ID] as const
+const ADMIN_PROPOSAL_THUMBNAIL = { col: 1, row: 0 } as const
 
 const fieldIdSchema = z.enum(FIELD_IDS)
 const thumbnailSchema = z.object({
@@ -59,7 +66,10 @@ export const projectMediaSchema = z.object({
   introLayout: z.enum(["split-cover"]).optional(),
   summary: projectMediaAssetSchema.optional(),
   websitePreview: projectMediaAssetSchema.optional(),
-  proposalSlides: z.array(projectMediaAssetSchema).max(ADMIN_PROJECT_PAGE_LIMIT).optional(),
+  proposalSlides: z
+    .array(projectMediaAssetSchema)
+    .max(ADMIN_PROJECT_PAGE_LIMIT)
+    .optional(),
   contentPostsLayout: z.enum(["grid", "carousel"]).optional(),
   contentPosts: z.array(projectMediaAssetSchema).max(12).optional(),
   videoCampaigns: z.array(projectVideoCampaignSchema).max(6).optional(),
@@ -82,6 +92,12 @@ const projectNamingRationaleSchema = z.object({
   note: z.string().min(1).max(180),
 })
 
+const projectProposalCtaSchema = z.object({
+  label: z.string().min(1).max(80),
+  credit: z.string().min(1).max(220),
+  creditNames: z.array(z.string().min(1).max(80)).max(8).optional(),
+})
+
 export const portfolioProjectSchema = z.object({
   id: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
   fieldId: fieldIdSchema,
@@ -101,6 +117,7 @@ export const portfolioProjectSchema = z.object({
   thumbnail: thumbnailSchema,
   media: projectMediaSchema.optional(),
   namingRationale: projectNamingRationaleSchema.optional(),
+  proposalCta: projectProposalCtaSchema.optional(),
 })
 
 export const portfolioManifestSchema = z.object({
@@ -117,35 +134,40 @@ export const portfolioManifestSchema = z.object({
   }),
 })
 
-const adminLocaleProjectSchema = z.object({
-  title: z.string().min(1).max(120),
-  category: z.string().min(1).max(80),
-  summary: z.string().min(1).max(280),
-  client: z.string().min(1).max(120),
-  scope: z.array(z.string().min(1).max(80)).min(1).max(12),
-  overview: z.string().min(1).max(900),
-  objective: z.string().min(1).max(900),
-  solution: z.string().min(1).max(900),
-  results: z.array(z.string().min(1).max(120)).min(1).max(12),
-  media: projectMediaSchema.optional(),
-})
+const adminProposalCtaSchema = z
+  .object({
+    label: z.string().min(1).max(80),
+    credit: z.string().min(1).max(220),
+  })
+  .strict()
 
-export const adminProjectSaveSchema = z.object({
-  expectedEtag: z.string().min(1).nullable(),
-  shared: z.object({
-    id: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
-      message: "Project id must be a lowercase slug.",
+const adminLocaleProjectSchema = z
+  .object({
+    title: z.string().min(1).max(120),
+    summary: z.string().min(1).max(280),
+    overview: z.string().min(1).max(900),
+    proposalCta: adminProposalCtaSchema,
+  })
+  .strict()
+
+export const adminProjectSaveSchema = z
+  .object({
+    expectedEtag: z.string().min(1).nullable(),
+    shared: z
+      .object({
+        id: z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
+          message: "Project id must be a lowercase slug.",
+        }),
+        media: projectMediaSchema.optional(),
+        creditNames: z.array(z.string().min(1).max(80)).min(1).max(8),
+      })
+      .strict(),
+    locales: z.object({
+      en: adminLocaleProjectSchema,
+      vi: adminLocaleProjectSchema,
     }),
-    fieldId: fieldIdSchema,
-    year: z.string().min(1).max(24),
-    thumbnail: thumbnailSchema,
-    media: projectMediaSchema.optional(),
-  }),
-  locales: z.object({
-    en: adminLocaleProjectSchema,
-    vi: adminLocaleProjectSchema,
-  }),
-})
+  })
+  .strict()
 
 export type PortfolioManifest = z.infer<typeof portfolioManifestSchema>
 export type AdminProjectSavePayload = z.infer<typeof adminProjectSaveSchema>
@@ -177,7 +199,8 @@ export function normalizeListText(value: string) {
 
 export function getFieldFilters(locale: Locale, fieldId: FieldId) {
   const fieldFilters =
-    PORTFOLIO_CONTENT[locale].fields.find((field) => field.id === fieldId)?.filters ?? []
+    PORTFOLIO_CONTENT[locale].fields.find((field) => field.id === fieldId)
+      ?.filters ?? []
   const existingCategories = PORTFOLIO_CONTENT[locale].projects
     .filter((project) => project.fieldId === fieldId)
     .map((project) => project.category)
@@ -186,24 +209,23 @@ export function getFieldFilters(locale: Locale, fieldId: FieldId) {
 }
 
 export function isAdminManagedFieldId(fieldId: FieldId) {
-  return ADMIN_MANAGED_FIELD_IDS.includes(fieldId as (typeof ADMIN_MANAGED_FIELD_IDS)[number])
+  return ADMIN_MANAGED_FIELD_IDS.includes(
+    fieldId as (typeof ADMIN_MANAGED_FIELD_IDS)[number],
+  )
 }
 
 export function isAdminManagedProject(project: Pick<Project, "fieldId">) {
   return isAdminManagedFieldId(project.fieldId)
 }
 
-function hasAxeStyleMedia(media?: ProjectMedia) {
-  return Boolean(media?.cover && media.summary && (media.proposalSlides?.length ?? 0) > 0)
-}
-
-function getLocaleMedia(payload: AdminProjectSavePayload, locale: Locale) {
-  return payload.locales[locale].media ?? payload.shared.media
+function hasProposalMedia(media?: ProjectMedia) {
+  return Boolean(
+    media?.cover && media.summary && (media.proposalSlides?.length ?? 0) > 0,
+  )
 }
 
 function getSubmittedMedia(payload: AdminProjectSavePayload) {
-  const media = [payload.shared.media, payload.locales.en.media, payload.locales.vi.media]
-  return media.filter(Boolean) as ProjectMedia[]
+  return payload.shared.media ? [payload.shared.media] : []
 }
 
 export function validateAdminProjectPayload(
@@ -229,29 +251,21 @@ export function validateAdminProjectPayload(
     errors.push("Project id cannot be changed after creation.")
   }
 
-  if (
-    (options.requireMedia || payload.shared.fieldId === "social-planner") &&
-    !(["en", "vi"] as const).every((locale) => hasAxeStyleMedia(getLocaleMedia(payload, locale)))
-  ) {
+  if (!hasProposalMedia(payload.shared.media)) {
     errors.push(
-      "Upload a cover image and proposal PDF before saving this Thinking project.",
+      "Upload a cover image, main image, and proposal PDF before saving this Thinking project.",
     )
   }
 
-  if (getSubmittedMedia(payload).some((media) => media.proposalSlides?.length === 0)) {
-    errors.push("Proposal carousel must contain at least one slide when media is provided.")
+  if (
+    getSubmittedMedia(payload).some(
+      (media) => media.proposalSlides?.length === 0,
+    )
+  ) {
+    errors.push(
+      "Proposal carousel must contain at least one slide when media is provided.",
+    )
   }
-
-  ;(["en", "vi"] as const).forEach((locale) => {
-    const filters = getFieldFilters(locale, payload.shared.fieldId)
-    const category = payload.locales[locale].category
-
-    if (!filters.includes(category)) {
-      errors.push(
-        `${locale.toUpperCase()} category must match one of the selected field filters.`,
-      )
-    }
-  })
 
   if (errors.length > 0) {
     return {
@@ -270,30 +284,71 @@ function getDefaultEyebrow(locale: Locale) {
   return locale === "vi" ? "Dự án" : "Project"
 }
 
+function getDefaultProjectDetails(locale: Locale, title: string) {
+  if (locale === "vi") {
+    return {
+      category: "Chiến dịch",
+      client: title,
+      scope: ["Campaign proposal", "Creative direction", "Portfolio showcase"],
+      objective:
+        "Trình bày bối cảnh, hướng tiếp cận và proposal của dự án theo một cấu trúc rõ ràng.",
+      solution:
+        "Kết hợp ảnh bìa, tóm tắt, main image, CTA, carousel PDF và credit để tạo trang proposal hoàn chỉnh.",
+      results: [
+        "Trang chi tiết dạng proposal",
+        "Carousel PDF",
+        "Credit cộng sự",
+      ],
+    }
+  }
+
+  return {
+    category: "Campaign",
+    client: title,
+    scope: ["Campaign proposal", "Creative direction", "Portfolio showcase"],
+    objective:
+      "Present the project context, approach, and proposal in a clear portfolio-ready structure.",
+    solution:
+      "Combine a cover, summary, main image, CTA, PDF carousel, and collaborator credit into one proposal flow.",
+    results: ["Proposal detail page", "PDF carousel", "Collaborator credits"],
+  }
+}
+
+function getProjectYear(existingProject?: Project) {
+  return existingProject?.year ?? new Date().getFullYear().toString()
+}
+
 export function createLocalizedProjects(
   payload: AdminProjectSavePayload,
   existingProjects?: Partial<Record<Locale, Project>>,
 ) {
-  const createProject = (locale: Locale): Project => ({
-    id: payload.shared.id,
-    fieldId: payload.shared.fieldId,
-    title: payload.locales[locale].title,
-    eyebrow: existingProjects?.[locale]?.eyebrow ?? getDefaultEyebrow(locale),
-    category: payload.locales[locale].category,
-    summary: payload.locales[locale].summary,
-    client: payload.locales[locale].client,
-    year: payload.shared.year,
-    scope: payload.locales[locale].scope,
-    campaignTitle: existingProjects?.[locale]?.campaignTitle,
-    closingNote: existingProjects?.[locale]?.closingNote,
-    overview: payload.locales[locale].overview,
-    objective: payload.locales[locale].objective,
-    solution: payload.locales[locale].solution,
-    results: payload.locales[locale].results,
-    thumbnail: payload.shared.thumbnail,
-    media: getLocaleMedia(payload, locale),
-    namingRationale: existingProjects?.[locale]?.namingRationale,
-  })
+  const createProject = (locale: Locale): Project => {
+    const localePayload = payload.locales[locale]
+    const defaults = getDefaultProjectDetails(locale, localePayload.title)
+
+    return {
+      id: payload.shared.id,
+      fieldId: ADMIN_PROPOSAL_FIELD_ID,
+      title: localePayload.title,
+      eyebrow: getDefaultEyebrow(locale),
+      category: defaults.category,
+      summary: localePayload.summary,
+      client: defaults.client,
+      year: getProjectYear(existingProjects?.[locale]),
+      scope: defaults.scope,
+      overview: localePayload.overview,
+      objective: defaults.objective,
+      solution: defaults.solution,
+      results: defaults.results,
+      thumbnail: ADMIN_PROPOSAL_THUMBNAIL,
+      media: payload.shared.media,
+      proposalCta: {
+        label: localePayload.proposalCta.label,
+        credit: localePayload.proposalCta.credit,
+        creditNames: payload.shared.creditNames,
+      },
+    }
+  }
 
   return {
     en: createProject("en"),

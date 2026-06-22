@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { AdminProjectForm } from "@/components/admin/AdminProjectForm"
 import type { ProjectMedia } from "@/data/portfolio"
-import { createFieldOptions, createProject, testMedia } from "@/test/factories"
+import { createProject, testMedia } from "@/test/factories"
 import { getMockRouter } from "@/test/setup"
 
 const mocks = vi.hoisted(() => ({
@@ -28,41 +28,45 @@ function jsonResponse(body: unknown, status = 200) {
 }
 
 function createLocalizedProject(media: ProjectMedia | undefined) {
+  const proposalCta = {
+    label: "View full portfolio",
+    credit: "Shout out to the friends who built this proposal with me.",
+    creditNames: ["Minh Anh", "Hoàng Linh", "Bảo Trân"],
+  }
+
   return {
     en: createProject("demo-project", {
       title: "Demo project",
-      category: "Campaign",
+      summary: "English summary",
+      overview: "English overview",
       media,
+      proposalCta,
     }),
     vi: createProject("demo-project", {
       title: "Du an demo",
-      eyebrow: "Du an",
+      eyebrow: "Dự án",
       category: "Chiến dịch",
-      summary: "Tom tat du an",
-      client: "Khach hang demo",
-      scope: ["Chien luoc"],
-      overview: "Tong quan",
-      objective: "Muc tieu",
-      solution: "Giai phap",
-      results: ["Ket qua"],
+      summary: "Tom tat tieng Viet",
+      overview: "Tong quan tieng Viet",
       media,
+      proposalCta: {
+        label: "Coi full portfolio",
+        credit: "Shout out những người đã cùng làm proposal với tôi.",
+        creditNames: proposalCta.creditNames,
+      },
     }),
   }
 }
 
-function renderForm(options: {
-  mode?: "create" | "edit"
-  media?: ProjectMedia
-  blobConfigured?: boolean
-  manifestError?: string
-  fields?: ReturnType<typeof createFieldOptions>
-} = {}) {
-  const {
-    mode = "edit",
-    blobConfigured = true,
-    manifestError,
-    fields = createFieldOptions(),
-  } = options
+function renderForm(
+  options: {
+    mode?: "create" | "edit"
+    media?: ProjectMedia
+    blobConfigured?: boolean
+    manifestError?: string
+  } = {},
+) {
+  const { mode = "edit", blobConfigured = true, manifestError } = options
   const media = "media" in options ? options.media : testMedia
   const project = mode === "edit" ? createLocalizedProject(media) : undefined
 
@@ -71,7 +75,6 @@ function renderForm(options: {
       mode={mode}
       manifestEtag="etag-1"
       project={project}
-      fields={fields}
       blobConfigured={blobConfigured}
       manifestError={manifestError}
     />,
@@ -104,14 +107,39 @@ describe("AdminProjectForm basics", () => {
     }))
   })
 
+  it("renders only AXE-standard proposal tabs and fields", () => {
+    renderForm()
+
+    expect(screen.getByRole("tab", { name: "Content" })).toBeInTheDocument()
+    expect(screen.getByRole("tab", { name: "Media" })).toBeInTheDocument()
+    expect(
+      screen.getByRole("tab", { name: "CTA & Credits" }),
+    ).toBeInTheDocument()
+    expect(screen.getByLabelText("Project id")).toBeInTheDocument()
+    expect(screen.getByLabelText("EN title")).toBeInTheDocument()
+    expect(screen.getByLabelText("VI summary")).toBeInTheDocument()
+    expect(
+      screen.queryByRole("tab", { name: "Overview" }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole("tab", { name: "English" }),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Field")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Year")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Thumbnail column")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Category")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Client")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Scope")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Objective")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Solution")).not.toBeInTheDocument()
+    expect(screen.queryByLabelText("Results")).not.toBeInTheDocument()
+  })
+
   it("auto-generates the project slug from a new English title until the id is touched", async () => {
     const user = userEvent.setup()
     renderForm({ mode: "create", media: undefined })
 
-    await user.click(screen.getByRole("tab", { name: "English" }))
-    await user.clear(screen.getByLabelText("Title"))
-    await user.type(screen.getByLabelText("Title"), "Fresh Launch")
-    await user.click(screen.getByRole("tab", { name: "Overview" }))
+    await user.type(screen.getByLabelText("EN title"), "Fresh Launch")
 
     await waitFor(() => {
       expect(screen.getByLabelText("Project id")).toHaveValue("fresh-launch")
@@ -119,31 +147,45 @@ describe("AdminProjectForm basics", () => {
 
     await user.clear(screen.getByLabelText("Project id"))
     await user.type(screen.getByLabelText("Project id"), "manual-id")
-    await user.click(screen.getByRole("tab", { name: "English" }))
-    await user.clear(screen.getByLabelText("Title"))
-    await user.type(screen.getByLabelText("Title"), "Another Title")
-    await user.click(screen.getByRole("tab", { name: "Overview" }))
+    await user.clear(screen.getByLabelText("EN title"))
+    await user.type(screen.getByLabelText("EN title"), "Another Title")
 
     expect(screen.getByLabelText("Project id")).toHaveValue("manual-id")
   })
 
-  it("uses the provided admin field options", () => {
-    renderForm()
+  it("pre-fills proposal CTA and collaborator defaults for new projects", async () => {
+    const user = userEvent.setup()
+    renderForm({ mode: "create", media: undefined })
 
-    const fieldSelect = screen.getByLabelText("Field") as HTMLSelectElement
+    await user.click(screen.getByRole("tab", { name: "CTA & Credits" }))
 
-    expect(Array.from(fieldSelect.options).map((option) => option.value)).toEqual([
-      "social-planner",
-      "creative-copywriter",
-    ])
-    expect(fieldSelect).toHaveValue("social-planner")
+    expect(screen.getByLabelText("EN CTA label")).toHaveValue(
+      "View full portfolio",
+    )
+    expect(screen.getByLabelText("VI CTA label")).toHaveValue(
+      "Coi full portfolio",
+    )
+    expect(screen.getByLabelText("EN credit intro")).toHaveValue(
+      "Shout out to the friends who built this proposal with me.",
+    )
+    expect(screen.getByLabelText("VI credit intro")).toHaveValue(
+      "Shout out những người đã cùng làm proposal với tôi.",
+    )
+    expect(screen.getByLabelText("Collaborator names")).toHaveValue(
+      "Minh Anh\nHoàng Linh\nBảo Trân",
+    )
+    expect(screen.getByText("Minh Anh")).toBeInTheDocument()
+    expect(screen.getByText("Hoàng Linh")).toBeInTheDocument()
+    expect(screen.getByText("Bảo Trân")).toBeInTheDocument()
   })
 
   it("disables saving and uploading when Blob storage is not configured", async () => {
     const user = userEvent.setup()
     renderForm({ blobConfigured: false })
 
-    expect(screen.getByText(/BLOB_READ_WRITE_TOKEN is missing/)).toBeInTheDocument()
+    expect(
+      screen.getByText(/BLOB_READ_WRITE_TOKEN is missing/),
+    ).toBeInTheDocument()
     expect(screen.getByRole("button", { name: /save project/i })).toBeDisabled()
 
     await user.click(screen.getByRole("tab", { name: "Media" }))
@@ -158,7 +200,9 @@ describe("AdminProjectForm basics", () => {
         jsonResponse(
           {
             error: "Project validation failed.",
-            details: ["EN category must match one of the selected field filters."],
+            details: [
+              "Upload a cover image, main image, and proposal PDF before saving this Thinking project.",
+            ],
           },
           400,
         ),
@@ -170,81 +214,67 @@ describe("AdminProjectForm basics", () => {
 
     expect(
       await screen.findByText(
-        "Project validation failed. EN category must match one of the selected field filters.",
+        "Project validation failed. Upload a cover image, main image, and proposal PDF before saving this Thinking project.",
       ),
     ).toBeInTheDocument()
   })
 
-  it("normalizes list text and refreshes the edit page after a successful save", async () => {
+  it("submits edited content, CTA copy, and collaborator chips", async () => {
     const user = userEvent.setup()
     const router = getMockRouter()
-    const fetch = vi.fn().mockResolvedValue(jsonResponse({ ok: true, etag: "etag-2" }))
+    const fetch = vi
+      .fn()
+      .mockResolvedValue(jsonResponse({ ok: true, etag: "etag-2" }))
     vi.stubGlobal("fetch", fetch)
     renderForm()
 
-    await user.click(screen.getByRole("tab", { name: "English" }))
-    await user.clear(screen.getByLabelText("Scope"))
-    await user.type(screen.getByLabelText("Scope"), "Strategy, Writing\nLaunch")
-    await user.clear(screen.getByLabelText("Results"))
-    await user.type(screen.getByLabelText("Results"), "Lift, Reach")
-    await user.click(screen.getByRole("button", { name: /save project/i }))
+    await user.clear(screen.getByLabelText("EN title"))
+    await user.type(screen.getByLabelText("EN title"), "Signal Launch")
+    await user.clear(screen.getByLabelText("EN summary"))
+    await user.type(
+      screen.getByLabelText("EN summary"),
+      "A sharp launch planning project.",
+    )
+    await user.clear(screen.getByLabelText("EN overview"))
+    await user.type(screen.getByLabelText("EN overview"), "English overview")
 
-    await screen.findByText("Project saved.")
-    const requestBody = JSON.parse(fetch.mock.calls[0][1].body)
-    expect(requestBody.locales.en.scope).toEqual(["Strategy", "Writing", "Launch"])
-    expect(requestBody.locales.en.results).toEqual(["Lift", "Reach"])
-    expect(requestBody.expectedEtag).toBe("etag-1")
-    expect(router.refresh).toHaveBeenCalled()
-  })
+    await user.clear(screen.getByLabelText("VI title"))
+    await user.type(screen.getByLabelText("VI title"), "Ra mắt tín hiệu")
+    await user.clear(screen.getByLabelText("VI summary"))
+    await user.type(
+      screen.getByLabelText("VI summary"),
+      "Dự án lập kế hoạch ra mắt.",
+    )
+    await user.clear(screen.getByLabelText("VI overview"))
+    await user.type(
+      screen.getByLabelText("VI overview"),
+      "Tổng quan tiếng Việt",
+    )
 
-  it("submits edited shared and localized text content in the update payload", async () => {
-    const user = userEvent.setup()
-    const fetch = vi.fn().mockResolvedValue(jsonResponse({ ok: true, etag: "etag-2" }))
-    vi.stubGlobal("fetch", fetch)
-    renderForm()
+    await user.click(screen.getByRole("tab", { name: "CTA & Credits" }))
+    await user.clear(screen.getByLabelText("EN CTA label"))
+    await user.type(screen.getByLabelText("EN CTA label"), "View deck")
+    await user.clear(screen.getByLabelText("VI CTA label"))
+    await user.type(screen.getByLabelText("VI CTA label"), "Coi deck")
+    await user.clear(screen.getByLabelText("EN credit intro"))
+    await user.type(
+      screen.getByLabelText("EN credit intro"),
+      "Built with these friends.",
+    )
+    await user.clear(screen.getByLabelText("VI credit intro"))
+    await user.type(
+      screen.getByLabelText("VI credit intro"),
+      "Làm cùng các bạn này.",
+    )
+    await user.clear(screen.getByLabelText("Collaborator names"))
+    await user.type(
+      screen.getByLabelText("Collaborator names"),
+      "An Nhi\nGia Hân, Phương Vy",
+    )
 
-    await user.clear(screen.getByLabelText("Year"))
-    await user.type(screen.getByLabelText("Year"), "2027")
-    await user.selectOptions(screen.getByLabelText("Thumbnail column"), "2")
-    await user.selectOptions(screen.getByLabelText("Thumbnail row"), "0")
-
-    await user.click(screen.getByRole("tab", { name: "English" }))
-    await user.clear(screen.getByLabelText("Title"))
-    await user.type(screen.getByLabelText("Title"), "Signal Launch")
-    await user.selectOptions(screen.getByLabelText("Category"), "Content Plan")
-    await user.clear(screen.getByLabelText("Client"))
-    await user.type(screen.getByLabelText("Client"), "Signal Co")
-    await user.clear(screen.getByLabelText("Summary"))
-    await user.type(screen.getByLabelText("Summary"), "A sharp launch planning project.")
-    await user.clear(screen.getByLabelText("Scope"))
-    await user.type(screen.getByLabelText("Scope"), "Strategy, Proposal\nLaunch")
-    await user.clear(screen.getByLabelText("Overview"))
-    await user.type(screen.getByLabelText("Overview"), "English overview")
-    await user.clear(screen.getByLabelText("Objective"))
-    await user.type(screen.getByLabelText("Objective"), "English objective")
-    await user.clear(screen.getByLabelText("Solution"))
-    await user.type(screen.getByLabelText("Solution"), "English solution")
-    await user.clear(screen.getByLabelText("Results"))
-    await user.type(screen.getByLabelText("Results"), "Lift, Reach")
-
-    await user.click(screen.getByRole("tab", { name: "Vietnamese" }))
-    await user.clear(screen.getByLabelText("Title"))
-    await user.type(screen.getByLabelText("Title"), "Ra mắt tín hiệu")
-    await user.selectOptions(screen.getByLabelText("Category"), "Kế hoạch nội dung")
-    await user.clear(screen.getByLabelText("Client"))
-    await user.type(screen.getByLabelText("Client"), "Signal VN")
-    await user.clear(screen.getByLabelText("Summary"))
-    await user.type(screen.getByLabelText("Summary"), "Dự án lập kế hoạch ra mắt.")
-    await user.clear(screen.getByLabelText("Scope"))
-    await user.type(screen.getByLabelText("Scope"), "Chiến lược, Proposal\nRa mắt")
-    await user.clear(screen.getByLabelText("Overview"))
-    await user.type(screen.getByLabelText("Overview"), "Tổng quan tiếng Việt")
-    await user.clear(screen.getByLabelText("Objective"))
-    await user.type(screen.getByLabelText("Objective"), "Mục tiêu tiếng Việt")
-    await user.clear(screen.getByLabelText("Solution"))
-    await user.type(screen.getByLabelText("Solution"), "Giải pháp tiếng Việt")
-    await user.clear(screen.getByLabelText("Results"))
-    await user.type(screen.getByLabelText("Results"), "Tăng trưởng, Tiếp cận")
+    expect(screen.getByText("An Nhi")).toBeInTheDocument()
+    expect(screen.getByText("Gia Hân")).toBeInTheDocument()
+    expect(screen.getByText("Phương Vy")).toBeInTheDocument()
 
     await user.click(screen.getByRole("button", { name: /save project/i }))
     await screen.findByText("Project saved.")
@@ -256,54 +286,31 @@ describe("AdminProjectForm basics", () => {
     )
     expect(requestBody.shared).toMatchObject({
       id: "demo-project",
-      fieldId: "social-planner",
-      year: "2027",
-      thumbnail: { col: 2, row: 0 },
       media: testMedia,
+      creditNames: ["An Nhi", "Gia Hân", "Phương Vy"],
     })
-    expect(requestBody.locales.en).toMatchObject({
+    expect(requestBody.shared).not.toHaveProperty("fieldId")
+    expect(requestBody.shared).not.toHaveProperty("year")
+    expect(requestBody.shared).not.toHaveProperty("thumbnail")
+    expect(requestBody.locales.en).toEqual({
       title: "Signal Launch",
-      category: "Content Plan",
       summary: "A sharp launch planning project.",
-      client: "Signal Co",
-      scope: ["Strategy", "Proposal", "Launch"],
       overview: "English overview",
-      objective: "English objective",
-      solution: "English solution",
-      results: ["Lift", "Reach"],
+      proposalCta: {
+        label: "View deck",
+        credit: "Built with these friends.",
+      },
     })
-    expect(requestBody.locales.vi).toMatchObject({
+    expect(requestBody.locales.vi).toEqual({
       title: "Ra mắt tín hiệu",
-      category: "Kế hoạch nội dung",
       summary: "Dự án lập kế hoạch ra mắt.",
-      client: "Signal VN",
-      scope: ["Chiến lược", "Proposal", "Ra mắt"],
       overview: "Tổng quan tiếng Việt",
-      objective: "Mục tiêu tiếng Việt",
-      solution: "Giải pháp tiếng Việt",
-      results: ["Tăng trưởng", "Tiếp cận"],
+      proposalCta: {
+        label: "Coi deck",
+        credit: "Làm cùng các bạn này.",
+      },
     })
-    expect(requestBody.locales.en.media).toEqual(testMedia)
-    expect(requestBody.locales.vi.media).toEqual(testMedia)
-    expect(requestBody.locales.en).not.toHaveProperty("eyebrow")
-    expect(requestBody.locales.en).not.toHaveProperty("campaignTitle")
-    expect(requestBody.locales.en).not.toHaveProperty("closingNote")
-    expect(requestBody.locales.en).not.toHaveProperty("namingRationale")
-  })
-
-  it("hides custom optional fields and advanced media text controls", async () => {
-    const user = userEvent.setup()
-    renderForm()
-
-    await user.click(screen.getByRole("tab", { name: "English" }))
-
-    expect(screen.queryByLabelText("Eyebrow")).not.toBeInTheDocument()
-    expect(screen.queryByLabelText("Campaign title")).not.toBeInTheDocument()
-    expect(screen.queryByLabelText("Closing note")).not.toBeInTheDocument()
-    expect(screen.queryByText("Naming rationale")).not.toBeInTheDocument()
-    expect(screen.queryByText("Media text")).not.toBeInTheDocument()
-    expect(screen.queryByLabelText("Cover caption")).not.toBeInTheDocument()
-    expect(screen.queryByLabelText("Cover CTA label")).not.toBeInTheDocument()
+    expect(router.refresh).toHaveBeenCalled()
   })
 })
 
@@ -317,16 +324,17 @@ describe("AdminProjectForm uploads", () => {
     }))
   })
 
-  it("keeps proposal PDF upload disabled until a cover exists", async () => {
+  it("keeps main image and proposal PDF upload disabled until a cover exists", async () => {
     const user = userEvent.setup()
     renderForm({ mode: "create", media: undefined })
 
     await user.click(screen.getByRole("tab", { name: "Media" }))
 
+    expect(screen.getByLabelText(/Upload main image/)).toBeDisabled()
     expect(screen.getByLabelText(/Upload proposal PDF/)).toBeDisabled()
   })
 
-  it("rejects invalid cover and PDF files before uploading", async () => {
+  it("rejects invalid cover, main image, and PDF files before uploading", async () => {
     const user = userEvent.setup()
     renderForm({
       mode: "edit",
@@ -341,23 +349,40 @@ describe("AdminProjectForm uploads", () => {
         files: [new File(["text"], "cover.txt", { type: "text/plain" })],
       },
     })
-    expect(await screen.findByText("Cover must be an image file.")).toBeInTheDocument()
+    expect(
+      await screen.findByText("Cover must be an image file."),
+    ).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText(/Upload main image/), {
+      target: {
+        files: [new File(["text"], "main.txt", { type: "text/plain" })],
+      },
+    })
+    expect(
+      await screen.findByText("Main image must be an image file."),
+    ).toBeInTheDocument()
 
     fireEvent.change(screen.getByLabelText(/Upload proposal PDF/), {
       target: {
         files: [new File(["image"], "proposal.png", { type: "image/png" })],
       },
     })
-    expect(await screen.findByText("Proposal must be a PDF file.")).toBeInTheDocument()
+    expect(
+      await screen.findByText("Proposal must be a PDF file."),
+    ).toBeInTheDocument()
 
-    const oversizedPdf = new File(["pdf"], "proposal.pdf", { type: "application/pdf" })
+    const oversizedPdf = new File(["pdf"], "proposal.pdf", {
+      type: "application/pdf",
+    })
     Object.defineProperty(oversizedPdf, "size", { value: 151 * 1024 * 1024 })
     fireEvent.change(screen.getByLabelText(/Upload proposal PDF/), {
       target: {
         files: [oversizedPdf],
       },
     })
-    expect(await screen.findByText("PDF is larger than 150 MB.")).toBeInTheDocument()
+    expect(
+      await screen.findByText("PDF is larger than 150 MB."),
+    ).toBeInTheDocument()
   })
 
   it("rejects proposal PDFs above the page limit", async () => {
@@ -376,20 +401,22 @@ describe("AdminProjectForm uploads", () => {
       new File(["pdf"], "proposal.pdf", { type: "application/pdf" }),
     )
 
-    expect(await screen.findByText("PDF has 51 pages. The limit is 50.")).toBeInTheDocument()
+    expect(
+      await screen.findByText("PDF has 51 pages. The limit is 50."),
+    ).toBeInTheDocument()
     expect(mocks.upload).not.toHaveBeenCalled()
   })
 
-  it("uploads a cover, converts a PDF into proposal images, and saves the created project", async () => {
+  it("uploads cover, main image, and PDF slides without letting PDF overwrite the main image", async () => {
     const user = userEvent.setup()
     const router = getMockRouter()
-    const fetch = vi.fn().mockResolvedValue(jsonResponse({ ok: true, etag: "etag-2" }))
+    const fetch = vi
+      .fn()
+      .mockResolvedValue(jsonResponse({ ok: true, etag: "etag-2" }))
     vi.stubGlobal("fetch", fetch)
     renderForm({ mode: "create", media: undefined })
 
-    await user.click(screen.getByRole("tab", { name: "English" }))
-    await user.type(screen.getByLabelText("Title"), "Demo Project")
-    await user.click(screen.getByRole("tab", { name: "Overview" }))
+    await user.type(screen.getByLabelText("EN title"), "Demo Project")
     await waitFor(() => {
       expect(screen.getByLabelText("Project id")).toHaveValue("demo-project")
     })
@@ -411,7 +438,23 @@ describe("AdminProjectForm uploads", () => {
         }),
       )
     })
-    expect(await screen.findByText("Ready")).toBeInTheDocument()
+
+    await user.upload(
+      screen.getByLabelText(/Upload main image/),
+      new File(["main"], "main.webp", { type: "image/webp" }),
+    )
+
+    await waitFor(() => {
+      expect(mocks.upload).toHaveBeenCalledWith(
+        "projects/demo-project/test-upload-id/summary.webp",
+        expect.any(File),
+        expect.objectContaining({
+          access: "public",
+          contentType: "image/webp",
+          handleUploadUrl: "/admin/api/blob-upload",
+        }),
+      )
+    })
 
     await user.upload(
       screen.getByLabelText(/Upload proposal PDF/),
@@ -438,22 +481,27 @@ describe("AdminProjectForm uploads", () => {
         }),
       )
     })
-    expect(screen.getByText("2")).toBeInTheDocument()
 
-    fireEvent.change(screen.getByLabelText(/Cover focal X/), { target: { value: "30" } })
-    fireEvent.change(screen.getByLabelText(/Cover focal Y/), { target: { value: "70" } })
+    fireEvent.change(screen.getByLabelText(/Cover focal X/), {
+      target: { value: "30" },
+    })
+    fireEvent.change(screen.getByLabelText(/Cover focal Y/), {
+      target: { value: "70" },
+    })
 
     await user.click(screen.getByRole("button", { name: /save project/i }))
     await screen.findByText("Project saved.")
 
     const requestBody = JSON.parse(fetch.mock.calls[0][1].body)
-    expect(fetch).toHaveBeenCalledWith("/admin/api/projects", expect.any(Object))
     expect(requestBody.shared.media.cover).toMatchObject({
       width: 1600,
       height: 900,
       focalPoint: { x: 30, y: 70 },
     })
-    expect(requestBody.shared.media.summary.src).toContain("proposal-01.png")
+    expect(requestBody.shared.media.summary.src).toContain("summary.webp")
+    expect(requestBody.shared.media.summary.src).not.toContain(
+      "proposal-01.png",
+    )
     expect(requestBody.shared.media.proposalSlides).toHaveLength(2)
     expect(router.push).toHaveBeenCalledWith("/admin/projects/demo-project")
   })

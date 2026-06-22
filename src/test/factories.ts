@@ -38,10 +38,8 @@ export function createAdminPayload(
     expectedEtag: "etag-1",
     shared: {
       id: "demo-project",
-      fieldId: "social-planner",
-      year: "2026",
-      thumbnail: { col: 0, row: 1 },
       media: testMedia,
+      creditNames: ["Minh Anh", "Hoàng Linh", "Bảo Trân"],
     },
     locales: {
       en: createLocalePayload("en"),
@@ -129,25 +127,21 @@ function createLocalePayload(locale: Locale) {
   return locale === "en"
     ? {
         title: "Demo project",
-        category: "Campaign",
         summary: "Short project summary",
-        client: "Demo Client",
-        scope: ["Strategy", "Content Plan"],
         overview: "Overview text",
-        objective: "Objective text",
-        solution: "Solution text",
-        results: ["Result one", "Result two"],
+        proposalCta: {
+          label: "View full portfolio",
+          credit: "Shout out to the friends who built this proposal with me.",
+        },
       }
     : {
         title: "Du an demo",
-        category: "Chiến dịch",
         summary: "Tom tat du an ngan",
-        client: "Khach hang demo",
-        scope: ["Chien luoc", "Ke hoach noi dung"],
         overview: "Noi dung tong quan",
-        objective: "Muc tieu",
-        solution: "Giai phap",
-        results: ["Ket qua mot", "Ket qua hai"],
+        proposalCta: {
+          label: "Coi full portfolio",
+          credit: "Shout out những người đã cùng làm proposal với tôi.",
+        },
       }
 }
 

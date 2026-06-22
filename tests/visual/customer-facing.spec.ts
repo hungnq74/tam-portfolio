@@ -126,12 +126,12 @@ const highRiskRoutes: CustomerRoute[] = [
     anchors: [
       {
         kind: "image",
-        name: "AXE generated project cover artwork",
+        name: "Ảnh bìa proposal chiến dịch AXE",
         label: "AXE Vietnamese cover",
       },
       {
         kind: "image",
-        name: "AXE executive summary page from the proposal PDF",
+        name: "Trang tóm tắt proposal AXE",
         label: "AXE Vietnamese summary page",
       },
       {
@@ -175,7 +175,7 @@ const highRiskRoutes: CustomerRoute[] = [
     anchors: [
       {
         kind: "image",
-        name: "TikTok Tet to the Top website cover artwork",
+        name: "Ảnh bìa website Tết to the Top của TikTok",
         label: "TikTok Vietnamese cover",
       },
       {
@@ -226,12 +226,13 @@ const highRiskRoutes: CustomerRoute[] = [
       },
       {
         kind: "text",
-        value: "Một không gian cho những thảo luận chỉn chu và câu chữ được chọn kỹ.",
+        value:
+          "Một không gian cho những thảo luận chỉn chu và câu chữ được chọn kỹ.",
         label: "Vietnamese formal outreach description",
       },
       {
         kind: "region",
-        name: "Meme & Funny Voice posts",
+        name: "Giọng meme và hài hước posts",
         label: "Vietnamese meme outreach carousel",
       },
     ],
@@ -241,7 +242,7 @@ const highRiskRoutes: CustomerRoute[] = [
 const portfolioGalleryRoutes: CustomerRoute[] = [
   {
     slug: "gallery-thinking-en",
-    path: "/?field=social-planner#gallery",
+    path: "/content/social-planner",
     locale: "en",
     anchors: [
       {
@@ -264,7 +265,7 @@ const portfolioGalleryRoutes: CustomerRoute[] = [
   },
   {
     slug: "gallery-writing-hub-en",
-    path: "/?field=creative-copywriter#gallery",
+    path: "/content/creative-copywriter",
     locale: "en",
     anchors: [
       {
@@ -287,7 +288,7 @@ const portfolioGalleryRoutes: CustomerRoute[] = [
   },
   {
     slug: "gallery-writing-video-en",
-    path: "/?field=creative-copywriter&project=samsung#gallery",
+    path: "/content/creative-copywriter/scope/social-video-script?project=samsung",
     locale: "en",
     anchors: [
       {
@@ -305,7 +306,7 @@ const portfolioGalleryRoutes: CustomerRoute[] = [
   },
   {
     slug: "gallery-writing-fanpage-en",
-    path: "/?field=creative-copywriter&project=weshare#gallery",
+    path: "/content/creative-copywriter/scope/fanpage-always-on-content?project=weshare",
     locale: "en",
     anchors: [
       {
@@ -323,7 +324,7 @@ const portfolioGalleryRoutes: CustomerRoute[] = [
   },
   {
     slug: "gallery-writing-website-en",
-    path: "/?field=creative-copywriter&project=tiktok#gallery",
+    path: "/content/creative-copywriter/scope/website-content?project=tiktok",
     locale: "en",
     anchors: [
       {
@@ -341,7 +342,7 @@ const portfolioGalleryRoutes: CustomerRoute[] = [
   },
   {
     slug: "gallery-writing-outreach-en",
-    path: "/?field=creative-copywriter&project=social-outreach#gallery",
+    path: "/content/creative-copywriter",
     locale: "en",
     anchors: [
       {

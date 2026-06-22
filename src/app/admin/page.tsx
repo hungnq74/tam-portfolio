@@ -5,6 +5,7 @@ import { AdminPageHeader, AdminPageShell } from "@/components/admin/AdminChrome"
 import { AdminDeleteButton } from "@/components/admin/AdminDeleteButton"
 import { AdminLogoutButton } from "@/components/admin/AdminLogoutButton"
 import { requireAdmin } from "@/lib/admin-auth"
+import { isAdminManagedProject } from "@/lib/admin-projects"
 import { readAdminPortfolioSnapshot } from "@/lib/portfolio-manifest"
 
 export const dynamic = "force-dynamic"
@@ -16,7 +17,9 @@ export const metadata: Metadata = {
 export default async function AdminPage() {
   await requireAdmin()
   const snapshot = await readAdminPortfolioSnapshot()
-  const projects = snapshot.contentByLocale.en.projects
+  const projects = snapshot.contentByLocale.en.projects.filter(
+    isAdminManagedProject,
+  )
 
   return (
     <AdminPageShell>
@@ -41,12 +44,16 @@ export default async function AdminPage() {
       {!snapshot.configured ? (
         <AdminBanner message="BLOB_READ_WRITE_TOKEN is missing. Public pages are using static fallback content, and admin changes are disabled." />
       ) : null}
-      {snapshot.error ? <AdminBanner message={snapshot.error} tone="error" /> : null}
+      {snapshot.error ? (
+        <AdminBanner message={snapshot.error} tone="error" />
+      ) : null}
 
       <div className="admin-card mb-5 flex flex-wrap items-center gap-3 px-4 py-3 text-sm text-slate-500">
         <Settings className="h-4 w-4 text-slate-400" />
         <span>Revision: {snapshot.manifest.revision}</span>
-        <span>Updated: {new Date(snapshot.manifest.updatedAt).toLocaleString()}</span>
+        <span>
+          Updated: {new Date(snapshot.manifest.updatedAt).toLocaleString()}
+        </span>
       </div>
 
       <div className="grid gap-3">
@@ -77,10 +84,9 @@ export default async function AdminPage() {
 
                 <div className="min-w-0">
                   <div className="mb-2 flex flex-wrap items-center gap-2">
-                    <span className="admin-pill">{project.fieldId}</span>
-                    <span className="admin-pill">{project.category}</span>
-                    <span className="admin-pill">{project.year}</span>
-                    <span className="admin-pill">{getMediaStatus(project)}</span>
+                    <span className="admin-pill">
+                      {getMediaStatus(project)}
+                    </span>
                   </div>
                   <h2 className="truncate text-lg font-semibold tracking-normal text-slate-950">
                     {project.title}
@@ -99,7 +105,10 @@ export default async function AdminPage() {
                     <Edit3 className="h-4 w-4" />
                     Edit
                   </Link>
-                  <AdminDeleteButton projectId={project.id} expectedEtag={snapshot.etag} />
+                  <AdminDeleteButton
+                    projectId={project.id}
+                    expectedEtag={snapshot.etag}
+                  />
                 </div>
               </div>
             </article>
@@ -118,22 +127,25 @@ function AdminBanner({
   tone?: "warn" | "error"
 }) {
   return (
-    <div className={`admin-notice mb-5 ${tone === "error" ? "admin-notice-error" : "admin-notice-warn"}`}>
+    <div
+      className={`admin-notice mb-5 ${tone === "error" ? "admin-notice-error" : "admin-notice-warn"}`}
+    >
       {message}
     </div>
   )
 }
 
 function getMediaStatus(project: {
-  media?: { proposalSlides?: unknown[]; summary?: unknown; websitePreview?: unknown }
+  media?: {
+    proposalSlides?: unknown[]
+    summary?: unknown
+  }
 }) {
   if (!project.media) return "Text detail"
   const slides = project.media.proposalSlides?.length ?? 0
   return slides > 0
     ? `${slides} slides`
-    : project.media.websitePreview
-      ? "Website preview"
-      : project.media.summary
-        ? "Media"
-        : "Cover"
+    : project.media.summary
+      ? "Main image"
+      : "Cover"
 }

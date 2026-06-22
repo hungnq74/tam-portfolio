@@ -1,6 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { NextRequest } from "next/server"
-import { createAdminPayload, createProject, createSnapshot } from "@/test/factories"
+import {
+  createAdminPayload,
+  createProject,
+  createSnapshot,
+} from "@/test/factories"
 
 const mocks = vi.hoisted(() => {
   class ManifestConflictError extends Error {
@@ -65,8 +69,10 @@ describe("admin project update API", () => {
         viProjects: [createProject("demo-project", { title: "Du an demo" })],
       }),
     )
-    mocks.replaceProjectInManifest.mockImplementation((_manifest, projects) =>
-      createSnapshot({ projects: [projects.en], viProjects: [projects.vi] }).manifest,
+    mocks.replaceProjectInManifest.mockImplementation(
+      (_manifest, projects) =>
+        createSnapshot({ projects: [projects.en], viProjects: [projects.vi] })
+          .manifest,
     )
     mocks.getUnusedOwnedBlobUrls.mockReturnValue([])
     mocks.savePortfolioManifest.mockResolvedValue({ etag: "etag-2" })
@@ -90,44 +96,30 @@ describe("admin project update API", () => {
     expect(response.status).toBe(400)
     const body = await response.json()
     expect(body.error).toBe("Project validation failed.")
-    expect(body.details).toContain("Project id cannot be changed after creation.")
+    expect(body.details).toContain(
+      "Project id cannot be changed after creation.",
+    )
   })
 
-  it("updates Writing projects", async () => {
+  it("rejects updates for non-proposal Writing projects", async () => {
     mocks.readAdminPortfolioSnapshot.mockResolvedValue(
       createSnapshot({
-        projects: [createProject("demo-project", { fieldId: "creative-copywriter" })],
-        viProjects: [createProject("demo-project", { fieldId: "creative-copywriter" })],
+        projects: [
+          createProject("demo-project", { fieldId: "creative-copywriter" }),
+        ],
+        viProjects: [
+          createProject("demo-project", { fieldId: "creative-copywriter" }),
+        ],
       }),
     )
 
-    const response = await PUT(
-      request(
-        "PUT",
-        createAdminPayload({
-          shared: { fieldId: "creative-copywriter", media: undefined },
-          locales: {
-            en: { category: "Social Video Script" },
-            vi: { category: "Kịch bản video social" },
-          },
-        }),
-      ),
-      context,
-    )
+    const response = await PUT(request("PUT", createAdminPayload()), context)
 
-    expect(response.status).toBe(200)
+    expect(response.status).toBe(404)
     await expect(response.json()).resolves.toEqual({
-      ok: true,
-      etag: "etag-2",
-      projectId: "demo-project",
+      error: "Project not found.",
     })
-    expect(mocks.replaceProjectInManifest).toHaveBeenCalledWith(
-      expect.objectContaining({ revision: "revision-1" }),
-      {
-        en: expect.objectContaining({ fieldId: "creative-copywriter" }),
-        vi: expect.objectContaining({ fieldId: "creative-copywriter" }),
-      },
-    )
+    expect(mocks.replaceProjectInManifest).not.toHaveBeenCalled()
   })
 
   it("returns not found when one locale is missing", async () => {
@@ -141,7 +133,9 @@ describe("admin project update API", () => {
     const response = await PUT(request("PUT", createAdminPayload()), context)
 
     expect(response.status).toBe(404)
-    await expect(response.json()).resolves.toEqual({ error: "Project not found." })
+    await expect(response.json()).resolves.toEqual({
+      error: "Project not found.",
+    })
   })
 
   it("returns a conflict for stale update etags", async () => {
@@ -158,7 +152,9 @@ describe("admin project update API", () => {
   })
 
   it("saves updates and warns when old media cleanup fails", async () => {
-    mocks.getUnusedOwnedBlobUrls.mockReturnValue(["projects/demo-project/old/cover.png"])
+    mocks.getUnusedOwnedBlobUrls.mockReturnValue([
+      "projects/demo-project/old/cover.png",
+    ])
     mocks.deleteBlobUrls.mockRejectedValue(new Error("cleanup failed"))
 
     const response = await PUT(request("PUT", createAdminPayload()), context)
@@ -178,7 +174,7 @@ describe("admin project update API", () => {
     expect(revalidatePath).toHaveBeenCalledWith("/work/demo-project")
   })
 
-  it("preserves hidden optional project fields when saving simplified admin updates", async () => {
+  it("replaces proposal content with the focused admin payload", async () => {
     mocks.readAdminPortfolioSnapshot.mockResolvedValue(
       createSnapshot({
         projects: [
@@ -191,6 +187,12 @@ describe("admin project update API", () => {
               title: "Why this name",
               items: [{ term: "Tet", definition: "Seasonal context" }],
               note: "Existing note",
+            },
+            proposalCta: {
+              label: "View full portfolio",
+              credit:
+                "Shout out to the friends who built this proposal with me.",
+              creditNames: ["Minh Anh", "Hoàng Linh", "Bảo Trân"],
             },
           }),
         ],
@@ -205,6 +207,11 @@ describe("admin project update API", () => {
               items: [{ term: "Tết", definition: "Bối cảnh mùa lễ hội" }],
               note: "Ghi chú hiện có",
             },
+            proposalCta: {
+              label: "Coi full portfolio",
+              credit: "Shout out những người đã cùng làm proposal với tôi.",
+              creditNames: ["Minh Anh", "Hoàng Linh", "Bảo Trân"],
+            },
           }),
         ],
       }),
@@ -213,23 +220,31 @@ describe("admin project update API", () => {
     const response = await PUT(request("PUT", createAdminPayload()), context)
 
     expect(response.status).toBe(200)
-    expect(mocks.replaceProjectInManifest).toHaveBeenCalledWith(
-      expect.objectContaining({ revision: "revision-1" }),
-      {
-        en: expect.objectContaining({
-          eyebrow: "Scope",
-          campaignTitle: "Existing campaign",
-          closingNote: "Existing closing",
-          namingRationale: expect.objectContaining({ title: "Why this name" }),
-        }),
-        vi: expect.objectContaining({
-          eyebrow: "Phạm vi",
-          campaignTitle: "Chiến dịch hiện có",
-          closingNote: "Ghi chú hiện có",
-          namingRationale: expect.objectContaining({ title: "Vì sao chọn tên này" }),
-        }),
+    const savedProjects = mocks.replaceProjectInManifest.mock.calls[0][1]
+    expect(savedProjects.en).toMatchObject({
+      eyebrow: "Project",
+      fieldId: "social-planner",
+      proposalCta: {
+        label: "View full portfolio",
+        credit: "Shout out to the friends who built this proposal with me.",
+        creditNames: ["Minh Anh", "Hoàng Linh", "Bảo Trân"],
       },
-    )
+    })
+    expect(savedProjects.vi).toMatchObject({
+      eyebrow: "Dự án",
+      fieldId: "social-planner",
+      proposalCta: {
+        label: "Coi full portfolio",
+        credit: "Shout out những người đã cùng làm proposal với tôi.",
+        creditNames: ["Minh Anh", "Hoàng Linh", "Bảo Trân"],
+      },
+    })
+    expect(savedProjects.en.campaignTitle).toBeUndefined()
+    expect(savedProjects.en.closingNote).toBeUndefined()
+    expect(savedProjects.en.namingRationale).toBeUndefined()
+    expect(savedProjects.vi.campaignTitle).toBeUndefined()
+    expect(savedProjects.vi.closingNote).toBeUndefined()
+    expect(savedProjects.vi.namingRationale).toBeUndefined()
   })
 })
 
@@ -244,7 +259,9 @@ describe("admin project delete API", () => {
       }),
     )
     mocks.removeProjectFromManifest.mockReturnValue(createSnapshot().manifest)
-    mocks.getOwnedBlobUrls.mockReturnValue(["projects/demo-project/a/cover.png"])
+    mocks.getOwnedBlobUrls.mockReturnValue([
+      "projects/demo-project/a/cover.png",
+    ])
     mocks.savePortfolioManifest.mockResolvedValue({ etag: "etag-2" })
   })
 
@@ -252,7 +269,9 @@ describe("admin project delete API", () => {
     const response = await DELETE(request("DELETE", {}), context)
 
     expect(response.status).toBe(400)
-    await expect(response.json()).resolves.toEqual({ error: "Delete request is invalid." })
+    await expect(response.json()).resolves.toEqual({
+      error: "Delete request is invalid.",
+    })
   })
 
   it("returns not found when deleting a missing project", async () => {
@@ -264,14 +283,20 @@ describe("admin project delete API", () => {
     )
 
     expect(response.status).toBe(404)
-    await expect(response.json()).resolves.toEqual({ error: "Project not found." })
+    await expect(response.json()).resolves.toEqual({
+      error: "Project not found.",
+    })
   })
 
-  it("deletes a Writing project", async () => {
+  it("rejects deletion for non-proposal Writing projects", async () => {
     mocks.readAdminPortfolioSnapshot.mockResolvedValue(
       createSnapshot({
-        projects: [createProject("demo-project", { fieldId: "creative-copywriter" })],
-        viProjects: [createProject("demo-project", { fieldId: "creative-copywriter" })],
+        projects: [
+          createProject("demo-project", { fieldId: "creative-copywriter" }),
+        ],
+        viProjects: [
+          createProject("demo-project", { fieldId: "creative-copywriter" }),
+        ],
       }),
     )
 
@@ -280,15 +305,11 @@ describe("admin project delete API", () => {
       context,
     )
 
-    expect(response.status).toBe(200)
+    expect(response.status).toBe(404)
     await expect(response.json()).resolves.toEqual({
-      ok: true,
-      etag: "etag-2",
+      error: "Project not found.",
     })
-    expect(mocks.removeProjectFromManifest).toHaveBeenCalledWith(
-      expect.objectContaining({ revision: "revision-1" }),
-      "demo-project",
-    )
+    expect(mocks.removeProjectFromManifest).not.toHaveBeenCalled()
   })
 
   it("returns a conflict for stale delete etags", async () => {

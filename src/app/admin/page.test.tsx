@@ -39,13 +39,15 @@ describe("AdminPage", () => {
     )
   })
 
-  it("lists projects from every admin-managed field", async () => {
+  it("lists only proposal-style Thinking projects", async () => {
     render(await AdminPage())
 
     expect(mocks.requireAdmin).toHaveBeenCalled()
-    expect(screen.getByText("2 projects")).toBeInTheDocument()
+    expect(screen.getByText("1 project")).toBeInTheDocument()
     expect(screen.getByText("Thinking Launch")).toBeInTheDocument()
-    expect(screen.getByText("Writing Draft")).toBeInTheDocument()
-    expect(screen.getByText(/Bản nháp Writing/)).toBeInTheDocument()
+    expect(screen.queryByText("Writing Draft")).not.toBeInTheDocument()
+    expect(screen.queryByText(/Bản nháp Writing/)).not.toBeInTheDocument()
+    expect(screen.queryByText("social-planner")).not.toBeInTheDocument()
+    expect(screen.queryByText("Campaign")).not.toBeInTheDocument()
   })
 })

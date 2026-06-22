@@ -48,32 +48,26 @@ describe("EditProjectPage", () => {
     )
   })
 
-  it("renders the editor for Thinking projects with all admin field options", async () => {
+  it("renders the proposal editor for Thinking projects", async () => {
     render(
       await EditProjectPage({
         params: Promise.resolve({ projectId: "thinking-project" }),
       }),
     )
 
-    expect(screen.getByRole("heading", { name: "Edit project" })).toBeInTheDocument()
+    expect(
+      screen.getByRole("heading", { name: "Edit project" }),
+    ).toBeInTheDocument()
     expect(screen.getByText("Thinking Launch")).toBeInTheDocument()
-
-    const fieldSelect = screen.getByLabelText("Field") as HTMLSelectElement
-    expect(Array.from(fieldSelect.options).map((option) => option.value)).toEqual([
-      "social-planner",
-      "creative-copywriter",
-    ])
+    expect(screen.getByRole("tab", { name: "Content" })).toBeInTheDocument()
+    expect(screen.queryByLabelText("Field")).not.toBeInTheDocument()
   })
 
-  it("renders the editor for Writing projects", async () => {
-    render(
-      await EditProjectPage({
+  it("does not render the editor for Writing projects", async () => {
+    await expect(
+      EditProjectPage({
         params: Promise.resolve({ projectId: "writing-project" }),
       }),
-    )
-
-    expect(screen.getByRole("heading", { name: "Edit project" })).toBeInTheDocument()
-    expect(screen.getByText("Writing Draft")).toBeInTheDocument()
-    expect(screen.getByLabelText("Field")).toHaveValue("creative-copywriter")
+    ).rejects.toThrow("NEXT_NOT_FOUND")
   })
 })

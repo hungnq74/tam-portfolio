@@ -1,34 +1,27 @@
 # Portfolio Admin User Guide
 
-This guide is for non-technical users who need to update portfolio project content. The admin tool is intentionally simple: it follows the same core field structure as the AXE sample project.
+This guide is for non-technical users who update proposal-style portfolio projects, using the AXE project as the standard.
 
-## 1. What Admin Can Edit
+Admin now manages only `Thinking` proposal projects. Writing/custom projects can still appear on the public portfolio, but they are not edited in this admin tool.
 
-Admin can edit project records in English and Vietnamese.
+## What You Can Edit
 
-Editable project content:
+Admin edits these project parts in English and Vietnamese:
 
-- Title
-- Category
-- Client
-- Summary
-- Scope
+- Project ID
+- Project title
+- Text summary
 - Overview
-- Objective
-- Solution
-- Results
-- Year
-- Field
-- Thumbnail position
 - Cover image
-- Proposal PDF
-- Cover focal point
+- Main image
+- CTA button label
+- Proposal PDF carousel
+- Credit intro
+- Collaborator name chips
 
-Admin does not edit advanced/custom fields such as eyebrow labels, campaign title, closing note, naming rationale, media captions, CTA labels, homepage copy, cover artwork, field labels, or scope card labels.
+Admin does not edit field, year, category, client, scope, objective, solution, results, thumbnail placement, site copy, homepage cover, or custom Writing project sections.
 
-If one of those advanced/custom items needs to change, ask a developer.
-
-## 2. Login
+## Login
 
 Open:
 
@@ -36,56 +29,40 @@ Open:
 /admin/login
 ```
 
-Then:
+Then enter the admin username and password, and click `Sign in`.
 
-1. Enter the admin username.
-2. Enter the admin password.
-3. Click `Sign in`.
-
-After login, you will see the project list at:
+After login, the project list is at:
 
 ```text
 /admin
 ```
 
-The login session lasts about 8 hours.
+## Project List
 
-## 3. Project List
+The list shows only editable proposal-style Thinking projects.
 
-The project list shows every project with:
+Each project row includes:
 
-- Thumbnail or cover preview.
-- Field.
-- Category.
-- Year.
-- Media status.
-- English title.
-- Vietnamese title.
-- `Edit` button.
-- `Delete` button.
+- Cover preview
+- Media status
+- English title
+- Vietnamese title
+- `Edit`
+- `Delete`
 
-Use `New project` to create a new project.
+Use `New project` to create a new proposal project.
 
-## 4. Editing A Project
+## Editing A Project
 
-1. Go to `/admin`.
-2. Find the project.
-3. Click `Edit`.
-4. Review each tab:
-   - `Overview`
-   - `English`
-   - `Vietnamese`
+1. Open `/admin`.
+2. Click `Edit`.
+3. Work through the three tabs:
+   - `Content`
    - `Media`
-5. Make your changes.
-6. Click `Save project`.
-7. Wait for the success message.
-8. Check the public project page.
-
-Public project pages use this format:
-
-```text
-/work/project-id
-```
+   - `CTA & Credits`
+4. Click `Save project`.
+5. Wait for the success message.
+6. Check the public page at `/work/project-id`.
 
 Example:
 
@@ -93,23 +70,13 @@ Example:
 /work/axe
 ```
 
-## 5. Creating A New Project
+## Content Tab
 
-1. Click `New project`.
-2. Fill the `Overview` tab.
-3. Fill the `English` tab.
-4. Fill the `Vietnamese` tab.
-5. Upload media if needed.
-6. Click `Save project`.
-7. Check the new public project page.
+The `Content` tab controls the text shown near the top of the project page.
 
-## 6. Overview Tab
+### Project ID
 
-The `Overview` tab contains shared settings.
-
-### Project Id
-
-The project id becomes part of the public URL.
+The project ID becomes the public URL.
 
 Example:
 
@@ -128,267 +95,164 @@ Rules:
 - Use lowercase letters, numbers, and hyphens.
 - Do not use spaces.
 - Do not use Vietnamese accents.
-- Keep it short.
+- Keep it short and stable.
 
-Good examples:
+After a project is created, the project ID cannot be changed in admin.
 
-```text
-tesla-education
-weshare
-summer-campaign-2026
-```
+### EN/VI Title
 
-After a project is created, the project id cannot be edited in admin.
+Use the project or campaign name.
 
-### Field
+### EN/VI Summary
 
-Choose where the project belongs:
+Use one short context sentence. This appears near the top of the detail page and should explain the project quickly.
 
-- `Thinking in Systems`
-- `Writing with Intent`
-
-The selected field controls which categories are available in the English and Vietnamese tabs.
-
-### Year
-
-Shown on the public project page.
-
-Examples:
+Example:
 
 ```text
-2024
-2025
-2024-2025
+Context: Make AXE Vietnam the top #1 brand discussed by Gen Z on social media and distribute 2M product samples.
 ```
 
-### Thumbnail Column And Row
+### EN/VI Overview
 
-These settings control fallback thumbnail placement for simple/text projects. For projects with cover media, the cover image is usually more important.
+Use a short paragraph with the broader project explanation. Keep it easy to scan.
 
-## 7. English Tab
+## Media Tab
 
-Use this tab for English public content.
+The `Media` tab controls the visual flow:
 
-Fields:
-
-- `Title`: project name.
-- `Category`: project category/scope.
-- `Client`: client or brand name.
-- `Summary`: short description used in cards and previews.
-- `Scope`: list of work areas.
-- `Overview`: main context.
-- `Objective`: goal or challenge.
-- `Solution`: what was done.
-- `Results`: list of outcomes.
-
-### Scope And Results Format
-
-Write one item per line:
-
-```text
-Big Idea
-Campaign Proposal
-Creative Copy
-```
-
-Comma-separated text also works, but one item per line is easier to review.
-
-## 8. Vietnamese Tab
-
-Use this tab for Vietnamese public content.
-
-Fill the same structure as English:
-
-- Title
-- Category
-- Client
-- Summary
-- Scope
-- Overview
-- Objective
-- Solution
-- Results
-
-The Vietnamese copy does not need to be word-for-word translation. It should read naturally for Vietnamese readers while keeping the same project meaning.
-
-## 9. Category
-
-Choose from the dropdown. Do not type custom categories.
-
-For Writing projects, examples include:
-
-- Social Video Script
-- Fanpage Always-on Content
-- Website Content
-- Social Outreach
-
-For Vietnamese, choose the matching localized category from the Vietnamese dropdown.
-
-Category affects where the project appears in content/gallery pages.
-
-## 10. Media Tab
-
-Use the `Media` tab for project files.
+1. Cover image
+2. Main image
+3. Proposal PDF carousel
 
 ### Upload Cover Image
 
-1. Open the `Media` tab.
-2. Click `Upload cover image`.
-3. Choose a PNG, JPG, JPEG, or WebP image.
-4. Wait until upload completes.
-5. Check the preview.
+1. Click `Upload cover image`.
+2. Choose PNG, JPG, JPEG, or WebP.
+3. Wait until upload finishes.
+4. Check the preview.
+
+The cover image appears at the top of the public project page.
 
 ### Cover Focal Point
 
 Use `Cover focal X` and `Cover focal Y` if the cover crop looks wrong.
 
-- X controls left/right focus.
-- Y controls top/bottom focus.
+- X moves focus left/right.
+- Y moves focus up/down.
 - 50/50 means center.
+
+### Upload Main Image
+
+Upload the main image separately from the PDF.
+
+This should be the hero summary image below the text summary/overview. For AXE, this is the image with the executive summary layout.
+
+Important: uploading a PDF will not replace the main image.
 
 ### Upload Proposal PDF
 
-Upload proposal PDF when the project needs proposal slides.
-
-Steps:
-
 1. Upload cover image first.
-2. Click `Upload proposal PDF`.
-3. Choose a PDF.
-4. Wait while admin converts pages into images.
-5. Check that slide count appears.
-6. Save the project.
+2. Upload main image.
+3. Click `Upload proposal PDF`.
+4. Choose a PDF file.
+5. Wait while admin converts PDF pages into carousel images.
+6. Check the slide count in the preview.
+7. Save the project.
 
-Limits:
+Save requires:
 
-- Maximum 50 pages.
-- Maximum 150 MB.
+- Cover image
+- Main image
+- At least one proposal slide from PDF
 
-Do not close the tab while upload or PDF conversion is running.
+## CTA & Credits Tab
 
-## 11. Thinking Projects
+This tab controls the bridge around the proposal carousel.
 
-Projects under `Thinking in Systems` need AXE-style media before saving:
+### CTA Button Label
 
-- Cover image.
-- Proposal PDF converted into slides.
+The CTA button appears before the PDF carousel and scrolls down to the carousel.
 
-If these are missing, admin will show an error asking you to upload cover and proposal.
+Default labels:
 
-## 12. Writing Projects
+- EN: `View full portfolio`
+- VI: `Coi full portfolio`
 
-Projects under `Writing with Intent` can usually be saved without proposal slides.
+You can edit the wording if needed, but keep it short.
 
-Still, add a cover image when available because it improves the project card and detail page.
+### Credit Intro
 
-## 13. Saving
+The credit intro appears after the PDF carousel.
 
-Click `Save project` after editing.
+Default copy:
 
-The save button may be disabled if:
+- EN: `Shout out to the friends who built this proposal with me.`
+- VI: `Shout out những người đã cùng làm proposal với tôi.`
 
-- Blob storage is not configured.
-- Upload is still running.
-- Save is already running.
-- There is a content manifest error.
+### Collaborator Names
 
-Wait for `Project saved.` before leaving the page.
+Write one name per line, or separate names with commas.
 
-## 14. Verify After Saving
-
-After saving, always check the public website.
-
-Minimum checks:
-
-1. Open `/work/project-id`.
-2. Check English content.
-3. Toggle Vietnamese.
-4. Check Vietnamese content.
-5. Check the project appears under the correct content category.
-6. Check cover image crop on desktop and mobile if media changed.
-
-Useful content pages:
+Example:
 
 ```text
-/content
-/content/creative-copywriter
-/content/creative-copywriter/scope/fanpage-always-on-content
-/content/creative-copywriter/scope/website-content
+Minh Anh
+Hoàng Linh
+Bảo Trân
 ```
 
-## 15. Delete A Project
+Admin will show these as small name chips on the public page.
 
-Use delete carefully.
+## Creating A New Project
 
-Deleting removes the project from both English and Vietnamese.
+1. Click `New project`.
+2. Fill `Project id`.
+3. Fill EN and VI title, summary, and overview.
+4. Open `Media`.
+5. Upload cover image.
+6. Upload main image.
+7. Upload proposal PDF.
+8. Open `CTA & Credits`.
+9. Review CTA labels, credit intros, and collaborator names.
+10. Click `Save project`.
+11. Open `/work/project-id` to review the public page.
 
-Steps:
+## Good Review Checklist
 
-1. Go to `/admin`.
-2. Find the project.
-3. Click `Delete`.
-4. Confirm only if you are sure.
-5. Check the public site afterward.
+Before finishing, check:
 
-If you only need to revise content, use `Edit` instead of delete.
+- English page has the right title, summary, overview, CTA, and credit text.
+- Vietnamese page reads naturally.
+- Cover is not awkwardly cropped.
+- Main image appears below the text section.
+- CTA appears before the PDF carousel.
+- PDF carousel has all expected slides.
+- Credit note and name chips appear after the carousel.
+- Public URL works.
 
-## 16. Common Errors
+## Common Problems
 
-### Missing Admin Env
+### Save Button Is Disabled
 
-Admin login is not configured. Ask a developer to check admin environment variables.
+Blob storage may not be configured. Ask a developer to check `BLOB_READ_WRITE_TOKEN`.
 
-### Invalid Username Or Password
+### Upload Main Image Is Disabled
 
-Check credentials and try again.
+Upload the cover image first.
 
-### Blob Token Missing
+### Upload Proposal PDF Is Disabled
 
-Admin can preview content but cannot save or upload. Ask a developer to configure Blob storage.
+Upload the cover image first.
 
-### Project Id Must Be A Lowercase Slug
+### Save Fails With Missing Media
 
-Use only lowercase letters, numbers, and hyphens.
+Make sure the project has all three required media pieces:
 
-### Upload A Cover Image And Proposal PDF Before Saving This Thinking Project
+- Cover image
+- Main image
+- Proposal PDF slides
 
-The project is in `Thinking in Systems`, so it needs cover and proposal media.
+### The Public Page Still Shows Old Content
 
-### PDF Has Too Many Pages
-
-The maximum is 50 pages. Shorten or split the PDF.
-
-### PDF Is Larger Than 150 MB
-
-Compress the PDF and upload again.
-
-### Portfolio Content Changed In Another Tab
-
-Someone else saved content after you opened the form.
-
-Recommended fix:
-
-1. Copy your unsaved text into a temporary note.
-2. Refresh the admin page.
-3. Reapply the changes.
-4. Save again.
-
-## 17. Best Practices
-
-- Edit one project at a time.
-- Avoid opening the same project in multiple admin tabs.
-- Prepare long copy in a document before pasting into admin.
-- Save after finishing one project.
-- Always verify the public page after saving.
-- Ask a developer for advanced/custom content changes.
-
-## 18. Quick Rule
-
-Use:
-
-- `Overview` for shared project settings.
-- `English` for English words.
-- `Vietnamese` for Vietnamese words.
-- `Media` for files.
-
-Then click `Save project` and check the public website.
+Refresh the public page. If it still looks old, save once more and ask a developer to check whether production needs redeploying.
