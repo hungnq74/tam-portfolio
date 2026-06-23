@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import type { Project } from "@/data/portfolio"
+import { getStaticProjectsByLocale, type Project } from "@/data/portfolio"
 import { createManifestFromProjects } from "@/lib/admin-projects"
 import {
   addProjectToManifest,
@@ -82,6 +82,8 @@ describe("portfolio manifest mutation helpers", () => {
 
     const hydrated = hydrateManifestProjectDefaults(manifest)
 
+    expect(hydrated.locales.en.projects[0]).toMatchObject({ title: "Runtime AXE" })
+    expect(hydrated.locales.vi.projects[0]).toMatchObject({ title: "Runtime AXE VI" })
     expect(hydrated.locales.en.projects[0].proposalCta).toEqual({
       label: "View full portfolio",
       credit: "Shout out to the friends who built this proposal with me.",
@@ -138,6 +140,107 @@ describe("portfolio manifest mutation helpers", () => {
 
     expect(hydrated.locales.en.projects[0].proposalCta).toBeUndefined()
     expect(hydrated.locales.vi.projects[0].proposalCta).toBeUndefined()
+  })
+
+  it("merges static creative-copywriter projects missing from older runtime manifests", () => {
+    const staticProjects = getStaticProjectsByLocale()
+    const staticAeon = staticProjects.en.find((project) => project.id === "aeon-vietnam")
+    const staticAeonVi = staticProjects.vi.find((project) => project.id === "aeon-vietnam")
+
+    const manifest = createManifestFromProjects({
+      en: [
+        createProject("acecook", {
+          fieldId: "creative-copywriter",
+          category: "Fanpage Always-on Content",
+        }),
+        createProject("weshare", {
+          fieldId: "creative-copywriter",
+          category: "Fanpage Always-on Content",
+        }),
+        createProject("panasonic", {
+          fieldId: "creative-copywriter",
+          category: "Fanpage Always-on Content",
+        }),
+      ],
+      vi: [
+        createProject("acecook", {
+          fieldId: "creative-copywriter",
+          category: "Fanpage Always-on Content",
+        }),
+        createProject("weshare", {
+          fieldId: "creative-copywriter",
+          category: "Fanpage Always-on Content",
+        }),
+        createProject("panasonic", {
+          fieldId: "creative-copywriter",
+          category: "Fanpage Always-on Content",
+        }),
+      ],
+    })
+
+    const hydrated = hydrateManifestProjectDefaults(manifest)
+
+    expect(hydrated.locales.en.projects.find((project) => project.id === "aeon-vietnam"))
+      .toEqual(staticAeon)
+    expect(hydrated.locales.vi.projects.find((project) => project.id === "aeon-vietnam"))
+      .toEqual(staticAeonVi)
+  })
+
+  it("replaces stale runtime creative-copywriter projects with static code-owned data", () => {
+    const staticTesla = getStaticProjectsByLocale().en.find(
+      (project) => project.id === "tesla-education",
+    )
+    const manifest = createManifestFromProjects({
+      en: [
+        createProject("tesla-education", {
+          fieldId: "creative-copywriter",
+          title: "Old Tesla",
+          summary: "Old runtime Tesla summary",
+          overview: "Old runtime Tesla overview",
+          media: {
+            cover: {
+              src: "/assets/projects/tesla-education/old-cover.jpg",
+              alt: "Old Tesla cover",
+              width: 1200,
+              height: 630,
+            },
+          },
+        }),
+      ],
+      vi: [],
+    })
+
+    const hydrated = hydrateManifestProjectDefaults(manifest)
+    const hydratedTesla = hydrated.locales.en.projects.find(
+      (project) => project.id === "tesla-education",
+    )
+
+    expect(hydratedTesla).toEqual(staticTesla)
+    expect(hydratedTesla?.summary).toBe(
+      "Choosing a school is about finding a place that feels right for your child's story.",
+    )
+    expect(hydratedTesla?.media?.cover.src).toBe(
+      "/assets/projects/tesla-education/detail-cover.jpg",
+    )
+  })
+
+  it("preserves runtime-only projects while merging code-owned creative projects", () => {
+    const manifest = createManifestFromProjects({
+      en: [
+        createProject("runtime-only-project", {
+          fieldId: "creative-copywriter",
+          title: "Runtime-only Project",
+        }),
+      ],
+      vi: [],
+    })
+
+    const hydrated = hydrateManifestProjectDefaults(manifest)
+
+    expect(hydrated.locales.en.projects.find((project) => project.id === "runtime-only-project"))
+      .toMatchObject({ title: "Runtime-only Project" })
+    expect(hydrated.locales.en.projects.some((project) => project.id === "aeon-vietnam"))
+      .toBe(true)
   })
 })
 

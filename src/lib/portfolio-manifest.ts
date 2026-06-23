@@ -78,6 +78,31 @@ function hydrateProjectDefaults(project: Project, staticProject?: Project): Proj
   }
 }
 
+function hydrateLocaleProjects(projects: Project[], staticProjects: Project[]) {
+  const runtimeProjectIds = new Set(projects.map((project) => project.id))
+  const staticProjectsById = new Map(staticProjects.map((project) => [project.id, project]))
+  const hydratedProjects = projects.map((project) => {
+    const staticProject = staticProjectsById.get(project.id)
+
+    if (staticProject?.fieldId === "creative-copywriter") {
+      return staticProject
+    }
+
+    return hydrateProjectDefaults(project, staticProject)
+  })
+
+  staticProjects.forEach((staticProject) => {
+    if (
+      staticProject.fieldId === "creative-copywriter" &&
+      !runtimeProjectIds.has(staticProject.id)
+    ) {
+      hydratedProjects.push(staticProject)
+    }
+  })
+
+  return hydratedProjects
+}
+
 export function hydrateManifestProjectDefaults(manifest: PortfolioManifest): PortfolioManifest {
   const staticProjectsByLocale = getStaticProjectsByLocale()
 
@@ -85,18 +110,16 @@ export function hydrateManifestProjectDefaults(manifest: PortfolioManifest): Por
     ...manifest,
     locales: {
       en: {
-        projects: manifest.locales.en.projects.map((project) => {
-          const staticProject = staticProjectsByLocale.en.find((item) => item.id === project.id)
-
-          return hydrateProjectDefaults(project, staticProject)
-        }),
+        projects: hydrateLocaleProjects(
+          manifest.locales.en.projects,
+          staticProjectsByLocale.en,
+        ),
       },
       vi: {
-        projects: manifest.locales.vi.projects.map((project) => {
-          const staticProject = staticProjectsByLocale.vi.find((item) => item.id === project.id)
-
-          return hydrateProjectDefaults(project, staticProject)
-        }),
+        projects: hydrateLocaleProjects(
+          manifest.locales.vi.projects,
+          staticProjectsByLocale.vi,
+        ),
       },
     },
   }
