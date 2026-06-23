@@ -1,9 +1,10 @@
-import { render, screen } from "@testing-library/react"
+import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { beforeEach, describe, expect, it } from "vitest"
 import { ProjectDetailPage } from "@/components/ProjectDetailPage"
 import {
   LOCALE_STORAGE_KEY,
+  PORTFOLIO_CONTENT,
   createPortfolioContentByLocale,
   type ProjectMedia,
 } from "@/data/portfolio"
@@ -130,6 +131,48 @@ describe("ProjectDetailPage", () => {
     )
   })
 
+  it("renders the AEON post campaign detail flow with grouped platform posts", () => {
+    render(<ProjectDetailPage contentByLocale={PORTFOLIO_CONTENT} projectId="aeon-vietnam" />)
+
+    const coverImage = screen.getByAltText("AEON Vietnam always-on content horizontal cover")
+    const overview = screen.getByText(/AEON is the kind of brand that sells almost everything/)
+
+    expect(coverImage.compareDocumentPosition(overview) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
+    expect(screen.getByRole("heading", { name: "FACEBOOK" })).toBeInTheDocument()
+    expect(
+      screen.getByText(/From weekend promotions and shopping events/),
+    ).toBeInTheDocument()
+
+    const facebookRegion = screen.getByRole("region", { name: "FACEBOOK posts" })
+    expect(
+      within(facebookRegion).getAllByRole("img", {
+        name: /AEON Vietnam Facebook always-on content post/,
+      }),
+    ).toHaveLength(6)
+
+    expect(screen.getByRole("heading", { name: "INSTAGRAM" })).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "Christmas Collection" })).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "Office Collection" })).toBeInTheDocument()
+
+    const christmasRegion = screen.getByRole("region", { name: "Christmas Collection post grid" })
+    expect(
+      within(christmasRegion).getAllByRole("img", {
+        name: /AEON Vietnam Christmas Collection Instagram post/,
+      }),
+    ).toHaveLength(6)
+    expect(within(christmasRegion).getByText(/BẬT MOOD/)).toBeInTheDocument()
+
+    const officeRegion = screen.getByRole("region", { name: "Office Collection post grid" })
+    expect(
+      within(officeRegion).getAllByRole("img", {
+        name: /AEON Vietnam Office Collection Instagram post/,
+      }),
+    ).toHaveLength(3)
+    expect(within(officeRegion).getByText(/ĐI LÀM CÓ/)).toBeInTheDocument()
+  })
+
   it("ignores stale Vietnamese locale storage and renders the English proposal CTA", async () => {
     window.localStorage.setItem(LOCALE_STORAGE_KEY, "vi")
     const project = createProject("demo-project", {
@@ -176,6 +219,105 @@ describe("ProjectDetailPage", () => {
     expect(carousel.compareDocumentPosition(credit) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     )
+  })
+
+  it("renders caption-grid outreach sections as three visible caption cards", () => {
+    const outreachMedia: ProjectMedia = {
+      cover: media.cover,
+      outreachSections: [
+        {
+          title: "Formal & Academic Voice",
+          description: "Carefully chosen words.",
+          displayMode: "linked-posts",
+          posts: [
+            {
+              src: "https://store.blob.vercel-storage.com/projects/outreach/formal.png",
+              alt: "Formal outreach post",
+              width: 1200,
+              height: 1200,
+              sourceUrl: "https://example.com/formal",
+            },
+          ],
+        },
+        {
+          title: "Meme & Funny Voice",
+          description: "Meme-led outreach.",
+          displayMode: "caption-posts",
+          posts: [
+            {
+              src: "https://store.blob.vercel-storage.com/projects/outreach/meme.png",
+              alt: "Meme outreach post",
+              width: 1200,
+              height: 1200,
+              caption: "Meme caption.",
+            },
+          ],
+        },
+        {
+          title: "Poetry & Creative Writing",
+          description:
+            "A place where I shamelessly flex my rhyming skills (without client's brief).",
+          displayMode: "caption-grid",
+          posts: [
+            {
+              src: "https://store.blob.vercel-storage.com/projects/outreach/poetry-01.png",
+              alt: "Poetry post 1",
+              width: 600,
+              height: 608,
+              sourceUrl: "https://example.com/poetry-01",
+              caption: "Poetry caption one.",
+            },
+            {
+              src: "https://store.blob.vercel-storage.com/projects/outreach/poetry-02.png",
+              alt: "Poetry post 2",
+              width: 600,
+              height: 600,
+              sourceUrl: "https://example.com/poetry-02",
+              caption: "Poetry caption two.",
+            },
+            {
+              src: "https://store.blob.vercel-storage.com/projects/outreach/poetry-03.png",
+              alt: "Poetry post 3",
+              width: 563,
+              height: 562,
+              sourceUrl: "https://example.com/poetry-03",
+              caption: "Poetry caption three.",
+            },
+          ],
+        },
+      ],
+    }
+    const project = createProject("social-outreach", {
+      title: "Social Outreach",
+      media: outreachMedia,
+    })
+    const contentByLocale = createPortfolioContentByLocale({
+      en: [project],
+      vi: [createProject("social-outreach", { media: outreachMedia })],
+    })
+
+    render(<ProjectDetailPage contentByLocale={contentByLocale} projectId="social-outreach" />)
+
+    expect(screen.getByText("Voice 03")).toBeInTheDocument()
+    expect(screen.getByRole("heading", { name: "Poetry & Creative Writing" })).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        "A place where I shamelessly flex my rhyming skills (without client's brief).",
+      ),
+    ).toBeInTheDocument()
+    const poetryRegion = screen.getByRole("region", {
+      name: "Poetry & Creative Writing posts",
+    })
+    expect(poetryRegion).not.toHaveAttribute("aria-roledescription", "carousel")
+    expect(screen.getByAltText("Poetry post 1")).toBeInTheDocument()
+    expect(screen.getByAltText("Poetry post 2")).toBeInTheDocument()
+    expect(screen.getByAltText("Poetry post 3")).toBeInTheDocument()
+    expect(screen.getByText("Poetry caption one.")).toBeInTheDocument()
+    expect(screen.getByText("Poetry caption two.")).toBeInTheDocument()
+    expect(screen.getByText("Poetry caption three.")).toBeInTheDocument()
+    expect(
+      screen.getByRole("link", { name: "Visit post: Poetry post 1" }),
+    ).toHaveAttribute("href", "https://example.com/poetry-01")
   })
 
   it("renders content posts as a carousel from project media layout without requiring captions", () => {
@@ -271,9 +413,15 @@ describe("ProjectDetailPage", () => {
       campaignTitle: "Tesla Education",
       overview: "Tesla overview copy below the wide cover.",
       media: {
-        cover: {
+        cardCover: {
           src: "https://store.blob.vercel-storage.com/projects/tesla/cover-wide.jpg",
-          alt: "Tesla Education horizontal campaign cover",
+          alt: "Tesla Education horizontal campaign thumbnail",
+          width: 2048,
+          height: 1365,
+        },
+        cover: {
+          src: "https://store.blob.vercel-storage.com/projects/tesla/detail-cover.jpg",
+          alt: "Tesla Education campus story project cover",
           width: 2048,
           height: 1365,
         },
@@ -293,9 +441,12 @@ describe("ProjectDetailPage", () => {
 
     render(<ProjectDetailPage contentByLocale={contentByLocale} projectId="tesla-layout" />)
 
-    const coverImage = screen.getByAltText("Tesla Education horizontal campaign cover")
+    const coverImage = screen.getByAltText("Tesla Education campus story project cover")
     const overview = screen.getByText("Tesla overview copy below the wide cover.")
 
+    expect(
+      screen.queryByAltText("Tesla Education horizontal campaign thumbnail"),
+    ).not.toBeInTheDocument()
     expect(coverImage.compareDocumentPosition(overview) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     )

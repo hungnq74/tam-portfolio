@@ -125,6 +125,22 @@ const highRiskRoutes: CustomerRoute[] = [
         name: "Formal & Academic Voice posts",
         label: "formal outreach carousel",
       },
+      {
+        kind: "text",
+        value: "Voice 03",
+        label: "third outreach voice label",
+      },
+      {
+        kind: "role",
+        role: "heading",
+        name: "Poetry & Creative Writing",
+        label: "poetry outreach heading",
+      },
+      {
+        kind: "region",
+        name: "Poetry & Creative Writing posts",
+        label: "poetry outreach grid",
+      },
     ],
   },
 ]
@@ -192,6 +208,17 @@ const portfolioGalleryRoutes: CustomerRoute[] = [
         value: "Samsung",
         label: "Samsung gallery card",
       },
+      {
+        kind: "image",
+        name: "Tesla Education horizontal campaign thumbnail",
+        label: "Tesla Education gallery thumbnail",
+      },
+      {
+        kind: "text",
+        value: "Choosing a school is about finding a place that feels right",
+        exact: false,
+        label: "Tesla Education gallery summary",
+      },
     ],
   },
   {
@@ -209,6 +236,34 @@ const portfolioGalleryRoutes: CustomerRoute[] = [
         kind: "text",
         value: "WeShare",
         label: "WeShare gallery card",
+      },
+    ],
+  },
+  {
+    slug: "gallery-writing-fanpage-aeon-en",
+    path: "/content/creative-copywriter/scope/fanpage-always-on-content?project=aeon-vietnam",
+    locale: "en",
+    anchors: [
+      {
+        kind: "role",
+        role: "heading",
+        name: "Fanpage Always-on Content",
+        label: "Fanpage AEON scope heading",
+      },
+      {
+        kind: "text",
+        value: "AEON Vietnam",
+        label: "AEON gallery card",
+      },
+      {
+        kind: "text",
+        value: "Let's help products find their way into shopping carts.",
+        label: "AEON gallery summary",
+      },
+      {
+        kind: "image",
+        name: "AEON Vietnam always-on content horizontal cover",
+        label: "AEON gallery cover",
       },
     ],
   },
@@ -349,19 +404,60 @@ const projectTemplateRoutes: CustomerRoute[] = [
     ],
   },
   {
+    slug: "work-aeon-vietnam-en",
+    path: "/work/aeon-vietnam",
+    locale: "en",
+    anchors: [
+      {
+        kind: "image",
+        name: "AEON Vietnam always-on content horizontal cover",
+        label: "AEON cover",
+      },
+      {
+        kind: "text",
+        value: "AEON is the kind of brand that sells almost everything",
+        exact: false,
+        label: "AEON overview",
+      },
+      {
+        kind: "role",
+        role: "heading",
+        name: "FACEBOOK",
+        label: "AEON Facebook section",
+      },
+      {
+        kind: "region",
+        name: "FACEBOOK posts",
+        label: "AEON Facebook posts",
+      },
+      {
+        kind: "role",
+        role: "heading",
+        name: "Christmas Collection",
+        label: "AEON Christmas section",
+      },
+      {
+        kind: "role",
+        role: "heading",
+        name: "Office Collection",
+        label: "AEON Office section",
+      },
+    ],
+  },
+  {
     slug: "work-tesla-education-en",
     path: "/work/tesla-education",
     locale: "en",
     anchors: [
       {
         kind: "text",
-        value: "Every school has a story",
+        value: "For Tesla Education's always-on content",
         exact: false,
         label: "Tesla Education overview",
       },
       {
         kind: "image",
-        name: "Tesla Education horizontal campaign cover",
+        name: "Tesla Education campus story project cover",
         label: "Tesla Education cover",
       },
       {

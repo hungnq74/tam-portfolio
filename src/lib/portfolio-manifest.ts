@@ -214,12 +214,21 @@ function mediaAssets(media?: ProjectMedia) {
   const assets: ProjectMediaAsset[] = []
 
   if (media?.cover) assets.push(media.cover)
+  if (media?.cardCover) assets.push(media.cardCover)
   if (media?.summary) assets.push(media.summary)
   if (media?.websitePreview) assets.push(media.websitePreview)
   if (media?.proposalSlides) assets.push(...media.proposalSlides)
   if (media?.contentPosts) assets.push(...media.contentPosts)
   if (media?.imageCampaigns) {
     media.imageCampaigns.forEach((campaign) => assets.push(...campaign.images))
+  }
+  if (media?.postCampaigns) {
+    media.postCampaigns.forEach((campaign) => {
+      if (campaign.posts) assets.push(...campaign.posts)
+      if (campaign.sections) {
+        campaign.sections.forEach((section) => assets.push(...section.posts))
+      }
+    })
   }
   if (media?.videoCampaigns) {
     media.videoCampaigns.forEach((campaign) => assets.push(...campaign.videos))

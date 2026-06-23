@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { ArrowLeft, Circle } from "lucide-react"
+import { ArrowLeft } from "lucide-react"
 import type { ReactNode } from "react"
 
 export function AdminPageShell({
@@ -24,10 +24,6 @@ export function AdminPageShell({
               </p>
             </div>
           </div>
-          <span className="admin-status-chip" data-tone="ready">
-            <Circle className="h-3 w-3 fill-current" />
-            English-only
-          </span>
         </div>
         {children}
       </section>

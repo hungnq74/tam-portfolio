@@ -53,15 +53,29 @@ export interface ProjectImageCampaign {
   images: ProjectMediaAsset[]
 }
 
+export interface ProjectPostCampaignSection {
+  title: string
+  description: string
+  posts: ProjectMediaAsset[]
+}
+
+export interface ProjectPostCampaign {
+  title: string
+  description: string
+  posts?: ProjectMediaAsset[]
+  sections?: ProjectPostCampaignSection[]
+}
+
 export interface ProjectOutreachSection {
   title: string
   description: string
-  displayMode: "linked-posts" | "caption-posts"
+  displayMode: "linked-posts" | "caption-posts" | "caption-grid"
   posts: ProjectMediaAsset[]
 }
 
 export interface ProjectMedia {
   cover: ProjectMediaAsset
+  cardCover?: ProjectMediaAsset
   introLayout?: "split-cover"
   summary?: ProjectMediaAsset
   websitePreview?: ProjectMediaAsset
@@ -70,6 +84,7 @@ export interface ProjectMedia {
   contentPosts?: ProjectMediaAsset[]
   videoCampaigns?: ProjectVideoCampaign[]
   imageCampaigns?: ProjectImageCampaign[]
+  postCampaigns?: ProjectPostCampaign[]
   outreachSections?: ProjectOutreachSection[]
 }
 
@@ -615,6 +630,164 @@ const PANASONIC_PROJECT_MEDIA_VI: ProjectMedia = {
   })),
 }
 
+const AEON_FACEBOOK_POSTS: ProjectMediaAsset[] = [
+  {
+    src: "/assets/projects/aeon-vietnam/facebook-01.jpg",
+    alt: "AEON Vietnam Facebook always-on content post 1",
+    width: 843,
+    height: 1266,
+    sourceUrl: "https://www.facebook.com/share/p/18xtmEosdh/",
+  },
+  {
+    src: "/assets/projects/aeon-vietnam/facebook-02.jpg",
+    alt: "AEON Vietnam Facebook always-on content post 2",
+    width: 1180,
+    height: 590,
+    sourceUrl: "https://www.facebook.com/share/p/17ufbWoNTX/",
+  },
+  {
+    src: "/assets/projects/aeon-vietnam/facebook-03.jpg",
+    alt: "AEON Vietnam Facebook always-on content post 3",
+    width: 2048,
+    height: 2048,
+    sourceUrl: "https://www.facebook.com/share/p/1DJGM2v1MS/",
+  },
+  {
+    src: "/assets/projects/aeon-vietnam/facebook-04.jpg",
+    alt: "AEON Vietnam Facebook always-on content post 4",
+    width: 2048,
+    height: 2048,
+    sourceUrl: "https://www.facebook.com/share/p/1HFnSYsS1C/",
+  },
+  {
+    src: "/assets/projects/aeon-vietnam/facebook-05.jpg",
+    alt: "AEON Vietnam Facebook always-on content post 5",
+    width: 2048,
+    height: 2048,
+    sourceUrl: "https://www.facebook.com/AeonVietnamPage/posts/pfbid02xDAxqNFC4Bg22QBad1tJRwy8jW3da1wwMR8cTkHGAeiPPDakVFVTaQZuc1m1jagJl",
+  },
+  {
+    src: "/assets/projects/aeon-vietnam/facebook-06.jpg",
+    alt: "AEON Vietnam Facebook always-on content post 6",
+    width: 2048,
+    height: 2048,
+    sourceUrl: "https://www.facebook.com/share/p/14iCpnKu2jr/",
+  },
+]
+
+const AEON_INSTAGRAM_CHRISTMAS_POSTS: ProjectMediaAsset[] = [
+  {
+    src: "/assets/projects/aeon-vietnam/instagram-christmas-01.jpg",
+    alt: "AEON Vietnam Christmas Collection Instagram post 1",
+    width: 1080,
+    height: 1350,
+    sourceUrl: "https://www.instagram.com/p/DEJY6bZvl6s/",
+    caption: "BẬT MOOD “NGOAN XINH YÊU” - DỊU DÀNG MÙA LỄ HỘI 💖\n\nNgọt ngào, xinh xắn như cô nàng Lọ Lem trong những buổi tiệc dịp cuối năm, tại sao không?\n\nCùng My Closet phối ngay:\n✨ Một chiếc đầm yếm đỏ vừa đủ nổi bật, tôn lên vẻ đẹp thanh thoát và duyên dáng\n✨ Một chiếc áo gân cuốn biên trắng với thiết kế đơn giản nhưng tinh tế, làm nàng thêm yêu kiều\nSet đồ là lựa chọn lý tưởng cho những cô nàng yêu thích sự dịu dàng và đặc biệt phù hợp để đi tiệc, dạo phố, đi làm,... \n\nĐến AEON mua sắm, bật mood “ngoan xinh yêu” để ghi điểm trong những dịp đặc biệt nàng nhé! 💎\n\n#AEON #AEONVietnam #MyCloset #CityCasual\n--------------------------- \nTrải nghiệm mua sắm tại Trung tâm Bách hóa Tổng hợp & Siêu thị AEON đến từ Nhật Bản: \n☎️ HOTLINE MUA HÀNG: 1800.888.699 \n☎️ Hotline chăm sóc khách hàng: 1800.888.886",
+  },
+  {
+    src: "/assets/projects/aeon-vietnam/instagram-christmas-02.jpg",
+    alt: "AEON Vietnam Christmas Collection Instagram post 2",
+    width: 1080,
+    height: 1350,
+    sourceUrl: "https://www.instagram.com/p/DD643yYvZJI/",
+    caption: "BỘ SƯU TẬP URBAN CASUAL: PHỐ LÊN ĐÈN GIÁNG SINH - NÀNG LÊN ĐỒ SÀNH ĐIỆU\n\n🎄Giáng sinh về, mang theo không khí rộn ràng trên những con phố ngập tràn màu sắc. Vì vậy, các cô nàng sành điệu chắc chắn không thể bỏ qua Urban Casual – phong cách thời trang trẻ trung, cuốn hút, giúp bạn tỏa sáng trong mùa lễ hội.\n\nSẵn sàng lên đồ với những item xịn sò:\n✨ Áo gile phao cá tính mix cùng áo len cổ lọ - Bộ đôi ấm áp “over hợp” cho ngày đông lạnh.\n✨ Quần dài wash thêm chút phá cách, vừa thoải mái, lại vừa cá tính.\n\nCả 3 items cùng nhiều outfit Urban Casual khác đã có mặt tại AEON. Nhanh chân đến mua sắm ngay nàng nhé!\n\n#AEON #AEONVietnam #MyCloset #KnittedOuter #ComfortPullover\n---------------------------\nTrải nghiệm mua sắm tại Trung tâm Bách hóa Tổng hợp & Siêu thị AEON đến từ Nhật Bản:\n☎️ HOTLINE MUA HÀNG: 1800.888.699\n☎️ Hotline chăm sóc khách hàng: 1800.888.886",
+  },
+  {
+    src: "/assets/projects/aeon-vietnam/instagram-christmas-03.jpg",
+    alt: "AEON Vietnam Christmas Collection Instagram post 3",
+    width: 1080,
+    height: 1350,
+    sourceUrl: "https://www.instagram.com/p/DDyub_pPZ9P/",
+    caption: "ĐẦM TWEED ĐỎ XINH XẮN - HÓA NGỌN LỬA NHỎ NGÀY ĐÔNG 🎅🏻\n\nGiữa ngày đông se lạnh, nàng đã sẵn sàng hóa thân thành \"ngọn lửa nhỏ\" rực rỡ và lan tỏa sự ấm áp, cuốn hút mọi ánh nhìn chưa?\n\nThử ngay công thức: \n❤️ Đầm tweed đỏ với chất liệu dày dặn vừa giúp giữ ấm, vừa toát lên vẻ đẹp dịu dàng chuẩn vibe mùa lễ hội.\n❤️ Kết hợp cùng áo ren hoa cổ điển với điểm nhấn nơ tinh tế, nhẹ nhàng giúp mang đến nét nữ tính nhẹ nhàng và thanh thoát.\nVới sự hội tụ giữa vẻ đẹp cổ điển và hiện đại, tổng thể bộ trang phục sẽ giúp nàng luôn nổi bật dù là đi chơi, dạo phố hay đi làm,...\n\nĐến AEON rước ngay bộ đôi “ngoan xinh yêu” thôi nàng ơi!\n\n#AEON #AEONVietnam #MyCloset #MordenElegance #Feminine\n--------------------------- \nTrải nghiệm mua sắm tại Trung tâm Bách hóa Tổng hợp & Siêu thị AEON đến từ Nhật Bản: \n☎️ HOTLINE MUA HÀNG: 1800.888.699 \n☎️ Hotline chăm sóc khách hàng: 1800.888.886",
+  },
+  {
+    src: "/assets/projects/aeon-vietnam/instagram-christmas-04.jpg",
+    alt: "AEON Vietnam Christmas Collection Instagram post 4",
+    width: 1080,
+    height: 1350,
+    sourceUrl: "https://www.instagram.com/p/DDor00-vcwK/",
+    caption: "NÀNG CHUỘNG FEMININE: TIỂU THƯ SANG CHẢNH - ĐÓN ĐÔNG AN LÀNH ✨\n\nGói trọn vẻ đẹp mùa đông trong một outfit đầy tinh tế, tại sao không? \n\nCùng khám phá ngay set đồ \"must-have\" cho nàng chuộng phong cách Feminine với:\n🎀 Một chiếc vest croptop trắng thanh lịch, tạo vẻ ngoài nhã nhặn và khí chất.\n🎀 Một chiếc váy chữ A tinh tế, tôn lên nét nữ tính, nhẹ nhàng.\nVới điểm nhấn là dãy cúc cùng hai chiếc nơ đỏ, outfit vừa đủ nổi bật, vừa giúp nàng bật lên khí chất tiểu thư.\n\nBộ sưu tập phong cách Feminine đã có sẵn tại AEON. Nhanh chân đến chọn mua cho mình những items ưng ý, tỏa sáng mùa lễ hội thôi nào!\n\n#AEON #AEONVietnam #MyCloset #RetroYoung #FeminineStreet\n--------------------------- \nTrải nghiệm mua sắm tại Trung tâm Bách hóa Tổng hợp & Siêu thị AEON đến từ Nhật Bản: \n☎️ HOTLINE MUA HÀNG: 1800.888.699 \n☎️ Hotline chăm sóc khách hàng: 1800.888.886",
+  },
+  {
+    src: "/assets/projects/aeon-vietnam/instagram-christmas-05.jpg",
+    alt: "AEON Vietnam Christmas Collection Instagram post 5",
+    width: 1080,
+    height: 1350,
+    sourceUrl: "https://www.instagram.com/p/DDWnvkZPxcJ/",
+    caption: "HOODIE THỜI THƯỢNG: NĂNG ĐỘNG ĐÓN GIÓ ĐÔNG ❄️\n\nTrong những ngày se lạnh cuối năm, không thể bỏ qua hoodie - một items đa-zi-năng vừa thoải mái, vừa giúp giữ ấm và không kém phần thời thượng. \n\nCùng My Closet phối ngay set đồ \"chill\" cho những ngày lạnh với:\n🎄 Một chiếc áo hoodie ấm áp, năng động\n🎄 Một chiếc quần nỉ co giãn, tạo cảm giác thoải mái cho mọi hoạt động\nChỉ cần đi cùng một đôi sneakers đơn giản, nàng đã có ngay outfit hoàn hảo cho ngày trời trở gió. Bật mí, nàng có thể chọn tone đỏ để hợp với mùa giáng sinh gần kề nhé!\n\n🛍️ Các item đã có sẵn tại AEON. Đến ngay và sắm ngay thôi nào!\n\n#AEON #AEONVietnam #MyCloset #Urbancore #TexturedCable\n--------------------------- \nTrải nghiệm mua sắm tại Trung tâm Bách hóa Tổng hợp & Siêu thị AEON đến từ Nhật Bản: \n☎️ HOTLINE MUA HÀNG: 1800.888.699 \n☎️ Hotline chăm sóc khách hàng: 1800.888.886",
+  },
+  {
+    src: "/assets/projects/aeon-vietnam/instagram-christmas-06.jpg",
+    alt: "AEON Vietnam Christmas Collection Instagram post 6",
+    width: 1080,
+    height: 1350,
+    sourceUrl: "https://www.instagram.com/p/DDbwJhAPqqR/",
+    caption: "ÁO DÂY KÉO: NÀNG PHỐI SAO CHO KHÉO?\n\nNàng đang tìm kiếm một set đồ thanh lịch mà vẫn đầy cuốn hút cho những dịp gặp gỡ cuối năm? \n\nThử ngay công thức\n✨ Áo gân có cổ phối dây kéo tạo điểm nhấn tinh tế, ôm nhẹ tôn dáng mang đến vẻ đẹp vừa thanh lịch, vừa quyến rũ\n✨ Quần jean ống rộng sành điệu và thời thượng\nPhối cùng một chiếc túi xách đơn giản, nàng đã có ngay một outfit ấn tượng, phù hợp bất kể đi học, đi làm hay vi vu dạo phố.\n\nNhanh chân ghé AEON để sắm ngay bộ đôi ăn ý ngay nàng nhé!\n\n#AEON #AEONVietnam #MyCloset #Urbancore #OpenKnit #Artisti Denim\n--------------------------- \nTrải nghiệm mua sắm tại Trung tâm Bách hóa Tổng hợp & Siêu thị AEON đến từ Nhật Bản: \n☎️ HOTLINE MUA HÀNG: 1800.888.699 \n☎️ Hotline chăm sóc khách hàng: 1800.888.886",
+  },
+]
+
+const AEON_INSTAGRAM_OFFICE_POSTS: ProjectMediaAsset[] = [
+  {
+    src: "/assets/projects/aeon-vietnam/instagram-office-01.jpg",
+    alt: "AEON Vietnam Office Collection Instagram post 1",
+    width: 1080,
+    height: 1350,
+    sourceUrl: "https://www.instagram.com/p/DAQWpztPyFW/",
+    caption: "ĐI LÀM CÓ “GU”: BỘ ĐÔI ĂN Ý CHO HỘI CHỊ EM VĂN PHÒNG\n\nNàng đang tìm kiếm công thức mix & match với áo sơ mi để làm mới phong cách công sở hàng ngày? Cùng My Closet thử ngay outfit:\n- Áo sơ-mi màu pastel nhã nhặn, tạo cảm giác thoải mái cả ngày\n- Chân váy ngắn túi hộp hiện đại, trẻ trung\nPhối cùng một chiếc túi xách hợp màu, nàng đã có ngay một outfit vô cùng thanh lịch.\n\nNhanh chân ghé AEON để mua sắm bộ đôi “over hợp”, sẵn sàng ghi điểm khi đến văn phòng nhé các nàng ơi!\n\n#AEON #AEONVietnam #MyCloset #CityCasual #DailyCasual\n\n--------------------------- \nTrải nghiệm mua sắm tại Trung tâm Bách hóa Tổng hợp & Siêu thị AEON đến từ Nhật Bản: \n☎️ HOTLINE MUA HÀNG: 1800.888.699 \n☎️ Hotline chăm sóc khách hàng: 1800.888.886",
+  },
+  {
+    src: "/assets/projects/aeon-vietnam/instagram-office-02.jpg",
+    alt: "AEON Vietnam Office Collection Instagram post 2",
+    width: 1080,
+    height: 1350,
+    sourceUrl: "https://www.instagram.com/p/C_shE7lvdPN/",
+    caption: "FEMININE STYLE - NÀNG KẸO NGỌT CÁ TÍNH\n\n🍭 Dịu dàng và nữ tính - Các nàng đã sẵn sàng hóa thân thành cô gái ngọt ngào với bộ sưu tập phong cách Feminine đến từ My Closet chưa?\n\nOutfit mở đầu cho vẻ đẹp nhẹ nhàng này là sự kết hợp hài hòa giữa:\n- Một chiếc quần yếm túi hộp trắng đáng yêu \n- Một chiếc áo thun tay dài xanh pastel ngọt ngào \nSet đồ mang đến vẻ đẹp thuần khiết pha chút tinh nghịch, đồng thời giúp nàng “hack tuổi” vô cùng hiệu quả.\n\n📍 Các item đã có mặt tại AEON. Nếu nàng “phải lòng” phong cách ngọt ngào, nữ tính thì đừng ngần ngại đến mua sắm ngay nhé!\n\n#AEON #AEONVietnam #MyCloset #CroppedKnit #ChicStreet\n\n--------------------------- \nTrải nghiệm mua sắm tại Trung tâm Bách hóa Tổng hợp & Siêu thị AEON đến từ Nhật Bản: \n☎️ HOTLINE MUA HÀNG: 1800.888.699 \n☎️ Hotline chăm sóc khách hàng: 1800.888.886",
+  },
+  {
+    src: "/assets/projects/aeon-vietnam/instagram-office-03.jpg",
+    alt: "AEON Vietnam Office Collection Instagram post 3",
+    width: 1080,
+    height: 1350,
+    sourceUrl: "https://www.instagram.com/p/C_2j4B2PFYy/",
+    caption: "LÊN ĐỒ TỐI GIẢN, NÀNG VẪN RẠNG NGỜI\n\n✨ Đôi khi, sự đơn giản lại là “vũ khí” mạnh mẽ nhất để nàng tỏa sáng.\n\nNhững cô nàng yêu thích phong cách tối giản nhưng vẫn muốn nổi bật khi xuất hiện đừng bỏ qua gợi ý phối đồ đến từ My Closet:\n- Áo tay dài cổ bẻ mềm mại \n- Quần short “đa-zi-năng” với phía trước xếp ly duyên dáng, phía sau là dáng quần lửng thoải mái khi di chuyển\nHoàn thiện outfit với một chiếc túi xách để nàng thêm phần nữ tính.\n\nCác item đang có sẵn tại AEON. Các nàng hãy nhanh chân đến để chọn cho mình những item yêu thích trong bộ sưu tập Feminine cùng My Closet nhé!\n\n#AEON #AEONVietnam #MyCloset #SoftMinimalism #NewNormalBasic\n\n--------------------------- \nTrải nghiệm mua sắm tại Trung tâm Bách hóa Tổng hợp & Siêu thị AEON đến từ Nhật Bản: \n☎️ HOTLINE MUA HÀNG: 1800.888.699 \n☎️ Hotline chăm sóc khách hàng: 1800.888.886",
+  },
+]
+
+const AEON_PROJECT_MEDIA: ProjectMedia = {
+  cover: {
+    src: "/assets/projects/aeon-vietnam/cover.png",
+    alt: "AEON Vietnam always-on content horizontal cover",
+    width: 800,
+    height: 226,
+    sourceUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTf3iZoDZXz-kj3vzbVtEMKWfUsrn61pxwzvtA0iGXvs9DlMVM-YxvqUHek&s=10",
+  },
+  postCampaigns: [
+    {
+      title: "FACEBOOK",
+      description:
+        "From weekend promotions and shopping events to household essentials, content designed to turn everyday products into reasons to visit the store.",
+      posts: AEON_FACEBOOK_POSTS,
+    },
+    {
+      title: "INSTAGRAM",
+      description:
+        "From trend-driven launches to everyday fashion picks, every piece of content makes people stop scrolling and start imagining themselves in the outfit.",
+      sections: [
+        {
+          title: "Christmas Collection",
+          description: "A little festive spirit, a little fashion magic.",
+          posts: AEON_INSTAGRAM_CHRISTMAS_POSTS,
+        },
+        {
+          title: "Office Collection",
+          description: "Dressed for the meeting. Styled for the feed.",
+          posts: AEON_INSTAGRAM_OFFICE_POSTS,
+        },
+      ],
+    },
+  ],
+}
+
 const SAMSUNG_VIDEO_SOURCES = [
   "https://www.facebook.com/reel/1808331319865303",
   "https://www.facebook.com/share/v/1AxaYvs1yr/",
@@ -755,17 +928,30 @@ const SAMSUNG_PROJECT_MEDIA_VI: ProjectMedia = {
 const TESLA_EDUCATION_VIDEO_SOURCE =
   "https://www.facebook.com/reel/1355172016653079"
 
-const TESLA_EDUCATION_PROJECT_COVER: ProjectMediaAsset = {
+const TESLA_EDUCATION_CARD_COVER: ProjectMediaAsset = {
   src: "/assets/projects/tesla-education/cover-wide.jpg",
-  alt: "Tesla Education horizontal campaign cover",
+  alt: "Tesla Education horizontal campaign thumbnail",
   width: 2048,
   height: 1365,
   sourceUrl: "https://www.facebook.com/photo.php?fbid=1407252798088393&set=pb.100064110576744.-2207520000&type=3",
 }
 
+const TESLA_EDUCATION_PROJECT_COVER: ProjectMediaAsset = {
+  src: "/assets/projects/tesla-education/detail-cover.jpg",
+  alt: "Tesla Education campus story project cover",
+  width: 2048,
+  height: 1365,
+  sourceUrl: "https://www.facebook.com/photo.php?fbid=1407252808088392&set=pb.100064110576744.-2207520000&type=3",
+}
+
+const TESLA_EDUCATION_CARD_COVER_VI: ProjectMediaAsset = {
+  ...TESLA_EDUCATION_CARD_COVER,
+  alt: "Ảnh thumbnail ngang chiến dịch Tesla Education",
+}
+
 const TESLA_EDUCATION_PROJECT_COVER_VI: ProjectMediaAsset = {
   ...TESLA_EDUCATION_PROJECT_COVER,
-  alt: "Ảnh bìa ngang chiến dịch Tesla Education",
+  alt: "Ảnh bìa câu chuyện campus Tesla Education",
 }
 
 const TESLA_EDUCATION_VIDEO: ProjectMediaAsset = {
@@ -785,6 +971,7 @@ const TESLA_EDUCATION_VIDEO_VI: ProjectMediaAsset = {
 
 const TESLA_EDUCATION_PROJECT_MEDIA_EN: ProjectMedia = {
   cover: TESLA_EDUCATION_PROJECT_COVER,
+  cardCover: TESLA_EDUCATION_CARD_COVER,
   videoCampaigns: [
     {
       title: "Brand Introduction Video",
@@ -797,6 +984,7 @@ const TESLA_EDUCATION_PROJECT_MEDIA_EN: ProjectMedia = {
 
 const TESLA_EDUCATION_PROJECT_MEDIA_VI: ProjectMedia = {
   cover: TESLA_EDUCATION_PROJECT_COVER_VI,
+  cardCover: TESLA_EDUCATION_CARD_COVER_VI,
   videoCampaigns: [
     {
       title: "Video giới thiệu thương hiệu",
@@ -888,6 +1076,42 @@ const SOCIAL_OUTREACH_MEME_POSTS: ProjectMediaAsset[] = [
   },
 ]
 
+const SOCIAL_OUTREACH_POETRY_SOURCES = [
+  "https://www.facebook.com/share/p/18QnGE11k5/",
+  "https://www.facebook.com/share/p/1Yt63fJATB/",
+  "https://www.facebook.com/share/p/18MhmYU1wr/",
+] as const
+
+const SOCIAL_OUTREACH_POETRY_POSTS: ProjectMediaAsset[] = [
+  {
+    src: "/assets/projects/social-outreach/poetry-01.jpg",
+    alt: "Poetry post from Thìa đầy thơ: Mình biết rằng hôm nay bạn mệt",
+    width: 600,
+    height: 608,
+    sourceUrl: SOCIAL_OUTREACH_POETRY_SOURCES[0],
+    caption:
+      "Mình biết rằng hôm nay bạn mệt\nVới một ngày toàn những lo âu\nNhưng mình tin sẽ chẳng sao đâu\nBởi mình biết chúng ta đều giỏi\n\nCó bao giờ bạn đặt câu hỏi\n“Mình đang phải cố gắng vì ai\nMọi nỗ lực liệu...",
+  },
+  {
+    src: "/assets/projects/social-outreach/poetry-02.jpg",
+    alt: "Poetry post from Thìa đầy thơ: Ở bên ngoài cửa sổ",
+    width: 600,
+    height: 600,
+    sourceUrl: SOCIAL_OUTREACH_POETRY_SOURCES[1],
+    caption:
+      "Ở bên ngoài cửa sổ\nCó một chú mèo hoang\nNằm ngắm ảnh trăng vàng\nGiữa màn đêm yên ắng\n\nLòng mèo đang trống vắng \nVì lạc mất tình yêu\nKhông biết giá bao nhiêu\nNhưng sao mèo buồn thế\n\nMèo đừng đau lòng...",
+  },
+  {
+    src: "/assets/projects/social-outreach/poetry-03.jpg",
+    alt: "Poetry post from Thìa đầy thơ: Có một việc mình mong bạn hiểu",
+    width: 563,
+    height: 562,
+    sourceUrl: SOCIAL_OUTREACH_POETRY_SOURCES[2],
+    caption:
+      "Có một việc mình mong bạn hiểu\nCuộc sống này dài ngắn bao nhiêu\nBạn phải luôn ghi nhớ một điều\nHãy luôn yêu bản thân mình nhất\n\nBạn quý giá hơn nhiều vật chất\nBạn sinh ra để được yêu thương\nBạn xinh...",
+  },
+]
+
 const SOCIAL_OUTREACH_FORMAL_POSTS_VI: ProjectMediaAsset[] =
   SOCIAL_OUTREACH_FORMAL_POSTS.map((post, index) => ({
     ...post,
@@ -898,6 +1122,12 @@ const SOCIAL_OUTREACH_MEME_POSTS_VI: ProjectMediaAsset[] =
   SOCIAL_OUTREACH_MEME_POSTS.map((post, index) => ({
     ...post,
     alt: `Bài outreach giọng meme ${index + 1}`,
+  }))
+
+const SOCIAL_OUTREACH_POETRY_POSTS_VI: ProjectMediaAsset[] =
+  SOCIAL_OUTREACH_POETRY_POSTS.map((post, index) => ({
+    ...post,
+    alt: `Bài outreach giọng thơ và creative writing ${index + 1}`,
   }))
 
 const SOCIAL_OUTREACH_PROJECT_MEDIA_EN: ProjectMedia = {
@@ -919,6 +1149,13 @@ const SOCIAL_OUTREACH_PROJECT_MEDIA_EN: ProjectMedia = {
       description: "A place where the same brain occasionally communicates through memes.",
       displayMode: "caption-posts",
       posts: SOCIAL_OUTREACH_MEME_POSTS,
+    },
+    {
+      title: "Poetry & Creative Writing",
+      description:
+        "A place where I shamelessly flex my rhyming skills (without client's brief).",
+      displayMode: "caption-grid",
+      posts: SOCIAL_OUTREACH_POETRY_POSTS,
     },
   ],
 }
@@ -942,6 +1179,13 @@ const SOCIAL_OUTREACH_PROJECT_MEDIA_VI: ProjectMedia = {
       description: "Một không gian nơi cùng một bộ não đôi khi giao tiếp bằng meme.",
       displayMode: "caption-posts",
       posts: SOCIAL_OUTREACH_MEME_POSTS_VI,
+    },
+    {
+      title: "Thơ và creative writing",
+      description:
+        "Một không gian nơi mình shamelessly flex kỹ năng gieo vần (không cần brief của client).",
+      displayMode: "caption-grid",
+      posts: SOCIAL_OUTREACH_POETRY_POSTS_VI,
     },
   ],
 }
@@ -1180,12 +1424,12 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         title: "Tesla Education",
         eyebrow: "Project",
         category: "Social Video Script",
-        summary: "Creative concept and full script for Tesla Education's inspiring brand introduction video.",
+        summary: "Choosing a school is about finding a place that feels right for your child's story.",
         client: "Tesla Education",
         year: "2026",
         scope: ["Brand Introduction Video", "Creative Concept", "Full Script"],
         overview:
-          "Every school has a story. The challenge is telling it in a way that people can actually feel.\n\nMy role was to develop the creative concept and write the full script for an inspiring brand introduction video, bringing together the voices of teachers, leaders, and educators who shape the learning journey every day.\n\nRather than listing achievements or facilities, the video focused on the beliefs behind them - turning educational values into a story that felt authentic, human, and worth remembering.",
+          "For Tesla Education's always-on content, I developed monthly content plans and created bilingual content across platforms, translating educational concepts into stories, insights, and messages that resonated with parents. From academic excellence and student development to school culture and everyday learning moments, each content angle was designed to help families better understand what makes Tesla, Tesla.",
         objective:
           "Turn Tesla Education's school story into a brand introduction video that felt human, inspiring, and emotionally clear.",
         solution:
@@ -1257,6 +1501,26 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         results: ["Digital ad copy-on-visuals", "Short promotional headlines", "CRM Promote message adaptation"],
         thumbnail: { col: 2, row: 0 },
         media: PANASONIC_PROJECT_MEDIA,
+      },
+      {
+        id: "aeon-vietnam",
+        fieldId: "creative-copywriter",
+        title: "AEON Vietnam",
+        eyebrow: "Project",
+        category: "Fanpage Always-on Content",
+        summary: "Let's help products find their way into shopping carts.",
+        client: "AEON Vietnam",
+        year: "2025",
+        scope: ["Facebook Always-on Content", "Instagram Content", "Product Storytelling"],
+        overview:
+          "AEON is the kind of brand that sells almost everything, which means content can never be one-size-fits-all. Different products, different audiences, different platforms, different ways of selling products.",
+        objective:
+          "Turn AEON Vietnam's wide product mix into always-on content that gives shoppers clear reasons to visit and buy.",
+        solution:
+          "Shape platform-specific product stories across Facebook and Instagram, matching promotions, lifestyle launches, and fashion picks to the audience and format.",
+        results: ["Facebook promotional content", "Instagram fashion collection copy", "Always-on product storytelling"],
+        thumbnail: { col: 0, row: 1 },
+        media: AEON_PROJECT_MEDIA,
       },
       {
         id: "social-outreach",
@@ -1718,6 +1982,26 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         results: ["Copy trên visual cho digital ads", "Headline khuyến mãi ngắn gọn", "Điều chỉnh thông điệp CRM Promote"],
         thumbnail: { col: 2, row: 0 },
         media: PANASONIC_PROJECT_MEDIA_VI,
+      },
+      {
+        id: "aeon-vietnam",
+        fieldId: "creative-copywriter",
+        title: "AEON Vietnam",
+        eyebrow: "Project",
+        category: "Fanpage Always-on Content",
+        summary: "Let's help products find their way into shopping carts.",
+        client: "AEON Vietnam",
+        year: "2025",
+        scope: ["Facebook Always-on Content", "Instagram Content", "Product Storytelling"],
+        overview:
+          "AEON is the kind of brand that sells almost everything, which means content can never be one-size-fits-all. Different products, different audiences, different platforms, different ways of selling products.",
+        objective:
+          "Turn AEON Vietnam's wide product mix into always-on content that gives shoppers clear reasons to visit and buy.",
+        solution:
+          "Shape platform-specific product stories across Facebook and Instagram, matching promotions, lifestyle launches, and fashion picks to the audience and format.",
+        results: ["Facebook promotional content", "Instagram fashion collection copy", "Always-on product storytelling"],
+        thumbnail: { col: 0, row: 1 },
+        media: AEON_PROJECT_MEDIA,
       },
       {
         id: "social-outreach",

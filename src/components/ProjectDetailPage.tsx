@@ -27,6 +27,7 @@ import {
   type ProjectNamingRationale,
   type ProjectMediaAsset,
   type ProjectOutreachSection,
+  type ProjectPostCampaign,
   type ProjectProposalCta,
   type ProjectVideoCampaign,
 } from "@/data/portfolio"
@@ -160,6 +161,7 @@ function MediaProjectPage({
   const contentPosts = media?.contentPosts ?? []
   const contentPostsLayout = media?.contentPostsLayout ?? "grid"
   const imageCampaigns = media?.imageCampaigns ?? []
+  const postCampaigns = media?.postCampaigns ?? []
   const videoCampaigns = media?.videoCampaigns ?? []
   const outreachSections = media?.outreachSections ?? []
   const usesSplitCoverIntro = media?.introLayout === "split-cover"
@@ -373,6 +375,16 @@ function MediaProjectPage({
               showLessLabel={ui.detail.showLessCaption}
               previousLabel={ui.detail.previousSlide}
               nextLabel={ui.detail.nextSlide}
+            />
+          ) : null}
+
+          {postCampaigns.length > 0 ? (
+            <ProjectPostCampaigns
+              campaigns={postCampaigns}
+              postLinkLabel={ui.detail.visitPost}
+              captionLabel={ui.detail.postCaption}
+              readMoreLabel={ui.detail.readMoreCaption}
+              showLessLabel={ui.detail.showLessCaption}
             />
           ) : null}
 
@@ -642,6 +654,7 @@ function ProjectOutreachPosts({
 }) {
   const showLinks = section.displayMode === "linked-posts"
   const showCaptions = section.displayMode === "caption-posts"
+  const showCaptionGrid = section.displayMode === "caption-grid"
   const postsPerPage = useContentPostsPerPage()
   const pageCount = Math.max(1, Math.ceil(section.posts.length / postsPerPage))
   const [activePageIndex, setActivePageIndex] = useState(0)
@@ -724,6 +737,30 @@ function ProjectOutreachPosts({
 
     event.preventDefault()
     goToPostPage(event.key === "ArrowLeft" ? -1 : 1)
+  }
+
+  if (showCaptionGrid) {
+    return (
+      <div
+        className={cn(CAROUSEL_RAIL_CLASS, "focus:outline-none")}
+        role="region"
+        aria-label={`${section.title} posts`}
+      >
+        <div className="grid items-stretch gap-4 md:grid-cols-3">
+          {section.posts.map((post) => (
+            <ProjectOutreachPostCard
+              key={post.src}
+              post={post}
+              postLinkLabel={postLinkLabel}
+              captionLabel={captionLabel}
+              showLink
+              showCaption
+              compact
+            />
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -1181,6 +1218,141 @@ function ProjectContentPostCard({
         </div>
       ) : null}
     </article>
+  )
+}
+
+function ProjectPostCampaigns({
+  campaigns,
+  postLinkLabel,
+  captionLabel,
+  readMoreLabel,
+  showLessLabel,
+}: {
+  campaigns: ProjectPostCampaign[]
+  postLinkLabel: string
+  captionLabel?: string
+  readMoreLabel?: string
+  showLessLabel?: string
+}) {
+  const [expandedCaptions, setExpandedCaptions] = useState<Record<string, boolean>>({})
+
+  const toggleCaption = useCallback((postSrc: string) => {
+    setExpandedCaptions((currentCaptions) => ({
+      ...currentCaptions,
+      [postSrc]: !currentCaptions[postSrc],
+    }))
+  }, [])
+
+  return (
+    <section className={cn(MEDIA_RAIL_CLASS, "space-y-12")} aria-label="Post campaigns">
+      {campaigns.map((campaign) => (
+        <article
+          key={campaign.title}
+          className="border-t border-gold/45 pt-6 sm:pt-8"
+        >
+          <div className="grid gap-4 md:grid-cols-[0.68fr_1fr] md:items-end">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-clay">
+                Platform
+              </p>
+              <h2 className="mt-2 font-serif text-4xl font-semibold leading-tight text-moss sm:text-5xl lg:text-6xl">
+                {campaign.title}
+              </h2>
+            </div>
+            <p className="font-prose max-w-3xl whitespace-pre-line text-base leading-7 text-ink/78 sm:text-lg sm:leading-8">
+              {campaign.description}
+            </p>
+          </div>
+
+          {campaign.posts?.length ? (
+            <ProjectPostCampaignPostsGrid
+              posts={campaign.posts}
+              ariaLabel={`${campaign.title} posts`}
+              postLinkLabel={postLinkLabel}
+              expandedCaptions={expandedCaptions}
+              onToggleCaption={toggleCaption}
+            />
+          ) : null}
+
+          {campaign.sections?.length ? (
+            <div className="mt-8 space-y-10">
+              {campaign.sections.map((section) => (
+                <section
+                  key={section.title}
+                  className="border-t border-[rgba(116,63,36,0.18)] pt-6"
+                  aria-label={`${section.title} posts`}
+                >
+                  <div className="mb-5 max-w-3xl">
+                    <h3 className="font-serif text-2xl font-semibold leading-tight text-moss sm:text-3xl">
+                      {section.title}
+                    </h3>
+                    <p className="font-prose mt-2 text-base leading-7 text-ink/76">
+                      {section.description}
+                    </p>
+                  </div>
+
+                  <ProjectPostCampaignPostsGrid
+                    posts={section.posts}
+                    ariaLabel={`${section.title} post grid`}
+                    postLinkLabel={postLinkLabel}
+                    captionLabel={captionLabel}
+                    readMoreLabel={readMoreLabel}
+                    showLessLabel={showLessLabel}
+                    expandedCaptions={expandedCaptions}
+                    onToggleCaption={toggleCaption}
+                    showCaptions
+                  />
+                </section>
+              ))}
+            </div>
+          ) : null}
+        </article>
+      ))}
+    </section>
+  )
+}
+
+function ProjectPostCampaignPostsGrid({
+  posts,
+  ariaLabel,
+  postLinkLabel,
+  captionLabel,
+  readMoreLabel,
+  showLessLabel,
+  expandedCaptions,
+  onToggleCaption,
+  showCaptions = false,
+}: {
+  posts: ProjectMediaAsset[]
+  ariaLabel: string
+  postLinkLabel: string
+  captionLabel?: string
+  readMoreLabel?: string
+  showLessLabel?: string
+  expandedCaptions: Record<string, boolean>
+  onToggleCaption: (postSrc: string) => void
+  showCaptions?: boolean
+}) {
+  return (
+    <div
+      className="mt-5 grid items-start gap-4 sm:grid-cols-2 xl:grid-cols-3"
+      role="region"
+      aria-label={ariaLabel}
+    >
+      {posts.map((post) => (
+        <ProjectContentPostCard
+          key={post.src}
+          post={post}
+          postLinkLabel={postLinkLabel}
+          captionLabel={captionLabel}
+          readMoreLabel={readMoreLabel}
+          showLessLabel={showLessLabel}
+          isCaptionExpanded={Boolean(expandedCaptions[post.src])}
+          onToggleCaption={showCaptions ? () => onToggleCaption(post.src) : undefined}
+          compact
+        />
+      ))}
+    </div>
   )
 }
 

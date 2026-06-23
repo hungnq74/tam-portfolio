@@ -2430,7 +2430,8 @@ function ProjectCard({
   href: string
   onNavigate?: () => void
 }) {
-  const coverFocalPoint = project.media?.cover.focalPoint ?? { x: 50, y: 50 }
+  const cardCover = project.media?.cardCover ?? project.media?.cover
+  const coverFocalPoint = cardCover?.focalPoint ?? { x: 50, y: 50 }
 
   return (
     <Link
@@ -2444,13 +2445,13 @@ function ProjectCard({
           : "border-paper/35 hover:-translate-y-1 hover:border-gold/70",
       )}
     >
-      <div className={cn("relative aspect-[16/10] overflow-hidden", project.media?.cover ? "bg-[#5bae31]" : "bg-paper-deep")}>
-        {project.media?.cover ? (
+      <div className={cn("relative aspect-[16/10] overflow-hidden", cardCover ? "bg-[#5bae31]" : "bg-paper-deep")}>
+        {cardCover ? (
           <img
-            src={project.media.cover.src}
-            alt={project.media.cover.alt}
-            width={project.media.cover.width}
-            height={project.media.cover.height}
+            src={cardCover.src}
+            alt={cardCover.alt}
+            width={cardCover.width}
+            height={cardCover.height}
             loading="lazy"
             decoding="async"
             className="h-full w-full object-cover transition duration-500 group-hover:scale-105 motion-reduce:group-hover:scale-100"

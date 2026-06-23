@@ -151,6 +151,12 @@ describe("owned Blob URL helpers", () => {
           width: 1600,
           height: 900,
         },
+        cardCover: {
+          src: "projects/demo/a/card-cover.png",
+          alt: "Card cover",
+          width: 1600,
+          height: 900,
+        },
         summary: {
           src: "https://cdn.example.com/projects/demo/a/summary.png",
           alt: "Summary",
@@ -211,6 +217,46 @@ describe("owned Blob URL helpers", () => {
             ],
           },
         ],
+        postCampaigns: [
+          {
+            title: "Post campaign one",
+            description: "Post campaign group.",
+            posts: [
+              {
+                src: "projects/demo/a/post-campaign-01.png",
+                alt: "Direct post campaign asset",
+                width: 1200,
+                height: 1200,
+              },
+              {
+                src: "https://store.blob.vercel-storage.com/projects/other/a/post-campaign-02.png",
+                alt: "Foreign direct post campaign asset",
+                width: 1200,
+                height: 1200,
+              },
+            ],
+            sections: [
+              {
+                title: "Nested section",
+                description: "Nested post campaign section.",
+                posts: [
+                  {
+                    src: "projects/demo/a/post-campaign-section-01.png",
+                    alt: "Nested post campaign asset",
+                    width: 1200,
+                    height: 1200,
+                  },
+                  {
+                    src: "https://store.blob.vercel-storage.com/projects/other/a/post-campaign-section-02.png",
+                    alt: "Foreign nested post campaign asset",
+                    width: 1200,
+                    height: 1200,
+                  },
+                ],
+              },
+            ],
+          },
+        ],
         videoCampaigns: [
           {
             title: "Campaign one",
@@ -257,10 +303,13 @@ describe("owned Blob URL helpers", () => {
 
     expect(getOwnedBlobUrls("demo", [project])).toEqual([
       "https://store.blob.vercel-storage.com/projects/demo/a/cover.png",
+      "projects/demo/a/card-cover.png",
       "projects/demo/a/website-preview.png",
       "projects/demo/a/proposal-01.png",
       "projects/demo/a/content-01.png",
       "projects/demo/a/image-campaign-01.png",
+      "projects/demo/a/post-campaign-01.png",
+      "projects/demo/a/post-campaign-section-01.png",
       "projects/demo/a/video-01.png",
       "projects/demo/a/outreach-01.png",
     ])

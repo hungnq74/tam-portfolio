@@ -102,18 +102,19 @@ function AdminProjectCard({
 }) {
   const readiness = getReadiness(project)
   const slideCount = project.media?.proposalSlides?.length ?? 0
+  const cardCover = project.media?.cardCover ?? project.media?.cover
 
   return (
     <article className="admin-card overflow-hidden">
       <div className="grid gap-0 lg:grid-cols-[15rem_1fr]">
         <div className="relative min-h-44 border-b border-slate-200 bg-slate-100 lg:border-b-0 lg:border-r">
-          {project.media?.cover ? (
+          {cardCover ? (
             <img
-              src={project.media.cover.src}
-              alt={project.media.cover.alt}
+              src={cardCover.src}
+              alt={cardCover.alt}
               className="h-full min-h-44 w-full object-cover"
               style={{
-                objectPosition: `${project.media.cover.focalPoint?.x ?? 50}% ${project.media.cover.focalPoint?.y ?? 50}%`,
+                objectPosition: `${cardCover.focalPoint?.x ?? 50}% ${cardCover.focalPoint?.y ?? 50}%`,
               }}
             />
           ) : (

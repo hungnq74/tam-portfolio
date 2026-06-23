@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest"
+import { PORTFOLIO_CONTENT } from "@/data/portfolio"
 import {
   createLocalizedProjects,
   portfolioProjectSchema,
@@ -19,6 +20,70 @@ describe("portfolioProjectSchema", () => {
     )
 
     expect(result.success).toBe(true)
+  })
+
+  it("accepts caption-grid outreach sections", () => {
+    const result = portfolioProjectSchema.safeParse(
+      createProject("social-outreach", {
+        media: {
+          cover: testMedia.cover,
+          outreachSections: [
+            {
+              title: "Poetry & Creative Writing",
+              description:
+                "A place where I shamelessly flex my rhyming skills (without client's brief).",
+              displayMode: "caption-grid",
+              posts: [
+                {
+                  src: "/assets/projects/social-outreach/poetry-01.jpg",
+                  alt: "Poetry post from Thìa đầy thơ",
+                  width: 600,
+                  height: 608,
+                  caption: "Caption excerpt.",
+                },
+              ],
+            },
+          ],
+        },
+      }),
+    )
+
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts an optional card cover alongside the detail cover", () => {
+    const result = portfolioProjectSchema.safeParse(
+      createProject("tesla-education", {
+        media: {
+          cover: {
+            ...testMedia.cover,
+            src: "/assets/projects/tesla-education/detail-cover.jpg",
+            alt: "Tesla Education campus story project cover",
+          },
+          cardCover: {
+            ...testMedia.cover,
+            src: "/assets/projects/tesla-education/cover-wide.jpg",
+            alt: "Tesla Education horizontal campaign thumbnail",
+          },
+        },
+      }),
+    )
+
+    expect(result.success).toBe(true)
+  })
+
+  it("accepts grouped post campaigns for AEON-style always-on work", () => {
+    const aeonProject = PORTFOLIO_CONTENT.en.projects.find(
+      (project) => project.id === "aeon-vietnam",
+    )
+
+    expect(aeonProject).toBeDefined()
+    const result = portfolioProjectSchema.safeParse(aeonProject)
+
+    expect(result.success).toBe(true)
+    expect(aeonProject?.media?.postCampaigns?.[0].posts).toHaveLength(6)
+    expect(aeonProject?.media?.postCampaigns?.[1].sections?.[0].posts).toHaveLength(6)
+    expect(aeonProject?.media?.postCampaigns?.[1].sections?.[1].posts).toHaveLength(3)
   })
 })
 

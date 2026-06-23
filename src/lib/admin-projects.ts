@@ -54,15 +54,34 @@ const projectImageCampaignSchema = z.object({
   images: z.array(projectMediaAssetSchema).min(1).max(8),
 })
 
+const projectPostCampaignSectionSchema = z.object({
+  title: z.string().min(1).max(140),
+  description: z.string().min(1).max(500),
+  posts: z.array(projectMediaAssetSchema).min(1).max(12),
+})
+
+const projectPostCampaignSchema = z
+  .object({
+    title: z.string().min(1).max(140),
+    description: z.string().min(1).max(500),
+    posts: z.array(projectMediaAssetSchema).min(1).max(18).optional(),
+    sections: z.array(projectPostCampaignSectionSchema).min(1).max(6).optional(),
+  })
+  .refine(
+    (campaign) => Boolean(campaign.posts?.length || campaign.sections?.length),
+    "Post campaign must include posts or sections.",
+  )
+
 const projectOutreachSectionSchema = z.object({
   title: z.string().min(1).max(140),
   description: z.string().min(1).max(300),
-  displayMode: z.enum(["linked-posts", "caption-posts"]),
+  displayMode: z.enum(["linked-posts", "caption-posts", "caption-grid"]),
   posts: z.array(projectMediaAssetSchema).min(1).max(12),
 })
 
 export const projectMediaSchema = z.object({
   cover: projectMediaAssetSchema,
+  cardCover: projectMediaAssetSchema.optional(),
   introLayout: z.enum(["split-cover"]).optional(),
   summary: projectMediaAssetSchema.optional(),
   websitePreview: projectMediaAssetSchema.optional(),
@@ -74,6 +93,7 @@ export const projectMediaSchema = z.object({
   contentPosts: z.array(projectMediaAssetSchema).max(12).optional(),
   videoCampaigns: z.array(projectVideoCampaignSchema).max(6).optional(),
   imageCampaigns: z.array(projectImageCampaignSchema).max(6).optional(),
+  postCampaigns: z.array(projectPostCampaignSchema).max(6).optional(),
   outreachSections: z.array(projectOutreachSectionSchema).max(4).optional(),
 })
 
