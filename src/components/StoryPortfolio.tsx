@@ -1354,7 +1354,6 @@ function GallerySection({
     )
   }
 
-  const filters = [ui.allFilter, ...activeField.filters]
   const scopeCards = activeField.scopeCards ?? []
   const hasScopeCards = scopeCards.length > 0
   const showingScopeHub = hasScopeCards && activeFilter === ui.allFilter
@@ -1420,25 +1419,7 @@ function GallerySection({
                   <ArrowLeft className="h-4 w-4" />
                   {ui.gallery.backToScopes}
                 </button>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {filters.map((filter) => (
-                  <button
-                    key={filter}
-                    type="button"
-                    onClick={() => onFilter(filter)}
-                    className={cn(
-                      "rounded-full border px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] transition focus:outline-none focus:ring-2 focus:ring-gold",
-                      filter === activeFilter
-                        ? "border-gold bg-gold text-moss"
-                        : "border-paper/22 text-paper/76 hover:border-gold hover:text-paper",
-                    )}
-                  >
-                    {filter}
-                  </button>
-                  ))}
-                </div>
-              )}
+              ) : null}
             </ScrollReveal>
 
             {showingScopeHub ? (
