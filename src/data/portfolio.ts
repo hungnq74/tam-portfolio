@@ -757,9 +757,16 @@ const AEON_PROJECT_MEDIA: ProjectMedia = {
   cover: {
     src: "/assets/projects/aeon-vietnam/cover.png",
     alt: "AEON Vietnam always-on content horizontal cover",
-    width: 800,
-    height: 226,
-    sourceUrl: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTf3iZoDZXz-kj3vzbVtEMKWfUsrn61pxwzvtA0iGXvs9DlMVM-YxvqUHek&s=10",
+    width: 2400,
+    height: 760,
+    sourceUrl: "https://www.aeon.com.vn/wp-content/themes/aeon/images/logo_en.svg",
+  },
+  cardCover: {
+    src: "/assets/projects/aeon-vietnam/card-cover.jpg",
+    alt: "AEON Vietnam logo thumbnail",
+    width: 1600,
+    height: 1000,
+    sourceUrl: "https://www.aeon.com.vn/wp-content/themes/aeon/images/logo_en.svg",
   },
   postCampaigns: [
     {

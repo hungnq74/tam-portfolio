@@ -1398,10 +1398,7 @@ function GallerySection({
                   <ArrowLeft className="h-4 w-4" />
                   {ui.gallery.back}
                 </button>
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-gold">
-                  {ui.gallery.eyebrow}
-                </p>
-                <h2 className="mt-2 font-serif text-[clamp(2.4rem,5vw,5rem)] font-semibold leading-none">
+                <h2 className="font-serif text-[clamp(2.4rem,5vw,5rem)] font-semibold leading-none">
                   {galleryTitle}
                 </h2>
                 {gallerySubheading ? (
@@ -1418,7 +1415,7 @@ function GallerySection({
                 <button
                   type="button"
                   onClick={() => onFilter(ui.allFilter)}
-                  className="inline-flex items-center gap-2 self-start rounded-full border border-paper/22 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-paper/78 transition hover:border-gold hover:text-paper focus:outline-none focus:ring-2 focus:ring-gold md:self-end"
+                  className="inline-flex items-center gap-2 self-start whitespace-nowrap rounded-full border border-paper/22 px-4 py-2 text-xs font-bold uppercase tracking-[0.12em] text-paper/78 transition hover:border-gold hover:text-paper focus:outline-none focus:ring-2 focus:ring-gold md:self-end"
                 >
                   <ArrowLeft className="h-4 w-4" />
                   {ui.gallery.backToScopes}

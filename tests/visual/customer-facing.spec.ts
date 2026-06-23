@@ -262,8 +262,8 @@ const portfolioGalleryRoutes: CustomerRoute[] = [
       },
       {
         kind: "image",
-        name: "AEON Vietnam always-on content horizontal cover",
-        label: "AEON gallery cover",
+        name: "AEON Vietnam logo thumbnail",
+        label: "AEON gallery logo thumbnail",
       },
     ],
   },
