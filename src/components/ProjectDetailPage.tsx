@@ -242,7 +242,12 @@ function MediaProjectPage({
   }
 
   return (
-    <main className="relative min-h-screen px-4 pb-24 pt-20 sm:px-6 sm:py-20 lg:px-10">
+    <main
+      className={cn(
+        "relative min-h-screen px-4 pt-20 sm:px-6 sm:pt-20 lg:px-10",
+        siblingNavigation ? "pb-6 sm:pb-8" : "pb-24 sm:pb-20",
+      )}
+    >
       <div className="mx-auto w-full max-w-7xl">
         <ProjectChrome ui={ui} field={field} project={project} />
 
@@ -441,7 +446,6 @@ function MediaProjectPage({
           ) : null}
 
           <ProjectSiblingNavigation
-            field={field}
             project={project}
             siblingNavigation={siblingNavigation}
           />
@@ -598,7 +602,12 @@ function ProjectSocialOutreachPage({
   siblingNavigation: ProjectSiblingNavigationData
 }) {
   return (
-    <main className="relative min-h-screen px-4 pb-24 pt-20 sm:px-6 sm:py-20 lg:px-10">
+    <main
+      className={cn(
+        "relative min-h-screen px-4 pt-20 sm:px-6 sm:pt-20 lg:px-10",
+        siblingNavigation ? "pb-6 sm:pb-8" : "pb-24 sm:pb-20",
+      )}
+    >
       <div className="mx-auto w-full max-w-7xl">
         <ProjectChrome ui={ui} field={field} project={project} />
 
@@ -637,7 +646,6 @@ function ProjectSocialOutreachPage({
           ))}
 
           <ProjectSiblingNavigation
-            field={field}
             project={project}
             siblingNavigation={siblingNavigation}
           />
@@ -1801,7 +1809,12 @@ function TextProjectPage({
   siblingNavigation: ProjectSiblingNavigationData
 }) {
   return (
-    <main className="relative flex min-h-screen items-center px-4 pb-24 pt-20 sm:px-6 sm:py-20 lg:px-10">
+    <main
+      className={cn(
+        "relative flex min-h-screen items-center px-4 pt-20 sm:px-6 sm:pt-20 lg:px-10",
+        siblingNavigation ? "pb-6 sm:pb-8" : "pb-24 sm:pb-20",
+      )}
+    >
       <div className="mx-auto w-full max-w-6xl">
         <ProjectChrome ui={ui} field={field} project={project} />
         <StoryFrame className="overflow-hidden p-5 sm:p-7 lg:p-9">
@@ -1852,7 +1865,6 @@ function TextProjectPage({
         </StoryFrame>
         <div className="mt-12 sm:mt-16">
           <ProjectSiblingNavigation
-            field={field}
             project={project}
             siblingNavigation={siblingNavigation}
           />
@@ -1863,11 +1875,9 @@ function TextProjectPage({
 }
 
 function ProjectSiblingNavigation({
-  field,
   project,
   siblingNavigation,
 }: {
-  field: Field
   project: Project
   siblingNavigation: ProjectSiblingNavigationData
 }) {
@@ -1875,7 +1885,10 @@ function ProjectSiblingNavigation({
 
   return (
     <nav
-      className={cn(PROJECT_FOOTER_NAV_CLASS, "py-10 sm:py-12 lg:py-14")}
+      className={cn(
+        PROJECT_FOOTER_NAV_CLASS,
+        "pb-2 pt-8 sm:pb-3 sm:pt-9 lg:pb-4 lg:pt-10",
+      )}
       aria-label={`More in ${project.category}`}
     >
       <div className="relative border-t border-gold/55">
@@ -1892,7 +1905,6 @@ function ProjectSiblingNavigation({
 
         <div className="mt-7 grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:gap-6">
           <ProjectSiblingLink
-            field={field}
             project={siblingNavigation.previous}
             direction="previous"
           />
@@ -1906,7 +1918,6 @@ function ProjectSiblingNavigation({
           </div>
 
           <ProjectSiblingLink
-            field={field}
             project={siblingNavigation.next}
             direction="next"
           />
@@ -1917,16 +1928,13 @@ function ProjectSiblingNavigation({
 }
 
 function ProjectSiblingLink({
-  field,
   project,
   direction,
 }: {
-  field: Field
   project: Project
   direction: "previous" | "next"
 }) {
   const isPrevious = direction === "previous"
-  const thumbnail = project.media?.cardCover ?? project.media?.cover
   const label = isPrevious ? "Previous project" : "Next project"
 
   return (
@@ -1936,16 +1944,12 @@ function ProjectSiblingLink({
       className={cn(
         "group grid items-center gap-3 rounded-[8px] px-2 py-2 transition hover:bg-paper/55 focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper sm:gap-4",
         isPrevious
-          ? "grid-cols-[auto_auto_1fr] text-left"
-          : "grid-cols-[1fr_auto_auto] text-right",
+          ? "grid-cols-[auto_1fr] text-left"
+          : "grid-cols-[1fr_auto] text-right",
       )}
     >
       {isPrevious ? (
         <ArrowLeft className="h-6 w-6 shrink-0 text-clay transition group-hover:-translate-x-0.5 group-hover:text-moss sm:h-7 sm:w-7" />
-      ) : null}
-
-      {isPrevious ? (
-        <ProjectSiblingThumbnail field={field} project={project} asset={thumbnail} />
       ) : null}
 
       <span className={cn("min-w-0", isPrevious ? "" : "lg:order-1")}>
@@ -1958,58 +1962,9 @@ function ProjectSiblingLink({
       </span>
 
       {!isPrevious ? (
-        <ProjectSiblingThumbnail
-          field={field}
-          project={project}
-          asset={thumbnail}
-          className="lg:order-2"
-        />
-      ) : null}
-
-      {!isPrevious ? (
-        <ArrowRight className="h-6 w-6 shrink-0 justify-self-end text-clay transition group-hover:translate-x-0.5 group-hover:text-moss sm:h-7 sm:w-7 lg:order-3" />
+        <ArrowRight className="h-6 w-6 shrink-0 justify-self-end text-clay transition group-hover:translate-x-0.5 group-hover:text-moss sm:h-7 sm:w-7 lg:order-2" />
       ) : null}
     </Link>
-  )
-}
-
-function ProjectSiblingThumbnail({
-  field,
-  project,
-  asset,
-  className,
-}: {
-  field: Field
-  project: Project
-  asset?: ProjectMediaAsset
-  className?: string
-}) {
-  return (
-    <span
-      className={cn(
-        "relative block aspect-[16/10] w-20 overflow-hidden border border-gold/45 bg-paper shadow-[0_8px_20px_rgba(45,32,21,0.1)] sm:w-28 lg:w-32",
-        className,
-      )}
-    >
-      {asset ? (
-        <img
-          src={asset.src}
-          alt=""
-          width={asset.width}
-          height={asset.height}
-          loading="lazy"
-          decoding="async"
-          className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
-          style={{
-            objectPosition: asset.focalPoint
-              ? `${asset.focalPoint.x}% ${asset.focalPoint.y}%`
-              : "50% 50%",
-          }}
-        />
-      ) : (
-        <ThumbnailArt field={field} project={project} className="absolute inset-0" />
-      )}
-    </span>
   )
 }
 
