@@ -40,6 +40,32 @@ const MEDIA_RAIL_CLASS =
   "relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 sm:w-[calc(100vw-3rem)] lg:w-[min(calc(100vw-6rem),1440px)]"
 const CAROUSEL_RAIL_CLASS =
   "relative left-1/2 w-[calc(100vw-2rem)] -translate-x-1/2 sm:w-[calc(100vw-3rem)] lg:w-[min(calc(100vw-10rem),1440px)] xl:w-[min(calc(100vw-18rem),1440px)]"
+const PROJECT_FOOTER_NAV_CLASS =
+  "relative left-1/2 w-screen -translate-x-1/2"
+
+type ProjectSiblingNavigationData = {
+  previous: Project
+  next: Project
+} | null
+
+function getProjectSiblingNavigation(
+  project: Project,
+  projects: Project[],
+): ProjectSiblingNavigationData {
+  const siblings = projects.filter(
+    (item) => item.fieldId === project.fieldId && item.category === project.category,
+  )
+
+  if (siblings.length <= 1) return null
+
+  const currentIndex = siblings.findIndex((item) => item.id === project.id)
+  if (currentIndex < 0) return null
+
+  return {
+    previous: siblings[(currentIndex - 1 + siblings.length) % siblings.length],
+    next: siblings[(currentIndex + 1) % siblings.length],
+  }
+}
 
 export function ProjectDetailPage({
   projectId,
@@ -54,6 +80,9 @@ export function ProjectDetailPage({
   const project = projects.find((item) => item.id === projectId) ?? null
   const field = project
     ? fields.find((item) => item.id === project.fieldId) ?? null
+    : null
+  const siblingNavigation = project
+    ? getProjectSiblingNavigation(project, projects)
     : null
 
   if (!project || !field) return null
@@ -71,12 +100,14 @@ export function ProjectDetailPage({
           ui={ui}
           field={field}
           project={project}
+          siblingNavigation={siblingNavigation}
         />
       ) : (
         <TextProjectPage
           ui={ui}
           field={field}
           project={project}
+          siblingNavigation={siblingNavigation}
         />
       )}
     </div>
@@ -150,10 +181,12 @@ function MediaProjectPage({
   ui,
   field,
   project,
+  siblingNavigation,
 }: {
   ui: PortfolioUi
   field: Field
   project: Project
+  siblingNavigation: ProjectSiblingNavigationData
 }) {
   const media = project.media
   const slides = media?.proposalSlides ?? []
@@ -203,6 +236,7 @@ function MediaProjectPage({
         field={field}
         project={project}
         sections={outreachSections}
+        siblingNavigation={siblingNavigation}
       />
     )
   }
@@ -405,6 +439,12 @@ function MediaProjectPage({
           {project.closingNote ? (
             <ProjectClosingNote note={project.closingNote} />
           ) : null}
+
+          <ProjectSiblingNavigation
+            field={field}
+            project={project}
+            siblingNavigation={siblingNavigation}
+          />
         </article>
       </div>
     </main>
@@ -549,11 +589,13 @@ function ProjectSocialOutreachPage({
   field,
   project,
   sections,
+  siblingNavigation,
 }: {
   ui: PortfolioUi
   field: Field
   project: Project
   sections: ProjectOutreachSection[]
+  siblingNavigation: ProjectSiblingNavigationData
 }) {
   return (
     <main className="relative min-h-screen px-4 pb-24 pt-20 sm:px-6 sm:py-20 lg:px-10">
@@ -593,6 +635,12 @@ function ProjectSocialOutreachPage({
               nextLabel={ui.detail.nextSlide}
             />
           ))}
+
+          <ProjectSiblingNavigation
+            field={field}
+            project={project}
+            siblingNavigation={siblingNavigation}
+          />
         </article>
       </div>
     </main>
@@ -1745,10 +1793,12 @@ function TextProjectPage({
   ui,
   field,
   project,
+  siblingNavigation,
 }: {
   ui: PortfolioUi
   field: Field
   project: Project
+  siblingNavigation: ProjectSiblingNavigationData
 }) {
   return (
     <main className="relative flex min-h-screen items-center px-4 pb-24 pt-20 sm:px-6 sm:py-20 lg:px-10">
@@ -1800,8 +1850,166 @@ function TextProjectPage({
             </div>
           </div>
         </StoryFrame>
+        <div className="mt-12 sm:mt-16">
+          <ProjectSiblingNavigation
+            field={field}
+            project={project}
+            siblingNavigation={siblingNavigation}
+          />
+        </div>
       </div>
     </main>
+  )
+}
+
+function ProjectSiblingNavigation({
+  field,
+  project,
+  siblingNavigation,
+}: {
+  field: Field
+  project: Project
+  siblingNavigation: ProjectSiblingNavigationData
+}) {
+  if (!siblingNavigation) return null
+
+  return (
+    <nav
+      className={cn(PROJECT_FOOTER_NAV_CLASS, "py-10 sm:py-12 lg:py-14")}
+      aria-label={`More in ${project.category}`}
+    >
+      <div className="relative border-t border-gold/55">
+        <span
+          aria-hidden="true"
+          className="absolute left-1/2 top-0 h-2 w-2 -translate-x-1/2 -translate-y-1/2 rotate-45 bg-gold"
+        />
+      </div>
+
+      <div className="w-full px-4 pt-6 sm:px-8 sm:pt-7 lg:px-12 xl:px-16">
+        <p className="text-center font-serif text-base font-semibold text-gold sm:text-lg">
+          More in {project.category}
+        </p>
+
+        <div className="mt-7 grid gap-4 lg:grid-cols-[1fr_auto_1fr] lg:items-center lg:gap-6">
+          <ProjectSiblingLink
+            field={field}
+            project={siblingNavigation.previous}
+            direction="previous"
+          />
+
+          <div
+            aria-hidden="true"
+            className="hidden h-20 items-center justify-center lg:flex"
+          >
+            <div className="h-full w-px bg-gold/40" />
+            <span className="-ml-1 h-2 w-2 rotate-45 bg-gold" />
+          </div>
+
+          <ProjectSiblingLink
+            field={field}
+            project={siblingNavigation.next}
+            direction="next"
+          />
+        </div>
+      </div>
+    </nav>
+  )
+}
+
+function ProjectSiblingLink({
+  field,
+  project,
+  direction,
+}: {
+  field: Field
+  project: Project
+  direction: "previous" | "next"
+}) {
+  const isPrevious = direction === "previous"
+  const thumbnail = project.media?.cardCover ?? project.media?.cover
+  const label = isPrevious ? "Previous project" : "Next project"
+
+  return (
+    <Link
+      href={`/work/${project.id}`}
+      aria-label={`${label}: ${project.title}`}
+      className={cn(
+        "group grid items-center gap-3 rounded-[8px] px-2 py-2 transition hover:bg-paper/55 focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper sm:gap-4",
+        isPrevious
+          ? "grid-cols-[auto_auto_1fr] text-left"
+          : "grid-cols-[1fr_auto_auto] text-right",
+      )}
+    >
+      {isPrevious ? (
+        <ArrowLeft className="h-6 w-6 shrink-0 text-clay transition group-hover:-translate-x-0.5 group-hover:text-moss sm:h-7 sm:w-7" />
+      ) : null}
+
+      {isPrevious ? (
+        <ProjectSiblingThumbnail field={field} project={project} asset={thumbnail} />
+      ) : null}
+
+      <span className={cn("min-w-0", isPrevious ? "" : "lg:order-1")}>
+        <span className="block font-serif text-[clamp(1.65rem,2.7vw,2.85rem)] font-semibold leading-none text-moss transition group-hover:text-clay">
+          {project.title}
+        </span>
+        <span className="font-prose mt-1.5 block text-sm leading-6 text-ink/55 sm:text-base">
+          {label}
+        </span>
+      </span>
+
+      {!isPrevious ? (
+        <ProjectSiblingThumbnail
+          field={field}
+          project={project}
+          asset={thumbnail}
+          className="lg:order-2"
+        />
+      ) : null}
+
+      {!isPrevious ? (
+        <ArrowRight className="h-6 w-6 shrink-0 justify-self-end text-clay transition group-hover:translate-x-0.5 group-hover:text-moss sm:h-7 sm:w-7 lg:order-3" />
+      ) : null}
+    </Link>
+  )
+}
+
+function ProjectSiblingThumbnail({
+  field,
+  project,
+  asset,
+  className,
+}: {
+  field: Field
+  project: Project
+  asset?: ProjectMediaAsset
+  className?: string
+}) {
+  return (
+    <span
+      className={cn(
+        "relative block aspect-[16/10] w-20 overflow-hidden border border-gold/45 bg-paper shadow-[0_8px_20px_rgba(45,32,21,0.1)] sm:w-28 lg:w-32",
+        className,
+      )}
+    >
+      {asset ? (
+        <img
+          src={asset.src}
+          alt=""
+          width={asset.width}
+          height={asset.height}
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+          style={{
+            objectPosition: asset.focalPoint
+              ? `${asset.focalPoint.x}% ${asset.focalPoint.y}%`
+              : "50% 50%",
+          }}
+        />
+      ) : (
+        <ThumbnailArt field={field} project={project} className="absolute inset-0" />
+      )}
+    </span>
   )
 }
 

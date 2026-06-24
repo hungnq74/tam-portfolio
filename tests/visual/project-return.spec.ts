@@ -76,6 +76,32 @@ async function expectWritingScopeHub(page: Page, options?: { atTop?: boolean }) 
   expect(new URL(page.url()).pathname).toBe("/content/creative-copywriter")
 }
 
+async function expectHomeFieldChooser(page: Page) {
+  await page.waitForURL("**/#fields")
+
+  const url = new URL(page.url())
+  expect(url.pathname).toBe("/")
+  expect(url.hash).toBe("#fields")
+
+  const fieldsSection = page.locator('[data-section-id="fields"]')
+
+  await expect(fieldsSection).toHaveCount(1)
+  await expect(fieldsSection.getByText("Thinking in Systems", { exact: true })).toBeAttached()
+  await expect(fieldsSection.getByText("Writing with Intent", { exact: true })).toBeAttached()
+
+  await page.waitForFunction(
+    () => {
+      const fields = document.querySelector('[data-section-id="fields"]')
+      if (!fields) return false
+
+      const rect = fields.getBoundingClientRect()
+      return rect.top < window.innerHeight * 0.35 && rect.bottom > window.innerHeight * 0.65
+    },
+    undefined,
+    { timeout: 10_000 },
+  )
+}
+
 test.describe("project return navigation", () => {
   test("cold visits to the home page still start at the cover", async ({ page }) => {
     await openEnglishPage(page, "/")
@@ -97,6 +123,34 @@ test.describe("project return navigation", () => {
 
   for (const motionMode of ["default", "reduced"] as const) {
     test.describe(`${motionMode} motion`, () => {
+      test("Thinking content Back button returns to the home field chooser", async ({
+        page,
+      }) => {
+        await openEnglishPage(page, "/content/social-planner", motionMode)
+        await expectContentGallery(page, "Thinking in Systems")
+
+        await page
+          .locator('[data-section-id="gallery"]')
+          .getByRole("button", { name: "Back" })
+          .click()
+
+        await expectHomeFieldChooser(page)
+      })
+
+      test("Writing content Back button returns to the home field chooser", async ({
+        page,
+      }) => {
+        await openEnglishPage(page, "/content/creative-copywriter", motionMode)
+        await expectWritingScopeHub(page)
+
+        await page
+          .locator('[data-section-id="gallery"]')
+          .getByRole("button", { name: "Back" })
+          .click()
+
+        await expectHomeFieldChooser(page)
+      })
+
       test("browser Back from a content project restores the exact content route", async ({
         page,
       }) => {

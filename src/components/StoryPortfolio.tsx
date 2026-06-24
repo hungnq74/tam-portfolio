@@ -51,6 +51,7 @@ import { useReducedMotion } from "@/hooks/useReducedMotion"
 import {
   getContentHref,
   getContentScopeHref,
+  getHomeFieldsHref,
   getProjectReturnHref,
   projectReturnsToScopeHub,
   resolvePortfolioRouteState,
@@ -61,6 +62,7 @@ const REVEAL_EASE = [0.22, 1, 0.36, 1] as const
 const LOCKED_FIELD_GATE_SECTIONS = new Set<SectionId>(["gallery", "detail"])
 const LOCKED_SCOPE_GATE_SECTIONS = new Set<SectionId>(["detail"])
 const EMPTY_LOCKED_SECTIONS = new Set<SectionId>()
+const HOME_NAVIGATION_SECTIONS = new Set<SectionId>(["cover", "about", "fields"])
 const CHOICE_ADVANCE_BYPASS_MS = 1100
 
 type RevealPreset = "page-rise" | "ink-line" | "image-depth" | "card-cascade"
@@ -110,7 +112,12 @@ function hasExplicitPortfolioTarget() {
   if (typeof window === "undefined") return false
 
   const params = new URLSearchParams(window.location.search)
-  return Boolean(params.get("field") || params.get("project") || window.location.hash === "#gallery")
+  return Boolean(
+    params.get("field") ||
+      params.get("project") ||
+      window.location.hash === "#gallery" ||
+      window.location.hash === "#fields",
+  )
 }
 
 export function StoryPortfolio({
@@ -123,7 +130,7 @@ export function StoryPortfolio({
   const content = useMemo(() => contentByLocale[locale], [contentByLocale, locale])
   const { author, chapters: contentChapters, fields, projects, ui } = content
   const chapters = useMemo(
-    () => contentChapters.filter((chapter) => chapter.id !== "detail"),
+    () => contentChapters.filter((chapter) => HOME_NAVIGATION_SECTIONS.has(chapter.id)),
     [contentChapters],
   )
   const sectionRefs = useRef<Record<SectionId, HTMLElement | null>>({
@@ -685,8 +692,8 @@ export function PortfolioContentPage({
       ? selectedProject.id
       : null
   const setSectionRef = useCallback((_node: HTMLElement | null) => {}, [])
-  const goToContentEntry = useCallback(() => {
-    router.push(getContentHref())
+  const goToHomeFields = useCallback(() => {
+    router.push(getHomeFieldsHref())
   }, [router])
   const chooseField = useCallback(
     (fieldId: FieldId) => {
@@ -697,7 +704,7 @@ export function PortfolioContentPage({
   const chooseFilter = useCallback(
     (filter: string) => {
       if (!activeField) {
-        goToContentEntry()
+        goToHomeFields()
         return
       }
 
@@ -722,7 +729,7 @@ export function PortfolioContentPage({
           : getContentHref(activeField),
       )
     },
-    [activeField, activeProjects, goToContentEntry, router, ui.allFilter],
+    [activeField, activeProjects, goToHomeFields, router, ui.allFilter],
   )
   const getScopeHref = useCallback(
     (scope: FieldScopeCard) => {
@@ -753,9 +760,9 @@ export function PortfolioContentPage({
                 activeFilter={activeFilter}
                 filteredProjects={filteredProjects}
                 selectedProjectId={selectedProjectId}
-                onBack={goToContentEntry}
+                onBack={goToHomeFields}
                 onFilter={chooseFilter}
-                onChooseField={goToContentEntry}
+                onChooseField={goToHomeFields}
                 getScopeHref={getScopeHref}
               />
             ) : (

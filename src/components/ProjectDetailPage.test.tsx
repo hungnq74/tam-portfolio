@@ -173,6 +173,74 @@ describe("ProjectDetailPage", () => {
     expect(within(officeRegion).getByText(/ĐI LÀM CÓ/)).toBeInTheDocument()
   })
 
+  it("renders previous and next project navigation within the same scope", () => {
+    render(<ProjectDetailPage contentByLocale={PORTFOLIO_CONTENT} projectId="weshare" />)
+
+    const siblingNav = screen.getByRole("navigation", {
+      name: "More in Fanpage Always-on Content",
+    })
+
+    expect(within(siblingNav).getByText("More in Fanpage Always-on Content")).toBeInTheDocument()
+    expect(
+      within(siblingNav).getByRole("link", { name: "Previous project: Acecook" }),
+    ).toHaveAttribute("href", "/work/acecook")
+    expect(
+      within(siblingNav).getByRole("link", { name: "Next project: Panasonic" }),
+    ).toHaveAttribute("href", "/work/panasonic")
+    expect(within(siblingNav).getByText("Acecook")).toBeInTheDocument()
+    expect(within(siblingNav).getByText("Panasonic")).toBeInTheDocument()
+  })
+
+  it("wraps sibling project navigation at the start and end of a scope", () => {
+    const acecookRender = render(
+      <ProjectDetailPage contentByLocale={PORTFOLIO_CONTENT} projectId="acecook" />,
+    )
+
+    let siblingNav = screen.getByRole("navigation", {
+      name: "More in Fanpage Always-on Content",
+    })
+
+    expect(
+      within(siblingNav).getByRole("link", { name: "Previous project: AEON Vietnam" }),
+    ).toHaveAttribute("href", "/work/aeon-vietnam")
+
+    acecookRender.unmount()
+    window.localStorage.clear()
+    render(
+      <ProjectDetailPage contentByLocale={PORTFOLIO_CONTENT} projectId="aeon-vietnam" />,
+    )
+
+    siblingNav = screen.getByRole("navigation", {
+      name: "More in Fanpage Always-on Content",
+    })
+
+    expect(
+      within(siblingNav).getByRole("link", { name: "Next project: Acecook" }),
+    ).toHaveAttribute("href", "/work/acecook")
+  })
+
+  it("does not render sibling navigation for single-project scopes", () => {
+    const project = createProject("solo-project", {
+      title: "Solo project",
+      category: "Solo Scope",
+      media,
+    })
+    const contentByLocale = createPortfolioContentByLocale({
+      en: [project],
+      vi: [
+        createProject("solo-project", {
+          title: "Dự án solo",
+          category: "Scope solo",
+          media,
+        }),
+      ],
+    })
+
+    render(<ProjectDetailPage contentByLocale={contentByLocale} projectId="solo-project" />)
+
+    expect(screen.queryByRole("navigation", { name: /More in/i })).not.toBeInTheDocument()
+  })
+
   it("ignores stale Vietnamese locale storage and renders the English proposal CTA", async () => {
     window.localStorage.setItem(LOCALE_STORAGE_KEY, "vi")
     const project = createProject("demo-project", {

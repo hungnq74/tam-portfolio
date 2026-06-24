@@ -378,6 +378,24 @@ const projectTemplateRoutes: CustomerRoute[] = [
         value: "Student-led Campaigns",
         label: "WeShare student campaigns",
       },
+      {
+        kind: "role",
+        role: "navigation",
+        name: "More in Fanpage Always-on Content",
+        label: "WeShare same-scope navigation",
+      },
+      {
+        kind: "role",
+        role: "link",
+        name: "Previous project: Acecook",
+        label: "WeShare previous project link",
+      },
+      {
+        kind: "role",
+        role: "link",
+        name: "Next project: Panasonic",
+        label: "WeShare next project link",
+      },
     ],
   },
   {

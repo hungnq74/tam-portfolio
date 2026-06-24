@@ -11,7 +11,7 @@ export type VisualAnchor =
     }
   | {
       kind: "role"
-      role: "button" | "heading" | "link" | "region"
+      role: "button" | "heading" | "link" | "navigation" | "region"
       name: string | RegExp
       label?: string
     }

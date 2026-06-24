@@ -26,6 +26,10 @@ function withProjectQuery(href: string, projectId?: string | null) {
   return `${href}?${params.toString()}`
 }
 
+export function getHomeFieldsHref() {
+  return "/#fields"
+}
+
 export function getContentHref(field?: Field | FieldId | null) {
   if (!field) return "/content"
 
@@ -93,6 +97,8 @@ export function getLegacyPortfolioTargetHref({
   search?: string
   hash?: string
 }) {
+  if (hash === "#fields" && !search) return null
+
   const routeState = resolvePortfolioRouteState({
     allFilter,
     fields,
@@ -140,7 +146,9 @@ export function resolvePortfolioRouteState({
     : requestedFieldId
       ? fields.find((field) => field.id === requestedFieldId) ?? null
       : null
-  const hasExplicitTarget = Boolean(requestedProjectId || requestedFieldId || hash === "#gallery")
+  const hasExplicitTarget = Boolean(
+    requestedProjectId || requestedFieldId || hash === "#gallery" || hash === "#fields",
+  )
 
   if (!requestedField) {
     return {
