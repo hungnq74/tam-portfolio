@@ -102,6 +102,33 @@ async function expectHomeFieldChooser(page: Page) {
   )
 }
 
+async function expectHomeIntroPage(page: Page, { withHash = true }: { withHash?: boolean } = {}) {
+  if (withHash) {
+    await page.waitForURL("**/#about")
+
+    const url = new URL(page.url())
+    expect(url.pathname).toBe("/")
+    expect(url.hash).toBe("#about")
+  }
+
+  const aboutSection = page.locator('[data-section-id="about"]')
+
+  await expect(aboutSection).toHaveCount(1)
+  await expect(page.getByText(/Once upon a day/i)).toBeAttached()
+
+  await page.waitForFunction(
+    () => {
+      const about = document.querySelector('[data-section-id="about"]')
+      if (!about) return false
+
+      const rect = about.getBoundingClientRect()
+      return rect.top < window.innerHeight * 0.35 && rect.bottom > window.innerHeight * 0.65
+    },
+    undefined,
+    { timeout: 10_000 },
+  )
+}
+
 test.describe("project return navigation", () => {
   test("cold visits to the home page still start at the cover", async ({ page }) => {
     await openEnglishPage(page, "/")
@@ -119,6 +146,45 @@ test.describe("project return navigation", () => {
 
     expect(position.scrollY).toBe(0)
     expect(position.coverTop).toBe(0)
+    await expect(
+      page.getByRole("navigation", { name: "Primary portfolio navigation" }),
+    ).toHaveCount(0)
+  })
+
+  test("global top nav jumps between home, work, and me routes", async ({ page }) => {
+    await openEnglishPage(page, "/")
+    await expect(
+      page.getByRole("navigation", { name: "Primary portfolio navigation" }),
+    ).toHaveCount(0)
+
+    await page.getByRole("button", { name: "Scroll to the introduction page" }).click()
+    await expectHomeIntroPage(page, { withHash: false })
+    await expect(
+      page.getByRole("navigation", { name: "Primary portfolio navigation" }),
+    ).toBeVisible()
+
+    await openEnglishPage(page, "/work/weshare")
+    await page.getByRole("link", { name: "HOME", exact: true }).click()
+    await expectHomeIntroPage(page)
+
+    await openEnglishPage(page, "/work/weshare")
+
+    await page.getByRole("link", { name: "WORK", exact: true }).click()
+    await expectHomeFieldChooser(page)
+
+    await openEnglishPage(
+      page,
+      "/content/creative-copywriter/scope/fanpage-always-on-content",
+    )
+    await page.getByRole("link", { name: "HOME", exact: true }).click()
+    await expectHomeIntroPage(page)
+
+    await page.getByRole("link", { name: "ME", exact: true }).click()
+    await page.waitForURL("**/myth")
+    await expect(page.getByText(/THE WORLD MAKES MORE SENSE THAN IT SEEMS/i)).toBeAttached()
+
+    await page.getByRole("link", { name: "WORK", exact: true }).click()
+    await expectHomeFieldChooser(page)
   })
 
   for (const motionMode of ["default", "reduced"] as const) {

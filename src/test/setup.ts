@@ -20,6 +20,7 @@ vi.mock("next/navigation", async () => {
 
   return {
     useRouter: () => router,
+    usePathname: () => window.location.pathname,
     redirect,
     notFound,
   }

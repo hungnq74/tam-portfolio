@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { useState } from "react"
 import { ArrowLeft, ArrowRight, BookOpen, Check, Copy, Feather, Mail, Phone, Sparkles } from "lucide-react"
+import { GlobalPortfolioNav } from "@/components/GlobalPortfolioNav"
 import { LocaleToggle } from "@/components/LocaleToggle"
 import { getPortfolioContent, MYTH_CONTENT } from "@/data/portfolio"
 import { useLocale } from "@/hooks/useLocale"
@@ -32,6 +33,7 @@ export function MythPage() {
 
     return (
       <main className="story-texture min-h-screen overflow-x-clip px-4 pb-24 pt-24 sm:px-6 lg:px-[5.5rem]">
+        <GlobalPortfolioNav />
         <LocaleToggle
           locale={locale}
           ariaLabel={portfolio.ui.languageToggleAria}
@@ -265,6 +267,7 @@ export function MythPage() {
 
   return (
     <main className="story-texture min-h-screen overflow-x-clip px-4 py-24 sm:px-6 lg:px-[5.5rem]">
+      <GlobalPortfolioNav />
       <LocaleToggle
         locale={locale}
         ariaLabel={portfolio.ui.languageToggleAria}

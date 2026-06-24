@@ -30,6 +30,10 @@ export function getHomeFieldsHref() {
   return "/#fields"
 }
 
+export function getHomeAboutHref() {
+  return "/#about"
+}
+
 export function getContentHref(field?: Field | FieldId | null) {
   if (!field) return "/content"
 
@@ -97,7 +101,7 @@ export function getLegacyPortfolioTargetHref({
   search?: string
   hash?: string
 }) {
-  if (hash === "#fields" && !search) return null
+  if ((hash === "#fields" || hash === "#about") && !search) return null
 
   const routeState = resolvePortfolioRouteState({
     allFilter,
@@ -147,8 +151,22 @@ export function resolvePortfolioRouteState({
       ? fields.find((field) => field.id === requestedFieldId) ?? null
       : null
   const hasExplicitTarget = Boolean(
-    requestedProjectId || requestedFieldId || hash === "#gallery" || hash === "#fields",
+    requestedProjectId ||
+      requestedFieldId ||
+      hash === "#gallery" ||
+      hash === "#fields" ||
+      hash === "#about",
   )
+
+  if (hash === "#about" && !requestedProjectId && !requestedFieldId) {
+    return {
+      selectedFieldId: null,
+      activeFilter: allFilter,
+      selectedProjectId: null,
+      targetSection: "about",
+      hasExplicitTarget,
+    }
+  }
 
   if (!requestedField) {
     return {

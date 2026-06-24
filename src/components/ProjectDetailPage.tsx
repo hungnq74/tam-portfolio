@@ -31,6 +31,7 @@ import {
   type ProjectProposalCta,
   type ProjectVideoCampaign,
 } from "@/data/portfolio"
+import { GlobalPortfolioNav } from "@/components/GlobalPortfolioNav"
 import { LocaleToggle } from "@/components/LocaleToggle"
 import { useLocale } from "@/hooks/useLocale"
 import { getProjectReturnHref } from "@/lib/portfolio-route-state"
@@ -89,6 +90,7 @@ export function ProjectDetailPage({
 
   return (
     <div className="story-texture min-h-screen overflow-x-clip pb-24">
+      <GlobalPortfolioNav />
       <LocaleToggle
         locale={locale}
         ariaLabel={ui.languageToggleAria}

@@ -3,6 +3,7 @@ import { PORTFOLIO_CONTENT } from "@/data/portfolio"
 import {
   getContentHref,
   getContentScopeHref,
+  getHomeAboutHref,
   getHomeFieldsHref,
   getLegacyPortfolioTargetHref,
   getPortfolioGalleryHref,
@@ -63,6 +64,16 @@ describe("resolvePortfolioRouteState", () => {
       activeFilter: "All",
       selectedProjectId: null,
       targetSection: "fields",
+      hasExplicitTarget: true,
+    })
+  })
+
+  it("restores the homepage intro from the about hash", () => {
+    expect(resolveEn("", "#about")).toMatchObject({
+      selectedFieldId: null,
+      activeFilter: "All",
+      selectedProjectId: null,
+      targetSection: "about",
       hasExplicitTarget: true,
     })
   })
@@ -165,6 +176,7 @@ describe("portfolio gallery href helpers", () => {
   })
 
   it("builds content entry and scope URLs from stable ids", () => {
+    expect(getHomeAboutHref()).toBe("/#about")
     expect(getHomeFieldsHref()).toBe("/#fields")
     expect(getContentHref()).toBe("/content")
     expect(getContentHref("creative-copywriter")).toBe("/content/creative-copywriter")
@@ -200,6 +212,7 @@ describe("portfolio gallery href helpers", () => {
     )
     expect(resolveLegacy("")).toBe("/content")
     expect(resolveLegacy("", "")).toBeNull()
+    expect(resolveLegacy("", "#about")).toBeNull()
     expect(resolveLegacy("", "#fields")).toBeNull()
   })
 

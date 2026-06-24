@@ -44,6 +44,7 @@ import {
   type ProjectMediaAsset,
   type SectionId,
 } from "@/data/portfolio"
+import { GlobalPortfolioNav } from "@/components/GlobalPortfolioNav"
 import { getLenis } from "@/components/LenisProvider"
 import { LocaleToggle } from "@/components/LocaleToggle"
 import { useLocale } from "@/hooks/useLocale"
@@ -113,9 +114,10 @@ function hasExplicitPortfolioTarget() {
 
   const params = new URLSearchParams(window.location.search)
   return Boolean(
-    params.get("field") ||
+      params.get("field") ||
       params.get("project") ||
       window.location.hash === "#gallery" ||
+      window.location.hash === "#about" ||
       window.location.hash === "#fields",
   )
 }
@@ -582,6 +584,7 @@ export function StoryPortfolio({
     <MotionPreferenceContext.Provider value={reducedMotion}>
       <RouteRestoreContext.Provider value={routeRestoreNonce}>
         <div className="story-texture min-h-screen overflow-x-clip">
+          <GlobalPortfolioNav visible={activeSection !== "cover"} />
           <LocaleToggle
             locale={locale}
             ariaLabel={ui.languageToggleAria}
@@ -745,6 +748,7 @@ export function PortfolioContentPage({
     <MotionPreferenceContext.Provider value={reducedMotion}>
       <RouteRestoreContext.Provider value={0}>
         <div className="story-texture min-h-screen overflow-x-clip">
+          <GlobalPortfolioNav />
           <LocaleToggle
             locale={locale}
             ariaLabel={ui.languageToggleAria}
