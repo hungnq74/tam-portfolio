@@ -6,9 +6,11 @@ import { RefreshCw } from "lucide-react"
 
 export function AdminManifestRefreshNotice({
   created = false,
+  deleted = false,
   error,
 }: {
   created?: boolean
+  deleted?: boolean
   error?: string
 }) {
   const router = useRouter()
@@ -31,7 +33,11 @@ export function AdminManifestRefreshNotice({
         </span>
         <div className="min-w-0">
           <p className="admin-kicker mb-2">
-            {created ? "Project saved" : "Content is refreshing"}
+            {created
+              ? "Project saved"
+              : deleted
+                ? "Project deleted"
+                : "Content is refreshing"}
           </p>
           <h2 className="text-xl font-semibold tracking-normal text-[rgb(var(--ink))]">
             Waiting for the admin content index
@@ -39,7 +45,9 @@ export function AdminManifestRefreshNotice({
           <p className="admin-subtle mt-2 max-w-2xl text-sm leading-6">
             {created
               ? "Your project was saved. Vercel Blob is still refreshing the admin manifest, so this page will retry automatically."
-              : "The admin manifest is refreshing. This page will retry automatically instead of showing a 404."}
+              : deleted
+                ? "Your project was deleted. Vercel Blob is still refreshing the admin manifest, so this list will retry automatically."
+                : "The admin manifest is refreshing. This page will retry automatically instead of showing a 404."}
           </p>
           {error ? (
             <p className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium leading-5 text-slate-600">

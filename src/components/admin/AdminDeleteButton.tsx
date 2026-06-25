@@ -41,7 +41,8 @@ export function AdminDeleteButton({
       }
 
       if (redirectTo) {
-        router.push(redirectTo)
+        const separator = redirectTo.includes("?") ? "&" : "?"
+        router.push(`${redirectTo}${separator}deleted=1`)
       } else {
         router.refresh()
       }

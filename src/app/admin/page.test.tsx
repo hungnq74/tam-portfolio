@@ -13,6 +13,8 @@ vi.mock("@/lib/admin-auth", () => ({
 }))
 
 vi.mock("@/lib/portfolio-manifest", () => ({
+  BLOB_MANIFEST_CACHE_REFRESHING_MESSAGE:
+    "Blob manifest cache is still refreshing. Please wait a few seconds and try again.",
   readAdminPortfolioSnapshot: mocks.readAdminPortfolioSnapshot,
 }))
 
@@ -50,5 +52,34 @@ describe("AdminPage", () => {
     expect(screen.queryByText(/Bản nháp Writing/)).not.toBeInTheDocument()
     expect(screen.queryByText("social-planner")).not.toBeInTheDocument()
     expect(screen.queryByText("Campaign")).not.toBeInTheDocument()
+  })
+
+  it("shows a delete refresh notice instead of a fatal error during Blob cache propagation", async () => {
+    mocks.readAdminPortfolioSnapshot.mockResolvedValue(
+      createSnapshot({
+        projects: [createProject("thinking-project", { title: "Thinking Launch" })],
+        error:
+          "Blob manifest cache is still refreshing. Please wait a few seconds and try again.",
+      }),
+    )
+
+    render(
+      await AdminPage({
+        searchParams: Promise.resolve({ deleted: "1" }),
+      }),
+    )
+
+    expect(screen.getByText("Project deleted")).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        "Your project was deleted. Vercel Blob is still refreshing the admin manifest, so this list will retry automatically.",
+      ),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByText(
+        "Unable to read Blob manifest: Blob manifest cache is still refreshing. Please wait a few seconds and try again.",
+      ),
+    ).not.toBeInTheDocument()
+    expect(screen.getByText("Thinking Launch")).toBeInTheDocument()
   })
 })

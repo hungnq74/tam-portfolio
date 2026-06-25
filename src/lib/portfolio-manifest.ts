@@ -25,6 +25,8 @@ import {
 } from "@/lib/admin-projects"
 
 export const PORTFOLIO_MANIFEST_PATH = "portfolio/content.json"
+export const BLOB_MANIFEST_CACHE_REFRESHING_MESSAGE =
+  "Blob manifest cache is still refreshing. Please wait a few seconds and try again."
 
 export interface PortfolioSnapshot {
   contentByLocale: PortfolioContentByLocale
@@ -68,12 +70,15 @@ async function resolveFreshManifestEtag(cachedEtag: string) {
   const metadata = await head(PORTFOLIO_MANIFEST_PATH)
 
   if (normalizeBlobEtag(metadata.etag) !== normalizeBlobEtag(cachedEtag)) {
-    throw new Error(
-      "Blob manifest cache is still refreshing. Please wait a few seconds and try again.",
-    )
+    return {
+      error: BLOB_MANIFEST_CACHE_REFRESHING_MESSAGE,
+      etag: metadata.etag,
+    }
   }
 
-  return metadata.etag
+  return {
+    etag: metadata.etag,
+  }
 }
 
 function contentFromManifest(manifest: PortfolioManifest) {
@@ -198,15 +203,16 @@ export async function readPortfolioSnapshot({
     }
 
     const hydratedManifest = hydrateManifestProjectDefaults(parsed.data)
-    const etag = fresh
+    const freshness = fresh
       ? await resolveFreshManifestEtag(result.blob.etag)
-      : result.blob.etag
+      : { etag: result.blob.etag }
 
     return {
       contentByLocale: contentFromManifest(hydratedManifest),
       manifest: hydratedManifest,
-      etag,
+      etag: freshness.etag,
       configured: true,
+      error: freshness.error,
     }
   } catch (error) {
     return {

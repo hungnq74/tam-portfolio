@@ -100,8 +100,11 @@ describe("portfolio manifest Blob reads", () => {
 
     const snapshot = await readAdminPortfolioSnapshot()
 
+    expect(snapshot.etag).toBe('"new-etag"')
+    expect(snapshot.contentByLocale.en.projects.some((project) => project.id === "axe"))
+      .toBe(true)
     expect(snapshot.error).toBe(
-      "Unable to read Blob manifest: Blob manifest cache is still refreshing. Please wait a few seconds and try again.",
+      "Blob manifest cache is still refreshing. Please wait a few seconds and try again.",
     )
   })
 })

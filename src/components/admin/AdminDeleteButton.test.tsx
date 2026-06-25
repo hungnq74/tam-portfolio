@@ -79,6 +79,6 @@ describe("AdminDeleteButton", () => {
 
     await user.click(screen.getByRole("button", { name: /delete/i }))
 
-    expect(router.push).toHaveBeenCalledWith("/admin")
+    expect(router.push).toHaveBeenCalledWith("/admin?deleted=1")
   })
 })

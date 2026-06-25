@@ -4,9 +4,13 @@ import { Edit3, FileImage, FileText, Plus, Settings } from "lucide-react"
 import { AdminPageHeader, AdminPageShell } from "@/components/admin/AdminChrome"
 import { AdminDeleteButton } from "@/components/admin/AdminDeleteButton"
 import { AdminLogoutButton } from "@/components/admin/AdminLogoutButton"
+import { AdminManifestRefreshNotice } from "@/components/admin/AdminManifestRefreshNotice"
 import { requireAdmin } from "@/lib/admin-auth"
 import { isAdminManagedProject } from "@/lib/admin-projects"
-import { readAdminPortfolioSnapshot } from "@/lib/portfolio-manifest"
+import {
+  BLOB_MANIFEST_CACHE_REFRESHING_MESSAGE,
+  readAdminPortfolioSnapshot,
+} from "@/lib/portfolio-manifest"
 import type { Project } from "@/data/portfolio"
 
 export const dynamic = "force-dynamic"
@@ -15,11 +19,20 @@ export const metadata: Metadata = {
   title: "Admin - Minh Tam Portfolio",
 }
 
-export default async function AdminPage() {
+type AdminPageProps = {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>
+}
+
+export default async function AdminPage({ searchParams }: AdminPageProps = {}) {
   await requireAdmin()
+  const query = searchParams ? await searchParams : {}
+  const deleted = query.deleted === "1"
   const snapshot = await readAdminPortfolioSnapshot()
   const projects = snapshot.contentByLocale.en.projects.filter(
     isAdminManagedProject,
+  )
+  const cacheRefreshing = snapshot.error?.includes(
+    BLOB_MANIFEST_CACHE_REFRESHING_MESSAGE,
   )
 
   return (
@@ -45,7 +58,11 @@ export default async function AdminPage() {
       {!snapshot.configured ? (
         <AdminBanner message="BLOB_READ_WRITE_TOKEN is missing. Public pages are using static fallback content, and admin changes are disabled." />
       ) : null}
-      {snapshot.error ? (
+      {cacheRefreshing ? (
+        <div className="mb-5">
+          <AdminManifestRefreshNotice deleted={deleted} error={snapshot.error} />
+        </div>
+      ) : snapshot.error ? (
         <AdminBanner message={snapshot.error} tone="error" />
       ) : null}
 
