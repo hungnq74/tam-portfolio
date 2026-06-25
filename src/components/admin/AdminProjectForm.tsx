@@ -365,6 +365,7 @@ export function AdminProjectForm({
         error?: string
         details?: string[]
         etag?: string
+        projectId?: string
         warning?: string
       } | null
 
@@ -381,7 +382,7 @@ export function AdminProjectForm({
       setMessage(result?.warning ?? "Project saved.")
 
       if (mode === "create") {
-        router.push(`/admin/projects/${projectId}`)
+        router.push(`/admin/projects/${result?.projectId ?? projectId}?created=1`)
       } else {
         router.refresh()
       }

@@ -7,7 +7,6 @@ import {
 import { requireAdminRequest } from "@/lib/admin-auth"
 import {
   addProjectToManifest,
-  assertExpectedEtag,
   ManifestConflictError,
   readAdminPortfolioSnapshot,
   savePortfolioManifest,
@@ -46,16 +45,6 @@ export async function POST(request: NextRequest) {
 
   if (writableError) {
     return jsonError(writableError, 503)
-  }
-
-  try {
-    assertExpectedEtag(snapshot, parsed.payload.expectedEtag)
-  } catch (error) {
-    if (error instanceof ManifestConflictError) {
-      return jsonError(error.message, 409)
-    }
-
-    throw error
   }
 
   const projectId = parsed.payload.shared.id

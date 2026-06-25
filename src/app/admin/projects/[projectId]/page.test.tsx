@@ -70,4 +70,32 @@ describe("EditProjectPage", () => {
       }),
     ).rejects.toThrow("NEXT_NOT_FOUND")
   })
+
+  it("shows a refresh notice instead of a 404 when a saved project is still propagating", async () => {
+    mocks.readAdminPortfolioSnapshot.mockResolvedValue(
+      createSnapshot({
+        projects: [],
+        viProjects: [],
+        error:
+          "Unable to read Blob manifest: Blob manifest cache is still refreshing. Please wait a few seconds and try again.",
+      }),
+    )
+
+    render(
+      await EditProjectPage({
+        params: Promise.resolve({ projectId: "new-project" }),
+        searchParams: Promise.resolve({ created: "1" }),
+      }),
+    )
+
+    expect(
+      screen.getByRole("heading", { name: "Project saved" }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        "Your project was saved. Vercel Blob is still refreshing the admin manifest, so this page will retry automatically.",
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByText("/new-project")).toBeInTheDocument()
+  })
 })

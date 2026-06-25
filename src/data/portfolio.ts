@@ -1298,6 +1298,8 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
           "Look beyond the surface. Break down what drives decisions and shapes behavior.",
         body:
           "Look beyond the surface. Break down what drives decisions and shapes behavior.",
+        scopeIntro:
+          "I look beyond what people do to understand why they do it.",
         image: "/assets/storybook/thinking-systems-field.png",
         imageAlt: "",
         sheetImage: SHARED_FIELD_ASSETS.social.sheetImage,
@@ -1779,6 +1781,8 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
           "Nơi ý tưởng bắt đầu - qua insight, cấu trúc và định hướng có chủ đích.",
         body:
           "Nơi ý tưởng bắt đầu - qua insight, cấu trúc và định hướng có chủ đích.",
+        scopeIntro:
+          "I look beyond what people do to understand why they do it.",
         image: SHARED_FIELD_ASSETS.social.image,
         imageAlt: "Minh họa lĩnh vực The Thinking",
         sheetImage: SHARED_FIELD_ASSETS.social.sheetImage,

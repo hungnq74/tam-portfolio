@@ -4,6 +4,7 @@ import {
   BlobPreconditionFailedError,
   del,
   get,
+  head,
   put,
   type PutBlobResult,
 } from "@vercel/blob"
@@ -33,6 +34,10 @@ export interface PortfolioSnapshot {
   error?: string
 }
 
+interface ReadPortfolioSnapshotOptions {
+  fresh?: boolean
+}
+
 export class ManifestConflictError extends Error {
   constructor() {
     super("Portfolio content changed in another tab. Refresh and try again.")
@@ -53,6 +58,22 @@ function getSeedManifest() {
 
 async function streamToText(stream: ReadableStream<Uint8Array>) {
   return new Response(stream).text()
+}
+
+function normalizeBlobEtag(etag: string) {
+  return etag.replace(/^W\//, "")
+}
+
+async function resolveFreshManifestEtag(cachedEtag: string) {
+  const metadata = await head(PORTFOLIO_MANIFEST_PATH)
+
+  if (normalizeBlobEtag(metadata.etag) !== normalizeBlobEtag(cachedEtag)) {
+    throw new Error(
+      "Blob manifest cache is still refreshing. Please wait a few seconds and try again.",
+    )
+  }
+
+  return metadata.etag
 }
 
 function contentFromManifest(manifest: PortfolioManifest) {
@@ -125,7 +146,9 @@ export function hydrateManifestProjectDefaults(manifest: PortfolioManifest): Por
   }
 }
 
-export async function readPortfolioSnapshot(): Promise<PortfolioSnapshot> {
+export async function readPortfolioSnapshot({
+  fresh = false,
+}: ReadPortfolioSnapshotOptions = {}): Promise<PortfolioSnapshot> {
   const seedManifest = getSeedManifest()
 
   if (!hasBlobConfig()) {
@@ -140,7 +163,17 @@ export async function readPortfolioSnapshot(): Promise<PortfolioSnapshot> {
   }
 
   try {
-    const result = await get(PORTFOLIO_MANIFEST_PATH, { access: "public" })
+    const result = await get(PORTFOLIO_MANIFEST_PATH, {
+      access: "public",
+      ...(fresh
+        ? {
+            headers: {
+              "Cache-Control": "no-cache",
+              Pragma: "no-cache",
+            },
+          }
+        : {}),
+    })
 
     if (!result || result.statusCode !== 200 || !result.stream) {
       return {
@@ -165,11 +198,14 @@ export async function readPortfolioSnapshot(): Promise<PortfolioSnapshot> {
     }
 
     const hydratedManifest = hydrateManifestProjectDefaults(parsed.data)
+    const etag = fresh
+      ? await resolveFreshManifestEtag(result.blob.etag)
+      : result.blob.etag
 
     return {
       contentByLocale: contentFromManifest(hydratedManifest),
       manifest: hydratedManifest,
-      etag: result.blob.etag,
+      etag,
       configured: true,
     }
   } catch (error) {
@@ -187,7 +223,7 @@ export async function readPortfolioSnapshot(): Promise<PortfolioSnapshot> {
 }
 
 export async function readAdminPortfolioSnapshot() {
-  const snapshot = await readPortfolioSnapshot()
+  const snapshot = await readPortfolioSnapshot({ fresh: true })
 
   if (!snapshot.configured) {
     return snapshot

@@ -108,17 +108,22 @@ describe("admin project create API", () => {
     })
   })
 
-  it("returns a conflict for stale etags", async () => {
-    mocks.assertExpectedEtag.mockImplementation(() => {
-      throw new mocks.ManifestConflictError()
-    })
+  it("creates against the latest server snapshot even when the form etag is stale", async () => {
+    const response = await POST(
+      request(createAdminPayload({ expectedEtag: "stale-form-etag" })),
+    )
 
-    const response = await POST(request(createAdminPayload()))
-
-    expect(response.status).toBe(409)
+    expect(response.status).toBe(200)
     await expect(response.json()).resolves.toEqual({
-      error: "Portfolio content changed in another tab. Refresh and try again.",
+      ok: true,
+      etag: "etag-2",
+      projectId: "demo-project",
     })
+    expect(mocks.assertExpectedEtag).not.toHaveBeenCalled()
+    expect(mocks.savePortfolioManifest).toHaveBeenCalledWith(
+      expect.objectContaining({ revision: "revision-1" }),
+      "etag-1",
+    )
   })
 
   it("rejects duplicate ids across locales", async () => {

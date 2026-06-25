@@ -296,9 +296,12 @@ describe("AdminProjectForm basics", () => {
 
   it("mirrors English fields into hidden Vietnamese payload when creating", async () => {
     const user = userEvent.setup()
+    const router = getMockRouter()
     const fetch = vi
       .fn()
-      .mockResolvedValue(jsonResponse({ ok: true, etag: "etag-2" }))
+      .mockResolvedValue(
+        jsonResponse({ ok: true, etag: "etag-2", projectId: "demo-project" }),
+      )
     vi.stubGlobal("fetch", fetch)
     renderForm({ mode: "create" })
 
@@ -324,6 +327,7 @@ describe("AdminProjectForm basics", () => {
         credit: "Built together.",
       },
     })
+    expect(router.push).toHaveBeenCalledWith("/admin/projects/demo-project?created=1")
   })
 })
 
@@ -522,6 +526,6 @@ describe("AdminProjectForm uploads", () => {
       "proposal-01.png",
     )
     expect(requestBody.shared.media.proposalSlides).toHaveLength(2)
-    expect(router.push).toHaveBeenCalledWith("/admin/projects/demo-project")
+    expect(router.push).toHaveBeenCalledWith("/admin/projects/demo-project?created=1")
   })
 })

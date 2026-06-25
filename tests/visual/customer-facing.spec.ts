@@ -158,6 +158,11 @@ const portfolioGalleryRoutes: CustomerRoute[] = [
         label: "Thinking gallery heading",
       },
       {
+        kind: "text",
+        value: "I look beyond what people do to understand why they do it.",
+        label: "Thinking gallery intro",
+      },
+      {
         kind: "image",
         name: "AXE generated project cover artwork",
         label: "Thinking gallery AXE card media",

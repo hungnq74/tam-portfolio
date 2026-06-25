@@ -1417,7 +1417,7 @@ function GallerySection({
                   </p>
                 ) : null}
               </div>
-              {showingScopeHub ? (
+              {!activeScope && activeField.scopeIntro ? (
                 <p className="font-prose max-w-md text-base leading-7 text-paper/84 sm:text-lg md:max-w-none md:text-right lg:whitespace-nowrap">
                   {activeField.scopeIntro}
                 </p>
