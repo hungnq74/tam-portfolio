@@ -131,6 +131,33 @@ describe("static portfolio projects", () => {
     })
   })
 
+  it("keeps Tesla Education split into video and always-on scope projects", () => {
+    const projects = PORTFOLIO_CONTENT.en.projects
+    const videoProject = projects.find((project) => project.id === "tesla-education")
+    const alwaysOnProject = projects.find(
+      (project) => project.id === "tesla-education-always-on",
+    )
+
+    expect(videoProject).toMatchObject({
+      title: "Tesla Education",
+      category: "Social Video Script",
+      summary:
+        "Every school has a story. The challenge is telling it in a way that people can actually feel.",
+    })
+    expect(videoProject?.media?.videoCampaigns?.[0].videos[0].sourceUrl).toBe(
+      "https://www.facebook.com/reel/1355172016653079",
+    )
+
+    expect(alwaysOnProject).toMatchObject({
+      title: "Tesla Education",
+      category: "Fanpage Always-on Content",
+      summary: "Choosing a school is about finding a place that feels right for your child's story.",
+    })
+    expect(alwaysOnProject?.media?.introLayout).toBe("split-cover")
+    expect(alwaysOnProject?.media?.contentPostsLayout).toBe("carousel")
+    expect(alwaysOnProject?.media?.contentPosts).toHaveLength(6)
+  })
+
   it("references existing local public assets with valid media metadata", () => {
     LOCALES.forEach((locale: Locale) => {
       const content = PORTFOLIO_CONTENT[locale]

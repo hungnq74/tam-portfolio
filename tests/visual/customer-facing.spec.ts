@@ -215,12 +215,12 @@ const portfolioGalleryRoutes: CustomerRoute[] = [
       },
       {
         kind: "image",
-        name: "Tesla Education horizontal campaign thumbnail",
+        name: "Tesla Education brand introduction video preview",
         label: "Tesla Education gallery thumbnail",
       },
       {
         kind: "text",
-        value: "Choosing a school is about finding a place that feels right",
+        value: "Every school has a story",
         exact: false,
         label: "Tesla Education gallery summary",
       },
@@ -269,6 +269,35 @@ const portfolioGalleryRoutes: CustomerRoute[] = [
         kind: "image",
         name: "AEON Vietnam logo thumbnail",
         label: "AEON gallery logo thumbnail",
+      },
+    ],
+  },
+  {
+    slug: "gallery-writing-fanpage-tesla-en",
+    path: "/content/creative-copywriter/scope/fanpage-always-on-content?project=tesla-education-always-on",
+    locale: "en",
+    anchors: [
+      {
+        kind: "role",
+        role: "heading",
+        name: "Fanpage Always-on Content",
+        label: "Fanpage Tesla scope heading",
+      },
+      {
+        kind: "text",
+        value: "Tesla Education",
+        label: "Tesla always-on gallery card",
+      },
+      {
+        kind: "text",
+        value: "Choosing a school is about finding a place that feels right",
+        exact: false,
+        label: "Tesla always-on gallery summary",
+      },
+      {
+        kind: "image",
+        name: "Tesla Education horizontal campaign thumbnail",
+        label: "Tesla always-on gallery thumbnail",
       },
     ],
   },
@@ -474,19 +503,49 @@ const projectTemplateRoutes: CustomerRoute[] = [
     anchors: [
       {
         kind: "text",
-        value: "For Tesla Education's always-on content",
+        value: "My role was to develop the creative concept",
         exact: false,
-        label: "Tesla Education overview",
+        label: "Tesla Education video overview",
       },
       {
-        kind: "image",
-        name: "Tesla Education campus story project cover",
-        label: "Tesla Education cover",
+        kind: "text",
+        value: "Mind taking a quick trip to Tesla Education's Fanpage instead?",
+        exact: false,
+        label: "Tesla Education video CTA note",
+      },
+      {
+        kind: "role",
+        role: "link",
+        name: "TAKE ME THERE: Tesla Education brand introduction video preview",
+        label: "Tesla Education video CTA",
       },
       {
         kind: "image",
         name: "Tesla Education brand introduction video preview",
-        label: "Tesla Education video preview",
+        label: "Tesla Education video cover",
+      },
+    ],
+  },
+  {
+    slug: "work-tesla-education-always-on-en",
+    path: "/work/tesla-education-always-on",
+    locale: "en",
+    anchors: [
+      {
+        kind: "text",
+        value: "For Tesla Education's always-on content",
+        exact: false,
+        label: "Tesla Education always-on overview",
+      },
+      {
+        kind: "image",
+        name: "Tesla Education campus story project cover",
+        label: "Tesla Education always-on cover",
+      },
+      {
+        kind: "region",
+        name: "Tesla Education content posts",
+        label: "Tesla Education always-on carousel",
       },
     ],
   },

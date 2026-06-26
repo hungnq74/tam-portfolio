@@ -973,12 +973,69 @@ const TESLA_EDUCATION_VIDEO: ProjectMediaAsset = {
 const TESLA_EDUCATION_VIDEO_VI: ProjectMediaAsset = {
   ...TESLA_EDUCATION_VIDEO,
   alt: "Video preview giới thiệu thương hiệu Tesla Education",
-  ctaLabel: "XEM VIDEO",
+  ctaLabel: "TAKE ME THERE",
 }
 
-const TESLA_EDUCATION_PROJECT_MEDIA_EN: ProjectMedia = {
-  cover: TESLA_EDUCATION_PROJECT_COVER,
-  cardCover: TESLA_EDUCATION_CARD_COVER,
+const TESLA_EDUCATION_ALWAYS_ON_SOURCES = [
+  "https://www.facebook.com/share/p/1BU4L5Fegd/",
+  "https://www.facebook.com/share/p/18geHsx1wA/",
+  "https://www.facebook.com/share/p/1ERYo9z6rL/",
+  "https://www.facebook.com/share/p/1JVuyMsCAn/",
+  "https://www.facebook.com/share/p/1CxqNg9Uda/",
+  "https://www.facebook.com/share/p/14fbhc2r9Nh/",
+] as const
+
+const TESLA_EDUCATION_ALWAYS_ON_POSTS: ProjectMediaAsset[] = [
+  {
+    src: "/assets/projects/tesla-education/always-on-01.jpg",
+    alt: "Tesla Education always-on post about IB learner risk-takers",
+    width: 600,
+    height: 783,
+    sourceUrl: TESLA_EDUCATION_ALWAYS_ON_SOURCES[0],
+  },
+  {
+    src: "/assets/projects/tesla-education/always-on-02.jpg",
+    alt: "Tesla Education always-on post about future-ready learning",
+    width: 600,
+    height: 783,
+    sourceUrl: TESLA_EDUCATION_ALWAYS_ON_SOURCES[1],
+  },
+  {
+    src: "/assets/projects/tesla-education/always-on-03.jpg",
+    alt: "Tesla Education always-on post for summer at Tesla",
+    width: 900,
+    height: 600,
+    sourceUrl: TESLA_EDUCATION_ALWAYS_ON_SOURCES[2],
+  },
+  {
+    src: "/assets/projects/tesla-education/always-on-04.jpg",
+    alt: "Tesla Education always-on post about end of year exhibitions",
+    width: 900,
+    height: 600,
+    sourceUrl: TESLA_EDUCATION_ALWAYS_ON_SOURCES[3],
+  },
+  {
+    src: "/assets/projects/tesla-education/always-on-05.jpg",
+    alt: "Tesla Education always-on post about future global leaders",
+    width: 600,
+    height: 900,
+    sourceUrl: TESLA_EDUCATION_ALWAYS_ON_SOURCES[4],
+  },
+  {
+    src: "/assets/projects/tesla-education/always-on-06.jpg",
+    alt: "Tesla Education always-on post about IB education journey",
+    width: 900,
+    height: 600,
+    sourceUrl: TESLA_EDUCATION_ALWAYS_ON_SOURCES[5],
+  },
+]
+
+const TESLA_EDUCATION_ALWAYS_ON_POSTS_VI: ProjectMediaAsset[] =
+  TESLA_EDUCATION_ALWAYS_ON_POSTS.map((post) => ({ ...post }))
+
+const TESLA_EDUCATION_VIDEO_PROJECT_MEDIA_EN: ProjectMedia = {
+  cover: TESLA_EDUCATION_VIDEO,
+  cardCover: TESLA_EDUCATION_VIDEO,
   videoCampaigns: [
     {
       title: "Brand Introduction Video",
@@ -989,17 +1046,33 @@ const TESLA_EDUCATION_PROJECT_MEDIA_EN: ProjectMedia = {
   ],
 }
 
-const TESLA_EDUCATION_PROJECT_MEDIA_VI: ProjectMedia = {
-  cover: TESLA_EDUCATION_PROJECT_COVER_VI,
-  cardCover: TESLA_EDUCATION_CARD_COVER_VI,
+const TESLA_EDUCATION_VIDEO_PROJECT_MEDIA_VI: ProjectMedia = {
+  cover: TESLA_EDUCATION_VIDEO_VI,
+  cardCover: TESLA_EDUCATION_VIDEO_VI,
   videoCampaigns: [
     {
-      title: "Video giới thiệu thương hiệu",
+      title: "Brand Introduction Video",
       description:
-        "Mình rất muốn để bạn xem video ngay tại đây, nhưng có vẻ nó hơi nặng với chiếc portfolio nhỏ này. Mình dẫn bạn sang fanpage Tesla Education xem một chút nhé?",
+        "I'd love to show you the video right here, but it's apparently too heavy for this little portfolio to carry. Mind taking a quick trip to Tesla Education's Fanpage instead?",
       videos: [TESLA_EDUCATION_VIDEO_VI],
     },
   ],
+}
+
+const TESLA_EDUCATION_ALWAYS_ON_MEDIA_EN: ProjectMedia = {
+  introLayout: "split-cover",
+  cover: TESLA_EDUCATION_PROJECT_COVER,
+  cardCover: TESLA_EDUCATION_CARD_COVER,
+  contentPostsLayout: "carousel",
+  contentPosts: TESLA_EDUCATION_ALWAYS_ON_POSTS,
+}
+
+const TESLA_EDUCATION_ALWAYS_ON_MEDIA_VI: ProjectMedia = {
+  introLayout: "split-cover",
+  cover: TESLA_EDUCATION_PROJECT_COVER_VI,
+  cardCover: TESLA_EDUCATION_CARD_COVER_VI,
+  contentPostsLayout: "carousel",
+  contentPosts: TESLA_EDUCATION_ALWAYS_ON_POSTS_VI,
 }
 
 const SOCIAL_OUTREACH_FORMAL_SOURCES = [
@@ -1433,19 +1506,19 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         title: "Tesla Education",
         eyebrow: "Project",
         category: "Social Video Script",
-        summary: "Choosing a school is about finding a place that feels right for your child's story.",
+        summary: "Every school has a story. The challenge is telling it in a way that people can actually feel.",
         client: "Tesla Education",
         year: "2026",
         scope: ["Brand Introduction Video", "Creative Concept", "Full Script"],
         overview:
-          "For Tesla Education's always-on content, I developed monthly content plans and created bilingual content across platforms, translating educational concepts into stories, insights, and messages that resonated with parents. From academic excellence and student development to school culture and everyday learning moments, each content angle was designed to help families better understand what makes Tesla, Tesla.",
+          "My role was to develop the creative concept and write the full script for an inspiring brand introduction video, bringing together the voices of teachers, leaders, and educators who shape the learning journey every day.\n\nRather than listing achievements or facilities, the video focused on the beliefs behind them - turning educational values into a story that felt authentic, human, and worth remembering.",
         objective:
           "Turn Tesla Education's school story into a brand introduction video that felt human, inspiring, and emotionally clear.",
         solution:
           "Build the concept and full script around the beliefs behind the school, weaving together educator voices instead of simply listing facilities or achievements.",
         results: ["Creative concept", "Full brand video script", "Education value storytelling"],
         thumbnail: { col: 1, row: 0 },
-        media: TESLA_EDUCATION_PROJECT_MEDIA_EN,
+        media: TESLA_EDUCATION_VIDEO_PROJECT_MEDIA_EN,
       },
       {
         id: "acecook",
@@ -1530,6 +1603,26 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         results: ["Facebook promotional content", "Instagram fashion collection copy", "Always-on product storytelling"],
         thumbnail: { col: 0, row: 1 },
         media: AEON_PROJECT_MEDIA,
+      },
+      {
+        id: "tesla-education-always-on",
+        fieldId: "creative-copywriter",
+        title: "Tesla Education",
+        eyebrow: "Project",
+        category: "Fanpage Always-on Content",
+        summary: "Choosing a school is about finding a place that feels right for your child's story.",
+        client: "Tesla Education",
+        year: "2026",
+        scope: ["Monthly Content Planning", "Bilingual Content", "Fanpage Always-on Content"],
+        overview:
+          "For Tesla Education's always-on content, I developed monthly content plans and created bilingual content across platforms, translating educational concepts into stories, insights, and messages that resonated with parents. From academic excellence and student development to school culture and everyday learning moments, each content angle was designed to help families better understand what makes Tesla, Tesla.",
+        objective:
+          "Help families understand Tesla Education through consistent always-on content across platforms.",
+        solution:
+          "Turn educational concepts, school culture, and everyday learning moments into parent-facing stories, insights, and social messages.",
+        results: ["Monthly content plans", "Bilingual platform content", "Parent-facing education storytelling"],
+        thumbnail: { col: 1, row: 1 },
+        media: TESLA_EDUCATION_ALWAYS_ON_MEDIA_EN,
       },
       {
         id: "social-outreach",
@@ -1916,19 +2009,19 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         title: "Tesla Education",
         eyebrow: "Dự án",
         category: "Kịch bản video social",
-        summary: "Ý tưởng sáng tạo và kịch bản hoàn chỉnh cho video giới thiệu thương hiệu truyền cảm hứng của Tesla Education.",
+        summary: "Every school has a story. The challenge is telling it in a way that people can actually feel.",
         client: "Tesla Education",
         year: "2026",
-        scope: ["Video giới thiệu thương hiệu", "Ý tưởng sáng tạo", "Kịch bản hoàn chỉnh"],
+        scope: ["Brand Introduction Video", "Creative Concept", "Full Script"],
         overview:
-          "Mỗi ngôi trường đều có một câu chuyện. Thử thách là kể câu chuyện đó theo cách người xem thật sự cảm được.\n\nVai trò của mình là phát triển ý tưởng sáng tạo và viết toàn bộ kịch bản cho một video giới thiệu thương hiệu truyền cảm hứng, kết nối tiếng nói của giáo viên, đội ngũ lãnh đạo và những nhà giáo dục đang định hình hành trình học tập mỗi ngày.\n\nThay vì chỉ liệt kê thành tích hay cơ sở vật chất, video tập trung vào niềm tin đứng phía sau những điều đó - biến giá trị giáo dục thành một câu chuyện chân thật, con người và đáng nhớ.",
+          "My role was to develop the creative concept and write the full script for an inspiring brand introduction video, bringing together the voices of teachers, leaders, and educators who shape the learning journey every day.\n\nRather than listing achievements or facilities, the video focused on the beliefs behind them - turning educational values into a story that felt authentic, human, and worth remembering.",
         objective:
-          "Biến câu chuyện của Tesla Education thành một video giới thiệu thương hiệu có cảm xúc, truyền cảm hứng và rõ tinh thần con người.",
+          "Turn Tesla Education's school story into a brand introduction video that felt human, inspiring, and emotionally clear.",
         solution:
-          "Xây dựng ý tưởng và kịch bản xoay quanh những niềm tin phía sau ngôi trường, kết nối nhiều tiếng nói của đội ngũ giáo dục thay vì chỉ liệt kê cơ sở vật chất hay thành tích.",
-        results: ["Ý tưởng sáng tạo", "Kịch bản video thương hiệu", "Kể chuyện về giá trị giáo dục"],
+          "Build the concept and full script around the beliefs behind the school, weaving together educator voices instead of simply listing facilities or achievements.",
+        results: ["Creative concept", "Full brand video script", "Education value storytelling"],
         thumbnail: { col: 1, row: 0 },
-        media: TESLA_EDUCATION_PROJECT_MEDIA_VI,
+        media: TESLA_EDUCATION_VIDEO_PROJECT_MEDIA_VI,
       },
       {
         id: "acecook",
@@ -2013,6 +2106,26 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         results: ["Facebook promotional content", "Instagram fashion collection copy", "Always-on product storytelling"],
         thumbnail: { col: 0, row: 1 },
         media: AEON_PROJECT_MEDIA,
+      },
+      {
+        id: "tesla-education-always-on",
+        fieldId: "creative-copywriter",
+        title: "Tesla Education",
+        eyebrow: "Dự án",
+        category: "Nội dung fanpage always-on",
+        summary: "Choosing a school is about finding a place that feels right for your child's story.",
+        client: "Tesla Education",
+        year: "2026",
+        scope: ["Monthly Content Planning", "Bilingual Content", "Fanpage Always-on Content"],
+        overview:
+          "For Tesla Education's always-on content, I developed monthly content plans and created bilingual content across platforms, translating educational concepts into stories, insights, and messages that resonated with parents. From academic excellence and student development to school culture and everyday learning moments, each content angle was designed to help families better understand what makes Tesla, Tesla.",
+        objective:
+          "Help families understand Tesla Education through consistent always-on content across platforms.",
+        solution:
+          "Turn educational concepts, school culture, and everyday learning moments into parent-facing stories, insights, and social messages.",
+        results: ["Monthly content plans", "Bilingual platform content", "Parent-facing education storytelling"],
+        thumbnail: { col: 1, row: 1 },
+        media: TESLA_EDUCATION_ALWAYS_ON_MEDIA_VI,
       },
       {
         id: "social-outreach",

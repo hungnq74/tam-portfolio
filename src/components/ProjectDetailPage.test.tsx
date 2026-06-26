@@ -173,6 +173,53 @@ describe("ProjectDetailPage", () => {
     expect(within(officeRegion).getByText(/ĐI LÀM CÓ/)).toBeInTheDocument()
   })
 
+  it("renders Tesla Education social video copy and fanpage CTA", () => {
+    render(<ProjectDetailPage contentByLocale={PORTFOLIO_CONTENT} projectId="tesla-education" />)
+
+    expect(
+      screen.getByText(
+        /My role was to develop the creative concept and write the full script/,
+      ),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText(
+        "I'd love to show you the video right here, but it's apparently too heavy for this little portfolio to carry. Mind taking a quick trip to Tesla Education's Fanpage instead?",
+      ),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("link", {
+        name: "TAKE ME THERE: Tesla Education brand introduction video preview",
+      }),
+    ).toHaveAttribute("href", "https://www.facebook.com/reel/1355172016653079")
+    expect(
+      screen.queryByText("For Tesla Education's always-on content", { exact: false }),
+    ).not.toBeInTheDocument()
+  })
+
+  it("renders Tesla Education always-on split cover and carousel posts", () => {
+    render(
+      <ProjectDetailPage
+        contentByLocale={PORTFOLIO_CONTENT}
+        projectId="tesla-education-always-on"
+      />,
+    )
+
+    expect(screen.getByText("For Tesla Education's always-on content", { exact: false }))
+      .toBeInTheDocument()
+    expect(screen.getByAltText("Tesla Education campus story project cover")).toBeInTheDocument()
+
+    const contentPosts = screen.getByRole("region", {
+      name: "Tesla Education content posts",
+    })
+    expect(contentPosts).toHaveAttribute("aria-roledescription", "carousel")
+    expect(
+      within(contentPosts).getAllByRole("img", {
+        name: /Tesla Education always-on post/,
+      }),
+    ).toHaveLength(6)
+    expect(within(contentPosts).queryByText("Facebook caption")).not.toBeInTheDocument()
+  })
+
   it("renders previous and next project navigation within the same scope", () => {
     render(<ProjectDetailPage contentByLocale={PORTFOLIO_CONTENT} projectId="weshare" />)
 
@@ -201,13 +248,16 @@ describe("ProjectDetailPage", () => {
     })
 
     expect(
-      within(siblingNav).getByRole("link", { name: "Previous project: AEON Vietnam" }),
-    ).toHaveAttribute("href", "/work/aeon-vietnam")
+      within(siblingNav).getByRole("link", { name: "Previous project: Tesla Education" }),
+    ).toHaveAttribute("href", "/work/tesla-education-always-on")
 
     acecookRender.unmount()
     window.localStorage.clear()
     render(
-      <ProjectDetailPage contentByLocale={PORTFOLIO_CONTENT} projectId="aeon-vietnam" />,
+      <ProjectDetailPage
+        contentByLocale={PORTFOLIO_CONTENT}
+        projectId="tesla-education-always-on"
+      />,
     )
 
     siblingNav = screen.getByRole("navigation", {

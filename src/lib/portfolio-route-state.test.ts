@@ -99,6 +99,14 @@ describe("resolvePortfolioRouteState", () => {
       activeFilter: "Fanpage Always-on Content",
       selectedProjectId: "panasonic",
     })
+
+    expect(
+      resolveEn("?field=creative-copywriter&project=tesla-education-always-on", "#gallery"),
+    ).toMatchObject({
+      selectedFieldId: "creative-copywriter",
+      activeFilter: "Fanpage Always-on Content",
+      selectedProjectId: "tesla-education-always-on",
+    })
   })
 
   it("restores the other Writing scopes from project URLs", () => {

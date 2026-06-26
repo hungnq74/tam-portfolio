@@ -217,11 +217,16 @@ describe("portfolio manifest mutation helpers", () => {
 
     expect(hydratedTesla).toEqual(staticTesla)
     expect(hydratedTesla?.summary).toBe(
-      "Choosing a school is about finding a place that feels right for your child's story.",
+      "Every school has a story. The challenge is telling it in a way that people can actually feel.",
     )
     expect(hydratedTesla?.media?.cover.src).toBe(
-      "/assets/projects/tesla-education/detail-cover.jpg",
+      "/assets/projects/tesla-education/video-01.jpg",
     )
+    expect(
+      hydrated.locales.en.projects.some(
+        (project) => project.id === "tesla-education-always-on",
+      ),
+    ).toBe(true)
   })
 
   it("preserves runtime-only projects while merging code-owned creative projects", () => {
