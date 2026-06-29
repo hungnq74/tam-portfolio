@@ -220,7 +220,15 @@ describe("ProjectDetailPage", () => {
         name: /Tesla Education always-on post/,
       }),
     ).toHaveLength(6)
-    expect(within(contentPosts).queryByText("Facebook caption")).not.toBeInTheDocument()
+    expect(
+      within(contentPosts).getByText("SUMMER AT TESLA | KHI MÙA HÈ GÕ CỬA 🌿"),
+    ).toBeInTheDocument()
+    expect(
+      within(contentPosts).getByText(
+        "Học sinh Tesla khi biết mình được giáo dục để trở thành thế hệ lãnh đạo toàn cầu tương lai 😎",
+        { exact: false },
+      ),
+    ).toBeInTheDocument()
   })
 
   it("renders previous and next project navigation within the same scope", () => {

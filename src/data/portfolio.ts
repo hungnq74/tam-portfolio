@@ -1057,6 +1057,7 @@ const TESLA_EDUCATION_ALWAYS_ON_POSTS: ProjectMediaAsset[] = [
     width: 600,
     height: 783,
     sourceUrl: TESLA_EDUCATION_ALWAYS_ON_SOURCES[0],
+    caption: "TESLA IB 101 #1: CHÂN DUNG NGƯỜI HỌC IB 🎓",
   },
   {
     src: "/assets/projects/tesla-education/always-on-02.jpg",
@@ -1064,6 +1065,7 @@ const TESLA_EDUCATION_ALWAYS_ON_POSTS: ProjectMediaAsset[] = [
     width: 600,
     height: 783,
     sourceUrl: TESLA_EDUCATION_ALWAYS_ON_SOURCES[1],
+    caption: "WHAT I LEARN AT TESLA | WHAT I DO IN THE FUTURE",
   },
   {
     src: "/assets/projects/tesla-education/always-on-03.jpg",
@@ -1071,6 +1073,7 @@ const TESLA_EDUCATION_ALWAYS_ON_POSTS: ProjectMediaAsset[] = [
     width: 900,
     height: 600,
     sourceUrl: TESLA_EDUCATION_ALWAYS_ON_SOURCES[2],
+    caption: "SUMMER AT TESLA | KHI MÙA HÈ GÕ CỬA 🌿",
   },
   {
     src: "/assets/projects/tesla-education/always-on-04.jpg",
@@ -1078,6 +1081,7 @@ const TESLA_EDUCATION_ALWAYS_ON_POSTS: ProjectMediaAsset[] = [
     width: 900,
     height: 600,
     sourceUrl: TESLA_EDUCATION_ALWAYS_ON_SOURCES[3],
+    caption: "END OF YEAR EXHIBITIONS | NGHỆ THUẬT TỪ ĐÔI BÀN TAY NHỎ 🎨",
   },
   {
     src: "/assets/projects/tesla-education/always-on-05.jpg",
@@ -1085,6 +1089,8 @@ const TESLA_EDUCATION_ALWAYS_ON_POSTS: ProjectMediaAsset[] = [
     width: 600,
     height: 900,
     sourceUrl: TESLA_EDUCATION_ALWAYS_ON_SOURCES[4],
+    caption:
+      "Học sinh Tesla khi biết mình được giáo dục để trở thành thế hệ lãnh đạo toàn cầu tương lai 😎",
   },
   {
     src: "/assets/projects/tesla-education/always-on-06.jpg",
@@ -1092,6 +1098,7 @@ const TESLA_EDUCATION_ALWAYS_ON_POSTS: ProjectMediaAsset[] = [
     width: 900,
     height: 600,
     sourceUrl: TESLA_EDUCATION_ALWAYS_ON_SOURCES[5],
+    caption: "🇻🇳 GIÁO DỤC IB TẠI TESLA: TỪ TẦM NHÌN ĐẾN HÀNH TRÌNH TRỌN VẸN",
   },
 ]
 
