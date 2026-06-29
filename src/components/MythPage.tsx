@@ -1,12 +1,14 @@
 "use client"
 
 import Link from "next/link"
-import { useState } from "react"
-import { ArrowLeft, ArrowRight, BookOpen, Check, Copy, Feather, Mail, Phone, Sparkles } from "lucide-react"
+import { type KeyboardEvent, useState } from "react"
+import { ArrowLeft, ArrowRight, BookOpen, Check, Copy, ExternalLink, Feather, Mail, Phone, Sparkles } from "lucide-react"
 import { GlobalPortfolioNav } from "@/components/GlobalPortfolioNav"
 import { LocaleToggle } from "@/components/LocaleToggle"
-import { getPortfolioContent, MYTH_CONTENT } from "@/data/portfolio"
+import { getPortfolioContent, MYTH_CONTENT, type MythContent } from "@/data/portfolio"
 import { useLocale } from "@/hooks/useLocale"
+
+type MythRecommendations = NonNullable<NonNullable<MythContent["truth"]>["recommendations"]>
 
 export function MythPage() {
   const { locale, setLocale } = useLocale()
@@ -200,6 +202,10 @@ export function MythPage() {
             </div>
           </section>
 
+          {truth.recommendations ? (
+            <RecommendationCarousel recommendations={truth.recommendations} />
+          ) : null}
+
           {contact ? (
             <section className="mt-16 border-y border-[rgba(116,63,36,0.22)] py-10 sm:mt-20 sm:py-12">
               <div className="grid gap-7 lg:grid-cols-[0.68fr_1.32fr] lg:gap-14">
@@ -353,5 +359,158 @@ export function MythPage() {
         </section>
       </section>
     </main>
+  )
+}
+
+function getWrappedIndex(index: number, length: number) {
+  return (index + length) % length
+}
+
+function RecommendationCarousel({
+  recommendations,
+}: {
+  recommendations: MythRecommendations
+}) {
+  const [activeIndex, setActiveIndex] = useState(0)
+  const items = recommendations.items
+  const activeItem = items[activeIndex]
+  const hasMultipleItems = items.length > 1
+
+  function goToRecommendation(direction: number) {
+    if (!hasMultipleItems) return
+    setActiveIndex((index) => getWrappedIndex(index + direction, items.length))
+  }
+
+  function onCarouselKeyDown(event: KeyboardEvent<HTMLElement>) {
+    if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return
+
+    event.preventDefault()
+    goToRecommendation(event.key === "ArrowLeft" ? -1 : 1)
+  }
+
+  if (!activeItem) return null
+
+  const previousItem = items[getWrappedIndex(activeIndex - 1, items.length)] ?? activeItem
+  const nextItem = items[getWrappedIndex(activeIndex + 1, items.length)] ?? activeItem
+
+  return (
+    <section className="mt-14 border-y border-[rgba(116,63,36,0.2)] py-10 sm:mt-16 sm:py-12">
+      <div className="mx-auto max-w-2xl text-center">
+        <div className="mb-4 flex items-center justify-center gap-3 text-gold">
+          <span className="h-px flex-1 bg-gold/42" />
+          <span className="h-2 w-2 rotate-45 bg-gold/80" />
+          <span className="h-px flex-1 bg-gold/42" />
+        </div>
+        <h2
+          className="font-serif font-semibold leading-[0.95] text-moss"
+          style={{ fontSize: "clamp(2rem, 3.7vw, 3.2rem)" }}
+        >
+          {recommendations.title}
+        </h2>
+        <p className="font-prose mx-auto mt-3 max-w-xl text-sm italic leading-6 text-ink/70 sm:text-base sm:leading-7">
+          {recommendations.subtitle}
+        </p>
+      </div>
+
+      <div
+        className="mx-auto mt-7 max-w-5xl focus:outline-none sm:mt-8"
+        role="region"
+        aria-label={`${recommendations.title} carousel`}
+        aria-roledescription="carousel"
+        tabIndex={0}
+        onKeyDown={onCarouselKeyDown}
+      >
+        <div className="mb-3 flex items-center justify-between px-1 text-[0.68rem] font-bold uppercase tracking-[0.18em] text-ink/58 sm:px-8 sm:text-xs">
+          <span aria-live="polite">{activeIndex + 1} / {items.length}</span>
+          <span>{activeItem.reviewer}</span>
+        </div>
+
+        <div className="relative overflow-hidden px-0 py-1.5 lg:px-20">
+          {hasMultipleItems ? (
+            <>
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute left-0 top-1/2 hidden w-[19%] -translate-y-1/2 opacity-35 blur-[0.2px] lg:block"
+              >
+                <img
+                  src={previousItem.image.src}
+                  alt=""
+                  width={previousItem.image.width}
+                  height={previousItem.image.height}
+                  className="mx-auto h-auto w-full rounded-[8px] border border-gold/24 shadow-[0_14px_32px_rgba(45,32,21,0.1)]"
+                />
+              </div>
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute right-0 top-1/2 hidden w-[19%] -translate-y-1/2 opacity-35 blur-[0.2px] lg:block"
+              >
+                <img
+                  src={nextItem.image.src}
+                  alt=""
+                  width={nextItem.image.width}
+                  height={nextItem.image.height}
+                  className="mx-auto h-auto w-full rounded-[8px] border border-gold/24 shadow-[0_14px_32px_rgba(45,32,21,0.1)]"
+                />
+              </div>
+            </>
+          ) : null}
+
+          <div className="relative z-10 mx-auto max-w-2xl">
+            <img
+              src={activeItem.image.src}
+              alt={activeItem.image.alt}
+              width={activeItem.image.width}
+              height={activeItem.image.height}
+              className="h-auto w-full rounded-[8px] border border-[rgba(116,63,36,0.2)] bg-paper shadow-[0_18px_42px_rgba(45,32,21,0.14)]"
+            />
+          </div>
+        </div>
+
+        {hasMultipleItems ? (
+          <div className="mt-4 flex items-center justify-center gap-4">
+            <button
+              type="button"
+              aria-label="Previous recommendation"
+              onClick={() => goToRecommendation(-1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-clay/30 bg-paper/72 text-clay transition hover:-translate-y-0.5 hover:border-clay hover:bg-clay hover:text-paper focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper"
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </button>
+            <div className="flex items-center gap-2" aria-hidden="true">
+              {items.map((item, index) => (
+                <span
+                  key={item.image.src}
+                  className={
+                    index === activeIndex
+                      ? "h-2.5 w-2.5 rounded-full bg-moss"
+                      : "h-2.5 w-2.5 rounded-full border border-gold/70"
+                  }
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              aria-label="Next recommendation"
+              onClick={() => goToRecommendation(1)}
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-clay/30 bg-paper/72 text-clay transition hover:-translate-y-0.5 hover:border-clay hover:bg-clay hover:text-paper focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper"
+            >
+              <ArrowRight className="h-4 w-4" />
+            </button>
+          </div>
+        ) : null}
+
+        <div className="mt-5 text-center">
+          <a
+            href={recommendations.sourceUrl}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.16em] text-clay underline decoration-clay/35 underline-offset-4 transition hover:text-moss focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper"
+          >
+            {recommendations.sourceLabel}
+            <ExternalLink className="h-3.5 w-3.5" />
+          </a>
+        </div>
+      </div>
+    </section>
   )
 }

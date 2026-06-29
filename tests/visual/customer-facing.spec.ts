@@ -53,6 +53,22 @@ const highRiskRoutes: CustomerRoute[] = [
         value: "GET TO KNOW TÂM IN MANY VERSIONS",
         label: "truth timeline",
       },
+      {
+        kind: "role",
+        role: "heading",
+        name: "Kind Words, Real Impact",
+        label: "recommendations heading",
+      },
+      {
+        kind: "region",
+        name: "Kind Words, Real Impact carousel",
+        label: "recommendations carousel",
+      },
+      {
+        kind: "image",
+        name: "LinkedIn recommendation from Quy Le Ba for Minh Tâm",
+        label: "first recommendation card",
+      },
     ],
   },
   {

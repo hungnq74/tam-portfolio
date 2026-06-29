@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import { existsSync } from "node:fs"
 import path from "node:path"
 import {
+  MYTH_CONTENT,
   PORTFOLIO_CONTENT,
   type Locale,
   type Project,
@@ -178,6 +179,24 @@ describe("static portfolio projects", () => {
           expect(asset.height, `${locale}/${project.id}/${asset.src} height`).toBeGreaterThan(0)
           expectLocalAssetExists(asset.src)
         })
+      })
+
+      const myth = MYTH_CONTENT[locale]
+      if (myth.image) expectLocalAssetExists(myth.image)
+      myth.truth?.recommendations?.items.forEach((item) => {
+        expect(
+          item.image.alt.trim(),
+          `${locale}/myth/${item.reviewer}/${item.image.src} alt text`,
+        ).toBeTruthy()
+        expect(
+          item.image.width,
+          `${locale}/myth/${item.reviewer}/${item.image.src} width`,
+        ).toBeGreaterThan(0)
+        expect(
+          item.image.height,
+          `${locale}/myth/${item.reviewer}/${item.image.src} height`,
+        ).toBeGreaterThan(0)
+        expectLocalAssetExists(item.image.src)
       })
     })
   })

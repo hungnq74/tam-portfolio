@@ -265,6 +265,16 @@ export interface MythContent {
       email: string
       phone: string
     }
+    recommendations?: {
+      title: string
+      subtitle: string
+      sourceLabel: string
+      sourceUrl: string
+      items: Array<{
+        reviewer: string
+        image: ProjectMediaAsset
+      }>
+    }
   }
   closingTitle: string
   closingBody: string
@@ -2423,6 +2433,51 @@ export const MYTH_CONTENT: Record<Locale, MythContent> = {
         body: "Seems like I’ve caught your attention. Let’s meet in real life.",
         email: "ttmtam76@gmail.com",
         phone: "(+84)934064685",
+      },
+      recommendations: {
+        title: "Kind Words, Real Impact",
+        subtitle: "What colleagues and collaborators say about working with Tâm.",
+        sourceLabel: "View LinkedIn recommendations",
+        sourceUrl:
+          "https://www.linkedin.com/in/minhtam76/details/recommendations/?detailScreenTabIndex=0",
+        items: [
+          {
+            reviewer: "Quy Le Ba",
+            image: {
+              src: "/assets/recommendations/linkedin-card-01.png",
+              alt: "LinkedIn recommendation from Quy Le Ba for Minh Tâm",
+              width: 1320,
+              height: 900,
+            },
+          },
+          {
+            reviewer: "Tin Ngo",
+            image: {
+              src: "/assets/recommendations/linkedin-card-02.png",
+              alt: "LinkedIn recommendation from Tin Ngo for Minh Tâm",
+              width: 1320,
+              height: 900,
+            },
+          },
+          {
+            reviewer: "Thao Anh Trinh",
+            image: {
+              src: "/assets/recommendations/linkedin-card-03.png",
+              alt: "LinkedIn recommendation from Thao Anh Trinh for Minh Tâm",
+              width: 1320,
+              height: 900,
+            },
+          },
+          {
+            reviewer: "Tom Vo",
+            image: {
+              src: "/assets/recommendations/linkedin-card-04.png",
+              alt: "LinkedIn recommendation from Tom Vo for Minh Tâm",
+              width: 1320,
+              height: 900,
+            },
+          },
+        ],
       },
     },
     closingTitle: "That is my well-being",
