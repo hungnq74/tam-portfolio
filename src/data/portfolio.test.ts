@@ -159,6 +159,24 @@ describe("static portfolio projects", () => {
     expect(alwaysOnProject?.media?.contentPosts).toHaveLength(6)
   })
 
+  it("keeps Samsung S26 Ultra Fashion x Travel videos in the Samsung script project", () => {
+    const samsung = PORTFOLIO_CONTENT.en.projects.find((project) => project.id === "samsung")
+    const campaign = samsung?.media?.videoCampaigns?.find(
+      (item) => item.title === "Campaign Samsung S26 Ultra: Fashion x Travel",
+    )
+
+    expect(campaign?.description).toBe(
+      "Scripts that positioned Galaxy S26 Ultra as the ultimate companion for style-conscious travelers, turning advanced technology into relatable creator moments.",
+    )
+    expect(campaign?.videos).toHaveLength(4)
+    expect(campaign?.videos.map((video) => video.sourceUrl)).toEqual([
+      "https://vt.tiktok.com/ZSC1bUDWU/",
+      "https://vt.tiktok.com/ZSC1V8KLP/",
+      "https://vt.tiktok.com/ZSQK9rKbE/",
+      "https://vt.tiktok.com/ZSCBvfakG/",
+    ])
+  })
+
   it("references existing local public assets with valid media metadata", () => {
     LOCALES.forEach((locale: Locale) => {
       const content = PORTFOLIO_CONTENT[locale]

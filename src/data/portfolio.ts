@@ -814,6 +814,10 @@ const SAMSUNG_VIDEO_SOURCES = [
   "https://www.facebook.com/reel/1380551776938897",
   "https://www.facebook.com/reel/25408362518856007",
   "https://www.facebook.com/share/v/1Jk3VhLNqs/",
+  "https://vt.tiktok.com/ZSC1bUDWU/",
+  "https://vt.tiktok.com/ZSC1V8KLP/",
+  "https://vt.tiktok.com/ZSQK9rKbE/",
+  "https://vt.tiktok.com/ZSCBvfakG/",
 ] as const
 
 const SAMSUNG_PROJECT_COVER: ProjectMediaAsset = {
@@ -891,6 +895,37 @@ const SAMSUNG_BETTER_YEAR_VIDEOS: ProjectMediaAsset[] = [
   },
 ]
 
+const SAMSUNG_S26_FASHION_TRAVEL_VIDEOS: ProjectMediaAsset[] = [
+  {
+    src: "/assets/projects/samsung/video-09.jpg",
+    alt: "Samsung S26 Ultra Fashion x Travel creator video preview 1",
+    width: 1186,
+    height: 1701,
+    sourceUrl: SAMSUNG_VIDEO_SOURCES[8],
+  },
+  {
+    src: "/assets/projects/samsung/video-10.jpg",
+    alt: "Samsung S26 Ultra Fashion x Travel creator video preview 2",
+    width: 1186,
+    height: 1701,
+    sourceUrl: SAMSUNG_VIDEO_SOURCES[9],
+  },
+  {
+    src: "/assets/projects/samsung/video-11.jpg",
+    alt: "Samsung S26 Ultra Fashion x Travel creator video preview 3",
+    width: 1080,
+    height: 1440,
+    sourceUrl: SAMSUNG_VIDEO_SOURCES[10],
+  },
+  {
+    src: "/assets/projects/samsung/video-12.jpg",
+    alt: "Samsung S26 Ultra Fashion x Travel creator video preview 4",
+    width: 1080,
+    height: 1920,
+    sourceUrl: SAMSUNG_VIDEO_SOURCES[11],
+  },
+]
+
 const SAMSUNG_TET_VIDEOS_VI: ProjectMediaAsset[] = SAMSUNG_TET_VIDEOS.map(
   (video, index) => ({
     ...video,
@@ -902,6 +937,14 @@ const SAMSUNG_BETTER_YEAR_VIDEOS_VI: ProjectMediaAsset[] =
   SAMSUNG_BETTER_YEAR_VIDEOS.map((video, index) => ({
     ...video,
     alt: `Video preview creator chiến dịch Galaxy A56 Gemini ${index + 1}`,
+  }))
+
+const SAMSUNG_S26_FASHION_TRAVEL_VIDEOS_VI: ProjectMediaAsset[] =
+  SAMSUNG_S26_FASHION_TRAVEL_VIDEOS.map((video, index) => ({
+    ...video,
+    alt: `Video preview creator chiến dịch Samsung S26 Ultra Fashion x Travel ${
+      index + 1
+    }`,
   }))
 
 const SAMSUNG_PROJECT_MEDIA_EN: ProjectMedia = {
@@ -919,6 +962,12 @@ const SAMSUNG_PROJECT_MEDIA_EN: ProjectMedia = {
       description:
         "Scripts that turned Gemini and Galaxy A56 5G features into creator-led festive moments, from playful crush stories to everyday new-year confidence.",
       videos: SAMSUNG_BETTER_YEAR_VIDEOS,
+    },
+    {
+      title: "Campaign Samsung S26 Ultra: Fashion x Travel",
+      description:
+        "Scripts that positioned Galaxy S26 Ultra as the ultimate companion for style-conscious travelers, turning advanced technology into relatable creator moments.",
+      videos: SAMSUNG_S26_FASHION_TRAVEL_VIDEOS,
     },
   ],
 }
@@ -938,6 +987,12 @@ const SAMSUNG_PROJECT_MEDIA_VI: ProjectMedia = {
       description:
         "Những kịch bản biến Gemini và các tính năng Galaxy A56 5G thành khoảnh khắc festive qua lăng kính creator, từ chuyện crush vui vui đến sự tự tin đầu năm.",
       videos: SAMSUNG_BETTER_YEAR_VIDEOS_VI,
+    },
+    {
+      title: "Chiến dịch Samsung S26 Ultra: Fashion x Travel",
+      description:
+        "Những kịch bản định vị Galaxy S26 Ultra như người bạn đồng hành lý tưởng cho các chuyến đi nhiều phong cách, biến công nghệ nâng cao thành khoảnh khắc creator gần gũi.",
+      videos: SAMSUNG_S26_FASHION_TRAVEL_VIDEOS_VI,
     },
   ],
 }

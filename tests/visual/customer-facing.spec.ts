@@ -469,6 +469,12 @@ const projectTemplateRoutes: CustomerRoute[] = [
         name: "Video campaigns",
         label: "Samsung video campaign section",
       },
+      {
+        kind: "role",
+        role: "heading",
+        name: "Campaign Samsung S26 Ultra: Fashion x Travel",
+        label: "Samsung S26 campaign heading",
+      },
     ],
   },
   {
