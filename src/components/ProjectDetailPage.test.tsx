@@ -339,6 +339,25 @@ describe("ProjectDetailPage", () => {
     )
   })
 
+  it("renders six Meme & Funny Voice posts with the new Bức thư caption", () => {
+    render(<ProjectDetailPage contentByLocale={PORTFOLIO_CONTENT} projectId="social-outreach" />)
+
+    const memeRegion = screen.getByRole("region", {
+      name: "Meme & Funny Voice posts",
+    })
+
+    expect(memeRegion).toHaveAttribute("aria-roledescription", "carousel")
+    expect(
+      within(memeRegion).getAllByRole("img", {
+        name: /Meme outreach post from/,
+      }),
+    ).toHaveLength(6)
+    expect(within(memeRegion).getByText(/Bức thư của Hà Nội/)).toBeInTheDocument()
+    expect(
+      within(memeRegion).getByText(/Giây phút nhận ra tôi chỉ là hữu duyên/),
+    ).toBeInTheDocument()
+  })
+
   it("renders caption-grid outreach sections as three visible caption cards", () => {
     const outreachMedia: ProjectMedia = {
       cover: media.cover,

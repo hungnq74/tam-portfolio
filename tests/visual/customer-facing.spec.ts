@@ -1,4 +1,4 @@
-import { test } from "@playwright/test"
+import { expect, test } from "@playwright/test"
 import {
   assertVisualIntegrity,
   expectCustomerScreenshot,
@@ -588,6 +588,25 @@ test.describe("customer-facing mobile visual regression", () => {
       await expectCustomerScreenshot(page, route.slug)
     })
   }
+
+  test("work-social-outreach-en meme carousel includes sixth Bức thư post", async ({
+    page,
+  }) => {
+    await openCustomerPage(page, "/work/social-outreach", "en")
+
+    const memeRegion = page.getByRole("region", {
+      name: "Meme & Funny Voice posts",
+    })
+
+    await expect(memeRegion).toHaveAttribute("aria-roledescription", "carousel")
+    await expect(
+      memeRegion.getByRole("img", { name: /Meme outreach post from/ }),
+    ).toHaveCount(6)
+    await expect(memeRegion).toContainText("Bức thư của Hà Nội")
+    await expect(memeRegion).toContainText(
+      "Giây phút nhận ra tôi chỉ là hữu duyên",
+    )
+  })
 
   test("stale Vietnamese locale storage still renders English-only UI", async ({ page }) => {
     await openCustomerPage(page, "/work/axe", "vi")

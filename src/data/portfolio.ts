@@ -1154,6 +1154,16 @@ const SOCIAL_OUTREACH_MEME_POSTS: ProjectMediaAsset[] = [
     caption:
       "Why So Serious\n\nTag ngay đứa bạn thân sắp về quê để dặn nó sớm lên chơi với mình\n\nMà nghe nói Tết này trên Vexere có kho vé khổng lồ với hơn 3000 nhà xe, 5000 tuyến đường cùng giá vé minh bạch và đảm bảo khởi hành đúng lịch. Đã vậy những ai lần đầu đặt qua ứng dụng hoặc website còn được Vexere trợ giá giảm 50K nữa, cụ thể như nào thì check comment nha! Còn tui khóc tiếp đây\n\n#VeTet #Vexere #DatVexere #TetChacMotVe",
   },
+  {
+    src: "/assets/projects/social-outreach/meme-06.jpg",
+    alt: "Meme outreach post from Bức thư của Hà Nội",
+    width: 600,
+    height: 800,
+    sourceUrl:
+      "https://www.facebook.com/bucthucuahanoi/posts/pfbid02zMRNq3Dzr57cNLBG2gSEvniv2CBBT5HrTLw9tiqdJYGBwqESJprrz8KMbVuKCj2l?rdid=9A0gKKJr6YBqNjf9#",
+    caption:
+      "Bức thư của Hà Nội\n\nGiây phút nhận ra tôi chỉ là hữu duyên góp mặt trong hộ khẩu gia đình. 😭\n\nThôi kệ, vẫn lên Vexere săn vé ưu đãi về quê với gia đình, khám phá kho vé khổng lồ hơn 3000 nhà xe, 5000 tuyến đường với giá...",
+  },
 ]
 
 const SOCIAL_OUTREACH_POETRY_SOURCES = [
