@@ -175,9 +175,10 @@ describe("AdminProjectForm basics", () => {
     expect(screen.getByLabelText("Collaborator names")).toHaveValue(
       "Minh Anh\nHoàng Linh\nBảo Trân",
     )
-    expect(screen.getByText("Minh Anh")).toBeInTheDocument()
-    expect(screen.getByText("Hoàng Linh")).toBeInTheDocument()
-    expect(screen.getByText("Bảo Trân")).toBeInTheDocument()
+    const previewNames = screen.getByText("Minh Anh · Hoàng Linh · Bảo Trân")
+    expect(previewNames).toBeInTheDocument()
+    expect(previewNames).not.toHaveClass("rounded-full")
+    expect(previewNames).not.toHaveClass("border")
   })
 
   it("disables saving and uploading when Blob storage is not configured", async () => {
@@ -253,9 +254,7 @@ describe("AdminProjectForm basics", () => {
       "An Nhi\nGia Hân, Phương Vy",
     )
 
-    expect(screen.getByText("An Nhi")).toBeInTheDocument()
-    expect(screen.getByText("Gia Hân")).toBeInTheDocument()
-    expect(screen.getByText("Phương Vy")).toBeInTheDocument()
+    expect(screen.getByText("An Nhi · Gia Hân · Phương Vy")).toBeInTheDocument()
 
     await user.click(screen.getByRole("button", { name: /save project/i }))
     await screen.findByText("Project saved.")

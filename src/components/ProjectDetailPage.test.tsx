@@ -114,12 +114,15 @@ describe("ProjectDetailPage", () => {
       name: /Demo project proposal carousel/i,
     })
     const credit = screen.getByText("Shout out to the friends who built this proposal with me.")
+    const creditNames = screen.getByText("Minh Anh · Hoàng Linh · Bảo Trân")
 
     expect(cta).toHaveAttribute("href", "#demo-project-proposal-carousel")
     expect(carousel).toHaveAttribute("id", "demo-project-proposal-carousel")
-    expect(screen.getByText("Minh Anh")).toBeInTheDocument()
-    expect(screen.getByText("Hoàng Linh")).toBeInTheDocument()
-    expect(screen.getByText("Bảo Trân")).toBeInTheDocument()
+    expect(credit).toHaveClass("font-bold")
+    expect(credit).not.toHaveClass("italic")
+    expect(creditNames).toBeInTheDocument()
+    expect(creditNames).not.toHaveClass("rounded-full")
+    expect(creditNames).not.toHaveClass("border")
     expect(summaryImage.compareDocumentPosition(cta) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,
     )
@@ -330,9 +333,8 @@ describe("ProjectDetailPage", () => {
     const credit = screen.getByText("Shout out to the friends who built this proposal with me.")
 
     expect(cta).toHaveAttribute("href", "#demo-project-proposal-carousel")
-    expect(screen.getByText("Minh Anh")).toBeInTheDocument()
-    expect(screen.getByText("Hoàng Linh")).toBeInTheDocument()
-    expect(screen.getByText("Bảo Trân")).toBeInTheDocument()
+    expect(credit).toHaveClass("font-bold")
+    expect(screen.getByText("Minh Anh · Hoàng Linh · Bảo Trân")).toBeInTheDocument()
     expect(window.localStorage.getItem(LOCALE_STORAGE_KEY)).toBe("en")
     expect(carousel.compareDocumentPosition(credit) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING,

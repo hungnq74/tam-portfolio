@@ -171,13 +171,7 @@ test.describe("admin proposal project flow", () => {
       "Minh Anh",
     )
     await expect(
-      page.locator("span").filter({ hasText: /^Minh Anh$/ }),
-    ).toBeVisible()
-    await expect(
-      page.locator("span").filter({ hasText: /^Hoàng Linh$/ }),
-    ).toBeVisible()
-    await expect(
-      page.locator("span").filter({ hasText: /^Bảo Trân$/ }),
+      page.getByText("Minh Anh · Hoàng Linh · Bảo Trân"),
     ).toBeVisible()
   })
 
@@ -204,7 +198,7 @@ test.describe("admin proposal project flow", () => {
       "Minh Anh\nHoàng Linh\nBảo Trân",
     )
     await expect(
-      page.locator("span").filter({ hasText: /^Minh Anh$/ }),
+      page.getByText("Minh Anh · Hoàng Linh · Bảo Trân"),
     ).toBeVisible()
   })
 
@@ -256,7 +250,7 @@ test.describe("admin editorial CMS visuals", () => {
 })
 
 test.describe("public AXE proposal flow", () => {
-  test("keeps CTA before the carousel and credit chips after the carousel", async ({
+  test("keeps CTA before the carousel and plain credit names after the carousel", async ({
     page,
   }) => {
     await openEnglishCustomerPage(page, "/work/axe")
@@ -281,14 +275,9 @@ test.describe("public AXE proposal flow", () => {
     ).toBeVisible()
     await expect(cta).toHaveAttribute("href", "#axe-proposal-carousel")
     await expect(carousel).toHaveAttribute("id", "axe-proposal-carousel")
+    await expect(credit).toHaveCSS("font-weight", "700")
     await expect(
-      page.locator("span").filter({ hasText: /^Minh Anh$/ }),
-    ).toBeVisible()
-    await expect(
-      page.locator("span").filter({ hasText: /^Hoàng Linh$/ }),
-    ).toBeVisible()
-    await expect(
-      page.locator("span").filter({ hasText: /^Bảo Trân$/ }),
+      page.getByText("Minh Anh · Hoàng Linh · Bảo Trân"),
     ).toBeVisible()
 
     await expect(

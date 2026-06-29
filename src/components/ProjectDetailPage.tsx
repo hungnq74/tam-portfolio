@@ -493,22 +493,17 @@ function ProjectProposalCtaButton({
 }
 
 function ProjectProposalCreditNote({ cta }: { cta: ProjectProposalCta }) {
+  const creditNames = cta.creditNames?.filter(Boolean).join(" · ")
+
   return (
     <aside className={cn(MEDIA_RAIL_CLASS, "border-t border-gold/45 pt-6 text-center")}>
-      <p className="font-prose mx-auto max-w-3xl px-3 text-sm italic leading-7 text-ink/66 sm:text-base">
+      <p className="font-prose mx-auto max-w-3xl px-3 text-sm font-bold leading-7 text-ink/76 sm:text-base">
         {cta.credit}
       </p>
-      {cta.creditNames?.length ? (
-        <div className="mx-auto mt-4 flex max-w-3xl flex-wrap justify-center gap-2 px-3">
-          {cta.creditNames.map((name) => (
-            <span
-              key={name}
-              className="inline-flex rounded-full border border-gold/45 bg-paper/72 px-3 py-1.5 text-xs font-bold uppercase tracking-[0.12em] text-clay shadow-[0_8px_20px_rgba(45,32,21,0.08)]"
-            >
-              {name}
-            </span>
-          ))}
-        </div>
+      {creditNames ? (
+        <p className="font-prose mx-auto mt-2 max-w-3xl px-3 text-sm leading-7 text-ink/62 sm:text-base">
+          {creditNames}
+        </p>
       ) : null}
     </aside>
   )

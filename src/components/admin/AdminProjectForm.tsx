@@ -1121,6 +1121,8 @@ function CreditPreview({
   credit: string
   creditNames: string[]
 }) {
+  const creditNamesLine = creditNames.join(" · ")
+
   return (
     <div className="admin-card-soft p-4">
       <p className="admin-kicker mb-3">Public-page bridge preview</p>
@@ -1128,25 +1130,12 @@ function CreditPreview({
         <span className="admin-button admin-button-secondary pointer-events-none">
           {ctaLabel || "View full portfolio"}
         </span>
-        <p className="admin-subtle mx-auto mt-4 max-w-xl text-sm leading-6">
+        <p className="mx-auto mt-4 max-w-xl text-sm font-bold leading-6 text-[rgb(var(--ink))]">
           {credit || "Credit intro will appear after the proposal carousel."}
         </p>
-        <div className="mt-3 flex flex-wrap justify-center gap-2">
-          {creditNames.length ? (
-            creditNames.map((name) => (
-              <span
-                key={name}
-                className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-sm font-semibold text-slate-800"
-              >
-                {name}
-              </span>
-            ))
-          ) : (
-            <span className="text-sm font-medium text-[rgba(38,52,40,0.52)]">
-              Add one name per line or comma-separated.
-            </span>
-          )}
-        </div>
+        <p className="mx-auto mt-2 max-w-xl text-sm font-medium leading-6 text-slate-600">
+          {creditNamesLine || "Add one name per line or comma-separated."}
+        </p>
       </div>
     </div>
   )
@@ -1256,7 +1245,7 @@ function getReadinessItems({
       ready: Boolean(draft.ctaLabel.trim() && draft.credit.trim() && creditNames.length),
       detail:
         draft.ctaLabel.trim() && draft.credit.trim() && creditNames.length
-          ? `${creditNames.length} collaborator chip${creditNames.length === 1 ? "" : "s"}.`
+          ? `${creditNames.length} collaborator${creditNames.length === 1 ? "" : "s"}.`
           : "Add CTA, credit intro, and collaborator names.",
     },
   ]
