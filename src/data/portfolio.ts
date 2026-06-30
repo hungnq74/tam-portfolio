@@ -2497,8 +2497,8 @@ export const MYTH_CONTENT: Record<Locale, MythContent> = {
         phone: "(+84)934064685",
       },
       recommendations: {
-        title: "Kind Words, Real Impact",
-        subtitle: "What colleagues and collaborators say about working with Tâm.",
+        title: "Reader Reviews",
+        subtitle: "Turns out, the readers liked this character more than she expected (˵ •̀ ᴗ - ˵ ) ✧",
         sourceLabel: "View LinkedIn recommendations",
         sourceUrl:
           "https://www.linkedin.com/in/minhtam76/details/recommendations/?detailScreenTabIndex=0",

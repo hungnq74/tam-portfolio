@@ -121,9 +121,9 @@ const routes: SmokeRoute[] = [
     label: "Me page",
     verify: async (page) => {
       await expect(page.getByText(/THE WORLD MAKES MORE SENSE THAN IT SEEMS/i)).toBeVisible()
-      await expect(page.getByRole("heading", { name: "Kind Words, Real Impact" })).toBeVisible()
+      await expect(page.getByRole("heading", { name: "Reader Reviews" })).toBeVisible()
       await expect(
-        page.getByRole("region", { name: "Kind Words, Real Impact carousel" }),
+        page.getByRole("region", { name: "Reader Reviews carousel" }),
       ).toBeVisible()
       await expect(page.getByRole("link", { name: "WORK", exact: true })).toBeVisible()
     },

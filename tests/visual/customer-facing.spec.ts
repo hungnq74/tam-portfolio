@@ -56,12 +56,12 @@ const highRiskRoutes: CustomerRoute[] = [
       {
         kind: "role",
         role: "heading",
-        name: "Kind Words, Real Impact",
+        name: "Reader Reviews",
         label: "recommendations heading",
       },
       {
         kind: "region",
-        name: "Kind Words, Real Impact carousel",
+        name: "Reader Reviews carousel",
         label: "recommendations carousel",
       },
       {

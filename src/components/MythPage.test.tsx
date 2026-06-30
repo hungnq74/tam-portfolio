@@ -15,10 +15,10 @@ describe("MythPage", () => {
     render(<MythPage />)
 
     const carousel = screen.getByRole("region", {
-      name: "Kind Words, Real Impact carousel",
+      name: "Reader Reviews carousel",
     })
 
-    expect(screen.getByRole("heading", { name: "Kind Words, Real Impact" }))
+    expect(screen.getByRole("heading", { name: "Reader Reviews" }))
       .toBeInTheDocument()
     expect(carousel).toHaveAttribute("aria-roledescription", "carousel")
     expect(
