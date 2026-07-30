@@ -2,22 +2,13 @@
 
 import {
   Activity,
-  Box,
   CalendarDays,
   ChartNoAxesCombined,
   ChevronDown,
-  CircleGauge,
   ExternalLink,
-  Eye,
   Globe2,
-  Home,
-  List,
   MoreHorizontal,
-  Plug,
   RefreshCw,
-  Search,
-  ShieldCheck,
-  Sparkles,
 } from "lucide-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { useMemo, useState, useTransition } from "react"
@@ -38,18 +29,6 @@ type StatsDashboardProps = {
   range: StatsRange
   environment: StatsEnvironment
 }
-
-const navItems = [
-  { label: "Overview", icon: Home },
-  { label: "Deployments", icon: Box },
-  { label: "Logs", icon: List },
-  { label: "Analytics", icon: ChartNoAxesCombined, active: true },
-  { label: "Speed Insights", icon: CircleGauge },
-  { label: "Observability", icon: Eye },
-  { label: "Firewall", icon: ShieldCheck },
-  { label: "CDN", icon: Globe2 },
-  { label: "Connect", icon: Plug },
-]
 
 const rangeLabels: Record<StatsRange, string> = {
   "24h": "Last 24 Hours",
@@ -294,48 +273,6 @@ export function StatsDashboard({ data, range, environment }: StatsDashboardProps
 
   return (
     <div className={styles.shell}>
-      <aside className={styles.sidebar}>
-        <div className={styles.scopeSwitcher}>
-          <span className={styles.avatar}>T</span>
-          <strong>Tâm&apos;s projects</strong>
-          <span className={styles.plan}>Hobby</span>
-          <ChevronDown aria-hidden="true" />
-        </div>
-
-        <div className={styles.searchBox}>
-          <Search aria-hidden="true" />
-          <span>Find</span>
-          <kbd>F</kbd>
-        </div>
-
-        <nav aria-label="Project navigation" className={styles.sideNav}>
-          {navItems.map((item) => {
-            const Icon = item.icon
-
-            return item.label === "Overview" ? (
-              <a href="/" key={item.label}>
-                <Icon aria-hidden="true" />
-                <span>{item.label}</span>
-              </a>
-            ) : (
-              <span className={item.active ? styles.navActive : ""} key={item.label}>
-                <Icon aria-hidden="true" />
-                <span>{item.label}</span>
-                {item.label === "Connect" ? <em>Beta</em> : null}
-              </span>
-            )
-          })}
-        </nav>
-
-        <div className={styles.sidebarNote}>
-          <Sparkles aria-hidden="true" />
-          <div>
-            <strong>Public analytics</strong>
-            <span>Powered by Vercel&apos;s aggregated data.</span>
-          </div>
-        </div>
-      </aside>
-
       <main className={styles.main}>
         <header className={styles.topbar}>
           <a className={styles.projectBrand} href="/">
