@@ -108,8 +108,11 @@ function createFallbackData(range: StatsRange): PublicAnalyticsData {
 }
 
 function getDateWindow(range: StatsRange) {
-  const until = new Date()
-  const since = new Date(until.getTime() - RANGE_CONFIG[range].durationMs)
+  const now = new Date()
+  const since = new Date(now.getTime() - RANGE_CONFIG[range].durationMs)
+  const until = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() + 1),
+  )
 
   return {
     since: since.toISOString(),
