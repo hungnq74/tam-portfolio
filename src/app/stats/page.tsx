@@ -2,7 +2,6 @@ import type { Metadata } from "next"
 import { StatsDashboard } from "@/components/stats/StatsDashboard"
 import {
   getPublicAnalytics,
-  type StatsEnvironment,
   type StatsRange,
 } from "@/lib/vercel-web-analytics"
 
@@ -27,17 +26,10 @@ function getRange(value: string | string[] | undefined): StatsRange {
   return candidate === "24h" || candidate === "30d" ? candidate : "7d"
 }
 
-function getEnvironment(value: string | string[] | undefined): StatsEnvironment {
-  const candidate = Array.isArray(value) ? value[0] : value
-
-  return candidate === "production" || candidate === "preview" ? candidate : "all"
-}
-
 export default async function StatsPage({ searchParams }: StatsPageProps) {
   const params = searchParams ? await searchParams : {}
   const range = getRange(params.range)
-  const environment = getEnvironment(params.environment)
-  const data = await getPublicAnalytics(range, environment)
+  const data = await getPublicAnalytics(range, "production")
 
-  return <StatsDashboard data={data} environment={environment} range={range} />
+  return <StatsDashboard data={data} range={range} />
 }

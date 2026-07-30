@@ -7,7 +7,6 @@ import {
   ChevronDown,
   ExternalLink,
   Globe2,
-  MoreHorizontal,
   RefreshCw,
 } from "lucide-react"
 import { usePathname, useRouter, useSearchParams } from "next/navigation"
@@ -16,30 +15,22 @@ import type {
   AnalyticsBreakdown,
   AnalyticsPoint,
   PublicAnalyticsData,
-  StatsEnvironment,
   StatsRange,
 } from "@/lib/vercel-web-analytics"
 import styles from "./StatsDashboard.module.css"
 
-type Metric = "visitors" | "pageviews" | "bounceRate"
+type Metric = "visitors" | "pageviews"
 type BreakdownView = "primary" | "secondary"
 
 type StatsDashboardProps = {
   data: PublicAnalyticsData
   range: StatsRange
-  environment: StatsEnvironment
 }
 
 const rangeLabels: Record<StatsRange, string> = {
   "24h": "Last 24 Hours",
   "7d": "Last 7 Days",
   "30d": "Last 30 Days",
-}
-
-const environmentLabels: Record<StatsEnvironment, string> = {
-  all: "All environments",
-  production: "Production",
-  preview: "Preview",
 }
 
 function formatNumber(value: number) {
@@ -88,7 +79,7 @@ function titleCase(value: string) {
     .join(" ")
 }
 
-function getLinePath(points: AnalyticsPoint[], metric: Exclude<Metric, "bounceRate">) {
+function getLinePath(points: AnalyticsPoint[], metric: Metric) {
   if (points.length === 0) {
     return {
       line: "M 0 318 L 1000 318",
@@ -121,7 +112,7 @@ function Chart({
   range,
 }: {
   points: AnalyticsPoint[]
-  metric: Exclude<Metric, "bounceRate">
+  metric: Metric
   range: StatsRange
 }) {
   const path = useMemo(() => getLinePath(points, metric), [metric, points])
@@ -254,17 +245,16 @@ function BreakdownCard({
   )
 }
 
-export function StatsDashboard({ data, range, environment }: StatsDashboardProps) {
+export function StatsDashboard({ data, range }: StatsDashboardProps) {
   const pathname = usePathname()
   const router = useRouter()
   const searchParams = useSearchParams()
   const [metric, setMetric] = useState<Metric>("visitors")
   const [isPending, startTransition] = useTransition()
-  const chartMetric = metric === "pageviews" ? "pageviews" : "visitors"
 
-  function updateFilter(key: "range" | "environment", value: string) {
+  function updateRange(value: string) {
     const nextParams = new URLSearchParams(searchParams.toString())
-    nextParams.set(key, value)
+    nextParams.set("range", value)
 
     startTransition(() => {
       router.replace(`${pathname}?${nextParams.toString()}`)
@@ -274,19 +264,6 @@ export function StatsDashboard({ data, range, environment }: StatsDashboardProps
   return (
     <div className={styles.shell}>
       <main className={styles.main}>
-        <header className={styles.topbar}>
-          <a className={styles.projectBrand} href="/">
-            <span className={styles.projectMark}>N</span>
-            <strong>tam-portfolio</strong>
-            <ChevronDown aria-hidden="true" />
-          </a>
-          <strong className={styles.pageTitle}>Analytics</strong>
-          <a className={styles.viewSite} href="/" rel="noreferrer" target="_blank">
-            View site
-            <ExternalLink aria-hidden="true" />
-          </a>
-        </header>
-
         <div className={`${styles.content} ${isPending ? styles.loading : ""}`}>
           <section className={styles.projectRow}>
             <a href="/" rel="noreferrer" target="_blank">
@@ -301,24 +278,10 @@ export function StatsDashboard({ data, range, environment }: StatsDashboardProps
 
             <div className={styles.controls}>
               <label>
-                <span className="sr-only">Environment</span>
-                <select
-                  onChange={(event) => updateFilter("environment", event.target.value)}
-                  value={environment}
-                >
-                  {Object.entries(environmentLabels).map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-                <ChevronDown aria-hidden="true" />
-              </label>
-              <label>
                 <CalendarDays aria-hidden="true" />
                 <span className="sr-only">Date range</span>
                 <select
-                  onChange={(event) => updateFilter("range", event.target.value)}
+                  onChange={(event) => updateRange(event.target.value)}
                   value={range}
                 >
                   {Object.entries(rangeLabels).map(([value, label]) => (
@@ -335,9 +298,6 @@ export function StatsDashboard({ data, range, environment }: StatsDashboardProps
                 type="button"
               >
                 <RefreshCw aria-hidden="true" />
-              </button>
-              <button aria-label="More options" type="button">
-                <MoreHorizontal aria-hidden="true" />
               </button>
             </div>
           </section>
@@ -369,21 +329,8 @@ export function StatsDashboard({ data, range, environment }: StatsDashboardProps
                 <span>Page Views</span>
                 <strong>{formatNumber(data.pageviews)}</strong>
               </button>
-              <button
-                aria-pressed={metric === "bounceRate"}
-                className={metric === "bounceRate" ? styles.metricActive : ""}
-                onClick={() => setMetric("bounceRate")}
-                type="button"
-              >
-                <span>Bounce Rate</span>
-                <strong>{data.bounceRate === null ? "—" : `${data.bounceRate}%`}</strong>
-              </button>
             </div>
-            {metric === "bounceRate" && data.bounceRate === null ? (
-              <EmptyState message="Bounce rate is not exposed by the public API." />
-            ) : (
-              <Chart metric={chartMetric} points={data.timeline} range={range} />
-            )}
+            <Chart metric={metric} points={data.timeline} range={range} />
           </section>
 
           <div className={styles.twoColumnGrid}>
