@@ -1,5 +1,6 @@
 import type { Metadata } from "next"
 import { Inter, Newsreader, Noto_Serif } from "next/font/google"
+import { Analytics } from "@vercel/analytics/next"
 import { LenisProvider } from "@/components/LenisProvider"
 import "./globals.css"
 
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${serif.variable} ${sans.variable} ${prose.variable}`}>
       <body>
         <LenisProvider>{children}</LenisProvider>
+        <Analytics />
       </body>
     </html>
   )

@@ -12,6 +12,7 @@
     "test:visual:update": "next build && playwright test --update-snapshots"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "@vercel/blob": "^2.4.0",
     "clsx": "^2.1.1",
     "framer-motion": "^12.38.0",
