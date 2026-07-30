@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import { Inter, Newsreader, Noto_Serif } from "next/font/google"
-import { Analytics } from "@vercel/analytics/next"
 import { LenisProvider } from "@/components/LenisProvider"
+import { PortfolioAnalytics } from "@/components/PortfolioAnalytics"
 import "./globals.css"
 
 const serif = Noto_Serif({
@@ -41,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={`${serif.variable} ${sans.variable} ${prose.variable}`}>
       <body>
         <LenisProvider>{children}</LenisProvider>
-        <Analytics />
+        <PortfolioAnalytics />
       </body>
     </html>
   )
