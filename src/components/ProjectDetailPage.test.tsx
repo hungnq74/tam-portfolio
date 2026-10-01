@@ -181,7 +181,7 @@ describe("ProjectDetailPage", () => {
 
     expect(
       screen.getByText(
-        /My role was to develop the creative concept and write the full script/,
+        /My role was to develop creative concepts and scripts across both long-form and short-form video content/,
       ),
     ).toBeInTheDocument()
     expect(
@@ -197,6 +197,61 @@ describe("ProjectDetailPage", () => {
     expect(
       screen.queryByText("For Tesla Education's always-on content", { exact: false }),
     ).not.toBeInTheDocument()
+
+    const mysteryVideos = screen.getAllByRole("link", { name: /Watch video: Tesla Education IB Mystery Box/ })
+    expect(mysteryVideos.map((link) => link.getAttribute("href"))).toEqual([
+      "https://www.facebook.com/reel/1023584327233995",
+      "https://www.facebook.com/reel/1072560088892094",
+    ])
+    mysteryVideos.forEach((link) => expect(link).toHaveAttribute("target", "_blank"))
+    expect(screen.getByRole("heading", { name: "Brand Introduction Video" }).compareDocumentPosition(
+      screen.getByRole("heading", { name: "IB Mystery Box Series" }),
+    ) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it("renders Enfa videos in source order and includes it in Social Video navigation", () => {
+    render(<ProjectDetailPage contentByLocale={PORTFOLIO_CONTENT} projectId="enfa-vietnam" />)
+
+    const videos = screen.getAllByRole("link", { name: /Watch video: Enfa Việt Nam TikTok video preview/ })
+    expect(videos.map((link) => link.getAttribute("href"))).toEqual([
+      "https://vt.tiktok.com/ZSbk5YSQC/",
+      "https://vt.tiktok.com/ZSbkPKydB/",
+      "https://vt.tiktok.com/ZSbkPW9fo/",
+      "https://vt.tiktok.com/ZSbk5JAJ5/",
+      "https://vt.tiktok.com/ZSbkPnHs8/",
+      "https://vt.tiktok.com/ZSbkPW9Js/",
+    ])
+    expect(screen.getByRole("link", { name: "Previous project: Tesla Education" }))
+      .toHaveAttribute("href", "/work/tesla-education")
+    expect(screen.getByRole("link", { name: "Next project: Samsung" }))
+      .toHaveAttribute("href", "/work/samsung")
+    expect(screen.queryByText("Year", { exact: true })).not.toBeInTheDocument()
+    expect(screen.queryByText("Results", { exact: true })).not.toBeInTheDocument()
+  })
+
+  it("keeps Always-on and IB 101 carousel navigation independent", async () => {
+    const user = userEvent.setup()
+    render(<ProjectDetailPage contentByLocale={PORTFOLIO_CONTENT} projectId="tesla-education-always-on" />)
+
+    const alwaysOn = screen.getByRole("region", { name: "Tesla Education content posts" })
+    const series = screen.getByRole("region", { name: "IB 101 Series posts" })
+    expect(series).toHaveAttribute("aria-roledescription", "carousel")
+    expect(within(series).getAllByRole("link", { name: /Visit post:/ })).toHaveLength(6)
+    expect(within(alwaysOn).getByText("1 / 6")).toBeInTheDocument()
+    expect(within(series).getByText("1 / 6")).toBeInTheDocument()
+
+    await user.click(within(series).getByRole("button", { name: "Next slide" }))
+    expect(within(series).getByText("2 / 6")).toBeInTheDocument()
+    expect(within(alwaysOn).getByText("1 / 6")).toBeInTheDocument()
+
+    alwaysOn.focus()
+    await user.keyboard("{ArrowRight}")
+    expect(within(alwaysOn).getByText("2 / 6")).toBeInTheDocument()
+    expect(within(series).getByText("2 / 6")).toBeInTheDocument()
+    series.focus()
+    await user.keyboard("{ArrowLeft}")
+    expect(within(series).getByText("1 / 6")).toBeInTheDocument()
+    expect(within(alwaysOn).getByText("2 / 6")).toBeInTheDocument()
   })
 
   it("renders Tesla Education always-on split cover and carousel posts", () => {

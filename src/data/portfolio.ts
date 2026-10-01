@@ -62,6 +62,7 @@ export interface ProjectPostCampaignSection {
 export interface ProjectPostCampaign {
   title: string
   description: string
+  postsLayout?: "grid" | "carousel"
   posts?: ProjectMediaAsset[]
   sections?: ProjectPostCampaignSection[]
 }
@@ -1105,9 +1106,142 @@ const TESLA_EDUCATION_ALWAYS_ON_POSTS: ProjectMediaAsset[] = [
 const TESLA_EDUCATION_ALWAYS_ON_POSTS_VI: ProjectMediaAsset[] =
   TESLA_EDUCATION_ALWAYS_ON_POSTS.map((post) => ({ ...post }))
 
+const TESLA_EDUCATION_MYSTERY_BOX_VIDEOS: ProjectMediaAsset[] = [
+  {
+    src: "/assets/projects/tesla-education/mystery-box-01.jpg",
+    alt: "Tesla Education IB Mystery Box video preview 1",
+    width: 1152,
+    height: 2048,
+    sourceUrl: "https://www.facebook.com/reel/1023584327233995",
+  },
+  {
+    src: "/assets/projects/tesla-education/mystery-box-02.jpg",
+    alt: "Tesla Education IB Mystery Box video preview 2",
+    width: 1152,
+    height: 2048,
+    sourceUrl: "https://www.facebook.com/reel/1072560088892094",
+  },
+]
+
+const TESLA_EDUCATION_MYSTERY_BOX_CAMPAIGN: ProjectVideoCampaign = {
+  title: "IB Mystery Box Series",
+  description: "An educational Reel series that unpacks parents’ biggest IB questions, making the IB journey easier to understand - one mystery at a time.",
+  videos: TESLA_EDUCATION_MYSTERY_BOX_VIDEOS,
+}
+
+const TESLA_EDUCATION_IB_101_POSTS: ProjectMediaAsset[] = [
+  {
+    src: "/assets/projects/tesla-education/ib-101-01.jpg",
+    alt: "Tesla Education IB 101 post about IB learner profile: risk-takers",
+    width: 600,
+    height: 783,
+    sourceUrl: "https://www.facebook.com/TESLA.ibeducation/posts/pfbid02T47NyLFUutbQRGPL7P7bgXZ9KoYg2JUdACstd1gHemGWiAWizHR7KBLH3ezySYA6l",
+  },
+  {
+    src: "/assets/projects/tesla-education/ib-101-02.jpg",
+    alt: "Tesla Education IB 101 post about ATL thinking skills",
+    width: 600,
+    height: 783,
+    sourceUrl: "https://www.facebook.com/TESLA.ibeducation/posts/pfbid02aFQHEVTENiJdM44TBtJ4YhT518Vg5FJypooLN4fxQ5qTtkdTTNysQBcyNiGkeq57l",
+  },
+  {
+    src: "/assets/projects/tesla-education/ib-101-03.jpg",
+    alt: "Tesla Education IB 101 post about IB Continuum learning journey",
+    width: 600,
+    height: 783,
+    sourceUrl: "https://www.facebook.com/TESLA.ibeducation/posts/pfbid02EYr3mR4BcWQVj7XL2MB4KdsuG32SMjAcTX6j1KSHVrXM3h5AvYJovgDa4n5LTX8Yl",
+  },
+  {
+    src: "/assets/projects/tesla-education/ib-101-04.jpg",
+    alt: "Tesla Education IB 101 post about TOK, EE and CAS experiences",
+    width: 600,
+    height: 783,
+    sourceUrl: "https://www.facebook.com/TESLA.ibeducation/posts/pfbid02HxBu4QDqLYus4SPHGe1iyzbN3oA7nUbCxNEbunrcX4VsRxe1Pix1vDpZPqNxXe1ul",
+  },
+  {
+    src: "/assets/projects/tesla-education/ib-101-05.jpg",
+    alt: "Tesla Education IB 101 post about 6C approach to teaching",
+    width: 600,
+    height: 783,
+    sourceUrl: "https://www.facebook.com/TESLA.ibeducation/posts/pfbid0ydTxRUY3DKtnrvJdnLZ65bjKiKL2kSpp8RWxxtSYqC53w9hTfuqNEWKc4sxzorJ1l",
+  },
+  {
+    src: "/assets/projects/tesla-education/ib-101-06.jpg",
+    alt: "Tesla Education IB 101 post about two IB Diploma pathways",
+    width: 1569,
+    height: 2048,
+    sourceUrl: "https://www.facebook.com/photo.php?fbid=1454706990009640&set=pb.100064110576744.-2207520000&type=3",
+  },
+]
+
+const TESLA_EDUCATION_IB_101_CAMPAIGN: ProjectPostCampaign = {
+  title: "IB 101 Series",
+  description: "A special series I proposed to demystify the IB curriculum through accessible content - helping parents understand what IB really means and how a full IB Continuum shapes their child’s learning journey at Tesla.",
+  postsLayout: "carousel",
+  posts: TESLA_EDUCATION_IB_101_POSTS,
+}
+
+const ENFA_VIETNAM_VIDEOS: ProjectMediaAsset[] = [
+  {
+    src: "/assets/projects/enfa-vietnam/video-01.jpg",
+    alt: "Enfa Việt Nam TikTok video preview 1 — Gia đình Bear - Bumm",
+    width: 540,
+    height: 960,
+    sourceUrl: "https://vt.tiktok.com/ZSbk5YSQC/",
+  },
+  {
+    src: "/assets/projects/enfa-vietnam/video-02.jpg",
+    alt: "Enfa Việt Nam TikTok video preview 2 — Nhà của Đăng",
+    width: 540,
+    height: 960,
+    sourceUrl: "https://vt.tiktok.com/ZSbkPKydB/",
+  },
+  {
+    src: "/assets/projects/enfa-vietnam/video-03.jpg",
+    alt: "Enfa Việt Nam TikTok video preview 3 — Em bé Thỏ",
+    width: 540,
+    height: 960,
+    sourceUrl: "https://vt.tiktok.com/ZSbkPW9fo/",
+  },
+  {
+    src: "/assets/projects/enfa-vietnam/video-04.jpg",
+    alt: "Enfa Việt Nam TikTok video preview 4 — Gia đình Bear - Bumm",
+    width: 540,
+    height: 960,
+    sourceUrl: "https://vt.tiktok.com/ZSbk5JAJ5/",
+  },
+  {
+    src: "/assets/projects/enfa-vietnam/video-05.jpg",
+    alt: "Enfa Việt Nam TikTok video preview 5 — Mẹ em Tôm",
+    width: 540,
+    height: 960,
+    sourceUrl: "https://vt.tiktok.com/ZSbkPnHs8/",
+  },
+  {
+    src: "/assets/projects/enfa-vietnam/video-06.jpg",
+    alt: "Enfa Việt Nam TikTok video preview 6 — Gia đình Hải Phòng",
+    width: 540,
+    height: 960,
+    sourceUrl: "https://vt.tiktok.com/ZSbkPW9Js/",
+  },
+]
+
+const ENFA_VIETNAM_PROJECT_MEDIA: ProjectMedia = {
+  introLayout: "split-cover",
+  cover: ENFA_VIETNAM_VIDEOS[0],
+  cardCover: ENFA_VIETNAM_VIDEOS[0],
+  videoCampaigns: [
+    {
+      title: "Enfa Việt Nam",
+      description: "Every mother has her own way of telling her child’s story.",
+      videos: ENFA_VIETNAM_VIDEOS,
+    },
+  ],
+}
+
 const TESLA_EDUCATION_VIDEO_PROJECT_MEDIA_EN: ProjectMedia = {
   cover: TESLA_EDUCATION_VIDEO,
-  cardCover: TESLA_EDUCATION_VIDEO,
+  cardCover: TESLA_EDUCATION_CARD_COVER,
   videoCampaigns: [
     {
       title: "Brand Introduction Video",
@@ -1115,12 +1249,13 @@ const TESLA_EDUCATION_VIDEO_PROJECT_MEDIA_EN: ProjectMedia = {
         "I'd love to show you the video right here, but it's apparently too heavy for this little portfolio to carry. Mind taking a quick trip to Tesla Education's Fanpage instead?",
       videos: [TESLA_EDUCATION_VIDEO],
     },
+    TESLA_EDUCATION_MYSTERY_BOX_CAMPAIGN,
   ],
 }
 
 const TESLA_EDUCATION_VIDEO_PROJECT_MEDIA_VI: ProjectMedia = {
   cover: TESLA_EDUCATION_VIDEO_VI,
-  cardCover: TESLA_EDUCATION_VIDEO_VI,
+  cardCover: TESLA_EDUCATION_CARD_COVER_VI,
   videoCampaigns: [
     {
       title: "Brand Introduction Video",
@@ -1128,6 +1263,7 @@ const TESLA_EDUCATION_VIDEO_PROJECT_MEDIA_VI: ProjectMedia = {
         "I'd love to show you the video right here, but it's apparently too heavy for this little portfolio to carry. Mind taking a quick trip to Tesla Education's Fanpage instead?",
       videos: [TESLA_EDUCATION_VIDEO_VI],
     },
+    TESLA_EDUCATION_MYSTERY_BOX_CAMPAIGN,
   ],
 }
 
@@ -1137,6 +1273,7 @@ const TESLA_EDUCATION_ALWAYS_ON_MEDIA_EN: ProjectMedia = {
   cardCover: TESLA_EDUCATION_CARD_COVER,
   contentPostsLayout: "carousel",
   contentPosts: TESLA_EDUCATION_ALWAYS_ON_POSTS,
+  postCampaigns: [TESLA_EDUCATION_IB_101_CAMPAIGN],
 }
 
 const TESLA_EDUCATION_ALWAYS_ON_MEDIA_VI: ProjectMedia = {
@@ -1145,6 +1282,7 @@ const TESLA_EDUCATION_ALWAYS_ON_MEDIA_VI: ProjectMedia = {
   cardCover: TESLA_EDUCATION_CARD_COVER_VI,
   contentPostsLayout: "carousel",
   contentPosts: TESLA_EDUCATION_ALWAYS_ON_POSTS_VI,
+  postCampaigns: [TESLA_EDUCATION_IB_101_CAMPAIGN],
 }
 
 const SOCIAL_OUTREACH_FORMAL_SOURCES = [
@@ -1593,7 +1731,7 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         year: "2026",
         scope: ["Brand Introduction Video", "Creative Concept", "Full Script"],
         overview:
-          "My role was to develop the creative concept and write the full script for an inspiring brand introduction video, bringing together the voices of teachers, leaders, and educators who shape the learning journey every day.\n\nRather than listing achievements or facilities, the video focused on the beliefs behind them - turning educational values into a story that felt authentic, human, and worth remembering.",
+          "My role was to develop creative concepts and scripts across both long-form and short-form video content, bringing the voices of teachers, leaders, and educators into stories that reflect the school’s learning philosophy.\n\nFrom brand storytelling to bite-sized social content, each video translated educational values into something authentic, human, and easy to connect with.",
         objective:
           "Turn Tesla Education's school story into a brand introduction video that felt human, inspiring, and emotionally clear.",
         solution:
@@ -1601,6 +1739,23 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         results: ["Creative concept", "Full brand video script", "Education value storytelling"],
         thumbnail: { col: 1, row: 0 },
         media: TESLA_EDUCATION_VIDEO_PROJECT_MEDIA_EN,
+      },
+      {
+        id: "enfa-vietnam",
+        fieldId: "creative-copywriter",
+        title: "Enfa Việt Nam",
+        eyebrow: "Project",
+        category: "Social Video Script",
+        summary: "Every mother has her own way of telling her child’s story.",
+        client: "Enfa Việt Nam",
+        year: "",
+        scope: ["TikTok Video Script"],
+        overview: "Every mother has her own way of telling her child’s story.\n\nFor Enfa Vietnam, I developed TikTok video scripts for Hot Moms, weaving the value of Enfa naturally into their children’s everyday growth. Each script was tailored to the mom’s personality and parenting perspective, making product messages feel less like a sales pitch and more like a genuine part of growing up.",
+        objective: "Weave the value of Enfa naturally into the children’s everyday growth.",
+        solution: "Tailor each script to the mom’s personality and parenting perspective.",
+        results: [],
+        thumbnail: { col: 2, row: 0 },
+        media: ENFA_VIETNAM_PROJECT_MEDIA,
       },
       {
         id: "acecook",
@@ -2096,7 +2251,7 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         year: "2026",
         scope: ["Brand Introduction Video", "Creative Concept", "Full Script"],
         overview:
-          "My role was to develop the creative concept and write the full script for an inspiring brand introduction video, bringing together the voices of teachers, leaders, and educators who shape the learning journey every day.\n\nRather than listing achievements or facilities, the video focused on the beliefs behind them - turning educational values into a story that felt authentic, human, and worth remembering.",
+          "My role was to develop creative concepts and scripts across both long-form and short-form video content, bringing the voices of teachers, leaders, and educators into stories that reflect the school’s learning philosophy.\n\nFrom brand storytelling to bite-sized social content, each video translated educational values into something authentic, human, and easy to connect with.",
         objective:
           "Turn Tesla Education's school story into a brand introduction video that felt human, inspiring, and emotionally clear.",
         solution:
@@ -2104,6 +2259,23 @@ export const PORTFOLIO_CONTENT: Record<Locale, PortfolioContent> = {
         results: ["Creative concept", "Full brand video script", "Education value storytelling"],
         thumbnail: { col: 1, row: 0 },
         media: TESLA_EDUCATION_VIDEO_PROJECT_MEDIA_VI,
+      },
+      {
+        id: "enfa-vietnam",
+        fieldId: "creative-copywriter",
+        title: "Enfa Việt Nam",
+        eyebrow: "Project",
+        category: "Kịch bản video social",
+        summary: "Every mother has her own way of telling her child’s story.",
+        client: "Enfa Việt Nam",
+        year: "",
+        scope: ["TikTok Video Script"],
+        overview: "Every mother has her own way of telling her child’s story.\n\nFor Enfa Vietnam, I developed TikTok video scripts for Hot Moms, weaving the value of Enfa naturally into their children’s everyday growth. Each script was tailored to the mom’s personality and parenting perspective, making product messages feel less like a sales pitch and more like a genuine part of growing up.",
+        objective: "Weave the value of Enfa naturally into the children’s everyday growth.",
+        solution: "Tailor each script to the mom’s personality and parenting perspective.",
+        results: [],
+        thumbnail: { col: 2, row: 0 },
+        media: ENFA_VIETNAM_PROJECT_MEDIA,
       },
       {
         id: "acecook",

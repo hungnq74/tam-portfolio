@@ -231,7 +231,7 @@ const portfolioGalleryRoutes: CustomerRoute[] = [
       },
       {
         kind: "image",
-        name: "Tesla Education brand introduction video preview",
+        name: "Tesla Education horizontal campaign thumbnail",
         label: "Tesla Education gallery thumbnail",
       },
       {
@@ -525,7 +525,7 @@ const projectTemplateRoutes: CustomerRoute[] = [
     anchors: [
       {
         kind: "text",
-        value: "My role was to develop the creative concept",
+        value: "My role was to develop creative concepts and scripts",
         exact: false,
         label: "Tesla Education video overview",
       },
@@ -569,6 +569,22 @@ const projectTemplateRoutes: CustomerRoute[] = [
         name: "Tesla Education content posts",
         label: "Tesla Education always-on carousel",
       },
+      {
+        kind: "region",
+        name: "IB 101 Series posts",
+        label: "Tesla IB 101 separate carousel",
+      },
+    ],
+  },
+  {
+    slug: "work-enfa-vietnam-en",
+    path: "/work/enfa-vietnam",
+    locale: "en",
+    anchors: [
+      { kind: "role", role: "heading", name: "Enfa Việt Nam", label: "Enfa heading" },
+      { kind: "text", value: "For Enfa Vietnam, I developed TikTok video scripts", exact: false, label: "Enfa overview" },
+      { kind: "image", name: /Enfa Việt Nam TikTok video preview 1/, label: "Enfa cover" },
+      { kind: "role", role: "link", name: /Watch video: Enfa Việt Nam TikTok video preview 6/, label: "Enfa last video" },
     ],
   },
   {
@@ -603,6 +619,24 @@ const customerRoutes = [
 ]
 
 test.describe("customer-facing mobile visual regression", () => {
+  test("Tesla content navigation keeps both carousels independent", async ({ page }) => {
+    await openCustomerPage(page, "/work/tesla-education-always-on", "en")
+    const alwaysOn = page.getByRole("region", { name: "Tesla Education content posts" })
+    const series = page.getByRole("region", { name: "IB 101 Series posts" })
+    const perPage = page.viewportSize()!.width >= 768 ? 2 : 1
+    const firstRange = perPage === 2 ? "1-2 / 6" : "1 / 6"
+    const secondRange = perPage === 2 ? "3-4 / 6" : "2 / 6"
+
+    await series.getByRole("button", { name: "Next slide" }).click()
+    await expect(series.getByText(secondRange, { exact: true })).toBeVisible()
+    await expect(alwaysOn.getByText(firstRange, { exact: true })).toHaveCount(1)
+    await alwaysOn.press("ArrowRight")
+    await expect(alwaysOn.getByText(secondRange, { exact: true })).toBeVisible()
+    await series.press("ArrowLeft")
+    await expect(series.getByText(firstRange, { exact: true })).toBeVisible()
+    await expect(alwaysOn.getByText(secondRange, { exact: true })).toHaveCount(1)
+  })
+
   for (const route of customerRoutes) {
     test(route.slug, async ({ page }) => {
       await openCustomerPage(page, route.path, route.locale)

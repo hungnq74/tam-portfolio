@@ -426,6 +426,8 @@ function MediaProjectPage({
               captionLabel={ui.detail.postCaption}
               readMoreLabel={ui.detail.readMoreCaption}
               showLessLabel={ui.detail.showLessCaption}
+              previousLabel={ui.detail.previousSlide}
+              nextLabel={ui.detail.nextSlide}
             />
           ) : null}
 
@@ -577,8 +579,11 @@ function ProjectSplitCoverIntro({
         <ProjectMediaImage
           asset={cover}
           eager
-          className="overflow-hidden rounded-[8px] border border-[rgba(116,63,36,0.2)] bg-paper shadow-[0_16px_42px_rgba(45,32,21,0.12)]"
-          imageClassName="h-full w-full object-cover"
+          className={cn(
+            "overflow-hidden rounded-[8px] border border-[rgba(116,63,36,0.2)] bg-paper shadow-[0_16px_42px_rgba(45,32,21,0.12)]",
+            cover.height > cover.width ? "w-full max-w-[18rem] justify-self-center" : null,
+          )}
+          imageClassName="h-full w-full object-contain"
         />
       </div>
     </section>
@@ -1280,12 +1285,16 @@ function ProjectPostCampaigns({
   captionLabel,
   readMoreLabel,
   showLessLabel,
+  previousLabel,
+  nextLabel,
 }: {
   campaigns: ProjectPostCampaign[]
   postLinkLabel: string
   captionLabel?: string
   readMoreLabel?: string
   showLessLabel?: string
+  previousLabel?: string
+  nextLabel?: string
 }) {
   const [expandedCaptions, setExpandedCaptions] = useState<Record<string, boolean>>({})
 
@@ -1306,7 +1315,7 @@ function ProjectPostCampaigns({
           <div className="grid gap-4 md:grid-cols-[0.68fr_1fr] md:items-end">
             <div>
               <p className="text-xs font-bold uppercase tracking-[0.2em] text-clay">
-                Platform
+                {campaign.postsLayout === "carousel" ? "Series" : "Platform"}
               </p>
               <h2 className="mt-2 font-serif text-4xl font-semibold leading-tight text-moss sm:text-5xl lg:text-6xl">
                 {campaign.title}
@@ -1318,13 +1327,30 @@ function ProjectPostCampaigns({
           </div>
 
           {campaign.posts?.length ? (
-            <ProjectPostCampaignPostsGrid
-              posts={campaign.posts}
-              ariaLabel={`${campaign.title} posts`}
-              postLinkLabel={postLinkLabel}
-              expandedCaptions={expandedCaptions}
-              onToggleCaption={toggleCaption}
-            />
+            campaign.postsLayout === "carousel" ? (
+              <div className="mt-5">
+                <ProjectContentPostsCarousel
+                  posts={campaign.posts}
+                  ariaLabel={`${campaign.title} posts`}
+                  postLinkLabel={postLinkLabel}
+                  captionLabel={captionLabel}
+                  readMoreLabel={readMoreLabel}
+                  showLessLabel={showLessLabel}
+                  previousLabel={previousLabel}
+                  nextLabel={nextLabel}
+                  expandedCaptions={expandedCaptions}
+                  onToggleCaption={toggleCaption}
+                />
+              </div>
+            ) : (
+              <ProjectPostCampaignPostsGrid
+                posts={campaign.posts}
+                ariaLabel={`${campaign.title} posts`}
+                postLinkLabel={postLinkLabel}
+                expandedCaptions={expandedCaptions}
+                onToggleCaption={toggleCaption}
+              />
+            )
           ) : null}
 
           {campaign.sections?.length ? (
@@ -1486,6 +1512,7 @@ function ProjectVideoCampaigns({
         return (
           <article
             key={campaign.title}
+            aria-label={campaign.title}
             className="border-t border-gold/45 pt-6 sm:pt-8"
           >
             <div className="grid gap-4 md:grid-cols-[0.68fr_1fr] md:items-end">
@@ -1508,13 +1535,18 @@ function ProjectVideoCampaigns({
                 watchVideoLabel={watchVideoLabel}
               />
             ) : (
-              <div className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div className={cn(
+                "mt-5 grid gap-4 sm:grid-cols-2",
+                campaign.videos.length === 6 ? "mx-auto max-w-5xl xl:grid-cols-3" :
+                  campaign.videos.length <= 3 ? "mx-auto max-w-2xl xl:grid-cols-2" : "xl:grid-cols-4",
+              )}>
                 {campaign.videos.map((video, index) => (
                   <ProjectVideoPreviewCard
                     key={video.src}
                     video={video}
                     index={index}
                     watchVideoLabel={watchVideoLabel}
+                    imageFit={campaign.videos.length === 2 || campaign.videos.length === 6 ? "contain" : "cover"}
                   />
                 ))}
               </div>
@@ -1581,10 +1613,12 @@ function ProjectVideoPreviewCard({
   video,
   index,
   watchVideoLabel,
+  imageFit = "cover",
 }: {
   video: ProjectMediaAsset
   index: number
   watchVideoLabel: string
+  imageFit?: "cover" | "contain"
 }) {
   const platformLabel = getVideoPlatformLabel(video.sourceUrl)
   const ctaLabel = video.ctaLabel ?? watchVideoLabel
@@ -1598,7 +1632,7 @@ function ProjectVideoPreviewCard({
         aria-label={`${ctaLabel}: ${video.alt}`}
         className="group block focus:outline-none focus:ring-2 focus:ring-clay focus:ring-offset-4 focus:ring-offset-paper"
       >
-        <div className="relative aspect-[9/16] max-h-[26rem] overflow-hidden bg-ink">
+        <div className={cn("relative aspect-[9/16] overflow-hidden bg-ink", imageFit === "cover" ? "max-h-[26rem]" : null)}>
           <img
             src={video.src}
             alt={video.alt}
@@ -1606,7 +1640,7 @@ function ProjectVideoPreviewCard({
             height={video.height}
             loading="lazy"
             decoding="async"
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.04]"
+            className={cn("h-full w-full transition duration-500 group-hover:scale-[1.04]", imageFit === "contain" ? "object-contain" : "object-cover")}
           />
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(43,30,19,0.42),rgba(43,30,19,0.06)_28%,rgba(43,30,19,0.18)_56%,rgba(43,30,19,0.88))]" />
           <span className="absolute left-3 top-3 rounded-full border border-paper/70 bg-ink/90 px-2.5 py-1 text-[0.62rem] font-bold uppercase tracking-[0.14em] text-paper shadow-[0_8px_20px_rgba(43,30,19,0.28)] backdrop-blur">

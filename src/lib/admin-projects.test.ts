@@ -8,6 +8,21 @@ import {
 import { createAdminPayload, createProject, testMedia } from "@/test/factories"
 
 describe("portfolioProjectSchema", () => {
+  it("preserves carousel campaigns and projects without an unpublished year or results", () => {
+    for (const locale of ["en", "vi"] as const) {
+      const enfa = portfolioProjectSchema.parse(
+        PORTFOLIO_CONTENT[locale].projects.find((project) => project.id === "enfa-vietnam"),
+      )
+      expect(enfa.year).toBe("")
+      expect(enfa.results).toEqual([])
+
+      const tesla = portfolioProjectSchema.parse(
+        PORTFOLIO_CONTENT[locale].projects.find((project) => project.id === "tesla-education-always-on"),
+      )
+      expect(tesla.media?.postCampaigns?.[0].postsLayout).toBe("carousel")
+    }
+  })
+
   it("accepts hidden proposal CTA credit names", () => {
     const result = portfolioProjectSchema.safeParse(
       createProject("demo-project", {
@@ -168,7 +183,7 @@ describe("validateAdminProjectPayload", () => {
       "Project id cannot be changed after creation.",
     )
     expect(missingCta.success).toBe(false)
-    expect(missingCta.errors.length).toBeGreaterThan(0)
+    expect(missingCta.errors?.length).toBeGreaterThan(0)
   })
 
   it("requires at least one collaborator name chip", () => {
@@ -178,7 +193,7 @@ describe("validateAdminProjectPayload", () => {
     )
 
     expect(result.success).toBe(false)
-    expect(result.errors.length).toBeGreaterThan(0)
+    expect(result.errors?.length).toBeGreaterThan(0)
   })
 
   it("rejects legacy admin payload fields that are no longer editable", () => {
@@ -209,9 +224,9 @@ describe("validateAdminProjectPayload", () => {
     })
 
     expect(result.success).toBe(false)
-    expect(result.errors.join(" ")).toContain("Unrecognized")
-    expect(result.errors.join(" ")).toContain("fieldId")
-    expect(result.errors.join(" ")).toContain("category")
+    expect(result.errors?.join(" ")).toContain("Unrecognized")
+    expect(result.errors?.join(" ")).toContain("fieldId")
+    expect(result.errors?.join(" ")).toContain("category")
   })
 })
 
