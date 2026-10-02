@@ -1,6 +1,6 @@
 import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { beforeEach, describe, expect, it } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { ProjectDetailPage } from "@/components/ProjectDetailPage"
 import {
   LOCALE_STORAGE_KEY,
@@ -9,6 +9,8 @@ import {
   type ProjectMedia,
 } from "@/data/portfolio"
 import { createProject } from "@/test/factories"
+
+const defaultMatchMedia = vi.mocked(window.matchMedia).getMockImplementation()!
 
 const media: ProjectMedia = {
   cover: {
@@ -44,6 +46,8 @@ describe("ProjectDetailPage", () => {
   beforeEach(() => {
     window.localStorage.clear()
   })
+
+  afterEach(() => vi.mocked(window.matchMedia).mockImplementation(defaultMatchMedia))
 
   it("renders admin-shaped Thinking media as an AXE-style proposal carousel", async () => {
     const user = userEvent.setup()
@@ -227,6 +231,32 @@ describe("ProjectDetailPage", () => {
       .toHaveAttribute("href", "/work/samsung")
     expect(screen.queryByText("Year", { exact: true })).not.toBeInTheDocument()
     expect(screen.queryByText("Results", { exact: true })).not.toBeInTheDocument()
+  })
+
+  it("pages through Enfa videos in groups of three on desktop", async () => {
+    vi.mocked(window.matchMedia).mockImplementation((query) => ({
+      ...defaultMatchMedia(query),
+      matches: true,
+    }))
+    const user = userEvent.setup()
+    render(<ProjectDetailPage contentByLocale={PORTFOLIO_CONTENT} projectId="enfa-vietnam" />)
+
+    const carousel = screen.getByRole("region", { name: /Campaign Khởi đầu A\+\s+Mong con thật wow videos/ })
+    expect(carousel).toHaveAttribute("aria-roledescription", "carousel")
+    expect(within(carousel).getByText("1-3 / 6")).toBeInTheDocument()
+    expect(within(carousel).getAllByRole("link", { name: /Watch video:/ })).toHaveLength(6)
+
+    await user.click(within(carousel).getByRole("button", { name: "Next slide" }))
+    expect(within(carousel).getByText("4-6 / 6")).toBeInTheDocument()
+    expect(within(carousel).getByText("Video 04")).toBeInTheDocument()
+
+    carousel.focus()
+    await user.keyboard("{ArrowLeft}")
+    expect(within(carousel).getByText("1-3 / 6")).toBeInTheDocument()
+    await user.click(within(carousel).getByRole("button", { name: "Previous slide" }))
+    expect(within(carousel).getByText("4-6 / 6")).toBeInTheDocument()
+    await user.click(within(carousel).getByRole("button", { name: "Next slide" }))
+    expect(within(carousel).getByText("1-3 / 6")).toBeInTheDocument()
   })
 
   it("keeps Always-on and IB 101 carousel navigation independent", async () => {

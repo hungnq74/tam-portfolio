@@ -2421,6 +2421,7 @@ function ProjectCard({
 }) {
   const cardCover = project.media?.cardCover ?? project.media?.cover
   const coverFocalPoint = cardCover?.focalPoint ?? { x: 50, y: 50 }
+  const containsCardCover = project.media?.cardCoverFit === "contain"
 
   return (
     <Link
@@ -2434,7 +2435,7 @@ function ProjectCard({
           : "border-paper/35 hover:-translate-y-1 hover:border-gold/70",
       )}
     >
-      <div className={cn("relative aspect-[16/10] overflow-hidden", cardCover ? "bg-[#5bae31]" : "bg-paper-deep")}>
+      <div className={cn("relative aspect-[16/10] overflow-hidden", cardCover && !containsCardCover ? "bg-[#5bae31]" : "bg-paper-deep")}>
         {cardCover ? (
           <img
             src={cardCover.src}
@@ -2443,7 +2444,10 @@ function ProjectCard({
             height={cardCover.height}
             loading="lazy"
             decoding="async"
-            className="h-full w-full object-cover transition duration-500 group-hover:scale-105 motion-reduce:group-hover:scale-100"
+            className={cn(
+              "h-full w-full transition duration-500 motion-reduce:group-hover:scale-100",
+              containsCardCover ? "object-contain" : "object-cover group-hover:scale-105",
+            )}
             style={{ objectPosition: `${coverFocalPoint.x}% ${coverFocalPoint.y}%` }}
           />
         ) : (

@@ -3,6 +3,7 @@
 import {
   type CSSProperties,
   type KeyboardEvent,
+  type ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -170,6 +171,27 @@ function useContentPostsPerPage() {
   return postsPerPage
 }
 
+function useVideosPerPage() {
+  const [videosPerPage, setVideosPerPage] = useState(1)
+
+  useEffect(() => {
+    const tablet = window.matchMedia("(min-width: 640px)")
+    const desktop = window.matchMedia("(min-width: 1280px)")
+    const syncVideosPerPage = () => setVideosPerPage(desktop.matches ? 3 : tablet.matches ? 2 : 1)
+
+    syncVideosPerPage()
+    tablet.addEventListener("change", syncVideosPerPage)
+    desktop.addEventListener("change", syncVideosPerPage)
+
+    return () => {
+      tablet.removeEventListener("change", syncVideosPerPage)
+      desktop.removeEventListener("change", syncVideosPerPage)
+    }
+  }, [])
+
+  return videosPerPage
+}
+
 function getSlideRangeLabel(startIndex: number, visibleCount: number, totalSlides: number) {
   const firstSlide = startIndex + 1
   const lastSlide = Math.min(startIndex + visibleCount, totalSlides)
@@ -200,6 +222,7 @@ function MediaProjectPage({
   const videoCampaigns = media?.videoCampaigns ?? []
   const outreachSections = media?.outreachSections ?? []
   const usesSplitCoverIntro = media?.introLayout === "split-cover"
+  const usesStackedCoverIntro = media?.introLayout === "stacked-cover"
   const showsProposalCarousel = !websitePreview && slides.length > 0
   const proposalCarouselId = `${project.id}-proposal-carousel`
   const slidesPerPage = useSlidesPerPage()
@@ -277,7 +300,22 @@ function MediaProjectPage({
                 body={project.overview}
               />
             ) : (
-              <div className={cn(MEDIA_RAIL_CLASS, "border-l-4 border-clay bg-paper/72 px-5 py-4 shadow-[0_14px_36px_rgba(45,32,21,0.1)] sm:px-6 sm:py-5")}>
+              <div className={cn(
+                MEDIA_RAIL_CLASS,
+                usesStackedCoverIntro
+                  ? "border-b border-gold/45 pb-8 sm:pb-10"
+                  : "border-l-4 border-clay bg-paper/72 px-5 py-4 shadow-[0_14px_36px_rgba(45,32,21,0.1)] sm:px-6 sm:py-5",
+              )}>
+                {usesStackedCoverIntro ? (
+                  <div className="mx-auto mb-5 max-w-4xl">
+                    <p className="text-xs font-bold uppercase tracking-[0.22em] text-clay">
+                      {project.category}
+                    </p>
+                    <h1 className="mt-3 font-serif text-3xl font-semibold leading-tight text-clay sm:text-4xl lg:text-5xl">
+                      {project.title}
+                    </h1>
+                  </div>
+                ) : null}
                 <p className="font-prose mx-auto max-w-4xl whitespace-pre-line text-base leading-7 text-ink/82 sm:text-lg">
                   {project.overview}
                 </p>
@@ -442,6 +480,8 @@ function MediaProjectPage({
             <ProjectVideoCampaigns
               campaigns={videoCampaigns}
               watchVideoLabel={ui.detail.watchVideo}
+              previousLabel={ui.detail.previousSlide}
+              nextLabel={ui.detail.nextSlide}
             />
           ) : null}
 
@@ -1037,18 +1077,64 @@ function ProjectContentPostsCarousel({
   onToggleCaption: (postSrc: string) => void
 }) {
   const postsPerPage = useContentPostsPerPage()
-  const pageCount = Math.max(1, Math.ceil(posts.length / postsPerPage))
+
+  return (
+    <ProjectMediaCarousel
+      items={posts}
+      itemsPerPage={postsPerPage}
+      ariaLabel={ariaLabel}
+      previousLabel={previousLabel ?? "Previous post"}
+      nextLabel={nextLabel ?? "Next post"}
+      railClassName={CAROUSEL_RAIL_CLASS}
+      pageClassName="md:grid-cols-2"
+      renderItem={(post) => (
+        <ProjectContentPostCard
+          key={post.src}
+          post={post}
+          postLinkLabel={postLinkLabel}
+          captionLabel={captionLabel}
+          readMoreLabel={readMoreLabel}
+          showLessLabel={showLessLabel}
+          isCaptionExpanded={Boolean(expandedCaptions[post.src])}
+          onToggleCaption={() => onToggleCaption(post.src)}
+          compact
+        />
+      )}
+    />
+  )
+}
+
+function ProjectMediaCarousel({
+  items,
+  itemsPerPage,
+  ariaLabel,
+  previousLabel,
+  nextLabel,
+  railClassName,
+  pageClassName,
+  renderItem,
+}: {
+  items: ProjectMediaAsset[]
+  itemsPerPage: number
+  ariaLabel: string
+  previousLabel: string
+  nextLabel: string
+  railClassName: string
+  pageClassName: string
+  renderItem: (item: ProjectMediaAsset, index: number) => ReactNode
+}) {
+  const pageCount = Math.max(1, Math.ceil(items.length / itemsPerPage))
   const [activePageIndex, setActivePageIndex] = useState(0)
   const trackRef = useRef<HTMLDivElement | null>(null)
   const programmaticScrollTimeoutRef = useRef<number | null>(null)
-  const visibleStart = activePageIndex * postsPerPage
-  const visibleCount = Math.min(postsPerPage, Math.max(0, posts.length - visibleStart))
-  const rangeLabel = getSlideRangeLabel(visibleStart, visibleCount, posts.length)
-  const postPages = Array.from({ length: pageCount }, (_, pageIndex) =>
-    posts.slice(pageIndex * postsPerPage, pageIndex * postsPerPage + postsPerPage),
+  const visibleStart = activePageIndex * itemsPerPage
+  const visibleCount = Math.min(itemsPerPage, Math.max(0, items.length - visibleStart))
+  const rangeLabel = getSlideRangeLabel(visibleStart, visibleCount, items.length)
+  const pages = Array.from({ length: pageCount }, (_, pageIndex) =>
+    items.slice(pageIndex * itemsPerPage, pageIndex * itemsPerPage + itemsPerPage),
   )
 
-  const scrollToPostPage = useCallback((pageIndex: number, behavior: ScrollBehavior = "smooth") => {
+  const scrollToPage = useCallback((pageIndex: number, behavior: ScrollBehavior = "smooth") => {
     const trackElement = trackRef.current
     if (!trackElement) return
 
@@ -1075,11 +1161,11 @@ function ProjectContentPostsCarousel({
   useEffect(() => {
     setActivePageIndex((pageIndex) => {
       const nextPageIndex = Math.min(pageIndex, pageCount - 1)
-      window.requestAnimationFrame(() => scrollToPostPage(nextPageIndex, "auto"))
+      window.requestAnimationFrame(() => scrollToPage(nextPageIndex, "auto"))
 
       return nextPageIndex
     })
-  }, [pageCount, scrollToPostPage])
+  }, [itemsPerPage, pageCount, scrollToPage])
 
   useEffect(() => {
     return () => {
@@ -1089,18 +1175,18 @@ function ProjectContentPostsCarousel({
     }
   }, [])
 
-  const goToPostPage = useCallback(
+  const goToPage = useCallback(
     (direction: number) => {
       if (pageCount <= 1) return
 
       setActivePageIndex((index) => {
         const nextPageIndex = (index + direction + pageCount) % pageCount
-        scrollToPostPage(nextPageIndex)
+        scrollToPage(nextPageIndex)
 
         return nextPageIndex
       })
     },
-    [pageCount, scrollToPostPage],
+    [pageCount, scrollToPage],
   )
 
   const syncPageFromScroll = useCallback(() => {
@@ -1117,12 +1203,12 @@ function ProjectContentPostsCarousel({
     if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return
 
     event.preventDefault()
-    goToPostPage(event.key === "ArrowLeft" ? -1 : 1)
+    goToPage(event.key === "ArrowLeft" ? -1 : 1)
   }
 
   return (
     <section
-      className={cn(CAROUSEL_RAIL_CLASS, "focus:outline-none")}
+      className={cn(railClassName, "focus:outline-none")}
       role="region"
       aria-label={ariaLabel}
       aria-roledescription="carousel"
@@ -1144,25 +1230,13 @@ function ProjectContentPostsCarousel({
           className="flex snap-x snap-mandatory overflow-x-auto overscroll-x-contain scroll-smooth pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
           onScroll={syncPageFromScroll}
         >
-          {postPages.map((pagePosts) => {
+          {pages.map((pageItems, pageIndex) => {
             return (
               <div
-                key={pagePosts.map((post) => post.src).join("-")}
-                className="grid min-w-full snap-start gap-4 md:grid-cols-2"
+                key={pageItems.map((item) => item.src).join("-")}
+                className={cn("grid min-w-full snap-start gap-4", pageClassName)}
               >
-                {pagePosts.map((post) => (
-                  <ProjectContentPostCard
-                    key={post.src}
-                    post={post}
-                    postLinkLabel={postLinkLabel}
-                    captionLabel={captionLabel}
-                    readMoreLabel={readMoreLabel}
-                    showLessLabel={showLessLabel}
-                    isCaptionExpanded={Boolean(expandedCaptions[post.src])}
-                    onToggleCaption={() => onToggleCaption(post.src)}
-                    compact
-                  />
-                ))}
+                {pageItems.map((item, index) => renderItem(item, pageIndex * itemsPerPage + index))}
               </div>
             )
           })}
@@ -1170,10 +1244,10 @@ function ProjectContentPostsCarousel({
 
         {pageCount > 1 ? (
           <div className="mt-4 flex items-center justify-center gap-3 xl:pointer-events-none xl:absolute xl:inset-y-0 xl:-left-16 xl:-right-16 xl:mt-0 xl:justify-between">
-            <CarouselButton label={previousLabel ?? "Previous post"} onClick={() => goToPostPage(-1)}>
+            <CarouselButton label={previousLabel} onClick={() => goToPage(-1)}>
               <ArrowLeft className="h-4 w-4" />
             </CarouselButton>
-            <CarouselButton label={nextLabel ?? "Next post"} onClick={() => goToPostPage(1)}>
+            <CarouselButton label={nextLabel} onClick={() => goToPage(1)}>
               <ArrowRight className="h-4 w-4" />
             </CarouselButton>
           </div>
@@ -1500,9 +1574,13 @@ function ProjectImageCampaigns({
 function ProjectVideoCampaigns({
   campaigns,
   watchVideoLabel,
+  previousLabel,
+  nextLabel,
 }: {
   campaigns: ProjectVideoCampaign[]
   watchVideoLabel: string
+  previousLabel: string
+  nextLabel: string
 }) {
   return (
     <section className={cn(MEDIA_RAIL_CLASS, "space-y-10")} aria-label="Video campaigns">
@@ -1520,7 +1598,10 @@ function ProjectVideoCampaigns({
                 <p className="text-xs font-bold uppercase tracking-[0.2em] text-clay">
                   Video scripts
                 </p>
-                <h2 className="mt-2 font-serif text-3xl font-semibold leading-tight text-moss sm:text-4xl lg:text-5xl">
+                <h2 className={cn(
+                  "mt-2 whitespace-pre-line font-serif text-3xl font-semibold leading-tight text-moss sm:text-4xl",
+                  campaign.title.includes("\n") ? "lg:text-[2.5rem]" : "lg:text-5xl",
+                )}>
                   {campaign.title}
                 </h2>
               </div>
@@ -1529,7 +1610,14 @@ function ProjectVideoCampaigns({
               </p>
             </div>
 
-            {featuredVideo ? (
+            {campaign.videosLayout === "carousel" ? (
+              <ProjectVideosCarousel
+                campaign={campaign}
+                watchVideoLabel={watchVideoLabel}
+                previousLabel={previousLabel}
+                nextLabel={nextLabel}
+              />
+            ) : featuredVideo ? (
               <ProjectFeaturedVideoCard
                 video={featuredVideo}
                 watchVideoLabel={watchVideoLabel}
@@ -1555,6 +1643,43 @@ function ProjectVideoCampaigns({
         )
       })}
     </section>
+  )
+}
+
+function ProjectVideosCarousel({
+  campaign,
+  watchVideoLabel,
+  previousLabel,
+  nextLabel,
+}: {
+  campaign: ProjectVideoCampaign
+  watchVideoLabel: string
+  previousLabel: string
+  nextLabel: string
+}) {
+  const videosPerPage = useVideosPerPage()
+
+  return (
+    <div className="mt-5">
+      <ProjectMediaCarousel
+        items={campaign.videos}
+        itemsPerPage={videosPerPage}
+        ariaLabel={`${campaign.title} videos`}
+        previousLabel={previousLabel}
+        nextLabel={nextLabel}
+        railClassName="relative mx-auto max-w-5xl"
+        pageClassName="sm:grid-cols-2 xl:grid-cols-3"
+        renderItem={(video, index) => (
+          <ProjectVideoPreviewCard
+            key={video.src}
+            video={video}
+            index={index}
+            watchVideoLabel={watchVideoLabel}
+            imageFit="contain"
+          />
+        )}
+      />
+    </div>
   )
 }
 

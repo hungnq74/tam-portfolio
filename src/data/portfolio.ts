@@ -44,6 +44,7 @@ export interface ProjectMediaAsset {
 export interface ProjectVideoCampaign {
   title: string
   description: string
+  videosLayout?: "grid" | "carousel"
   videos: ProjectMediaAsset[]
 }
 
@@ -77,7 +78,8 @@ export interface ProjectOutreachSection {
 export interface ProjectMedia {
   cover: ProjectMediaAsset
   cardCover?: ProjectMediaAsset
-  introLayout?: "split-cover"
+  cardCoverFit?: "cover" | "contain"
+  introLayout?: "split-cover" | "stacked-cover"
   summary?: ProjectMediaAsset
   websitePreview?: ProjectMediaAsset
   proposalSlides?: ProjectMediaAsset[]
@@ -1226,14 +1228,27 @@ const ENFA_VIETNAM_VIDEOS: ProjectMediaAsset[] = [
   },
 ]
 
+const ENFA_VIETNAM_CAMPAIGN_COVER: ProjectMediaAsset = {
+  src: "/assets/projects/enfa-vietnam/cover-wide.jpg",
+  alt: "Enfa Việt Nam — Khởi đầu A+ - Mong con thật wow campaign banner",
+  width: 3000,
+  height: 1160,
+  sourceUrl: "https://cdn.enfa.vn/website_pc_aplus_mar_d17125f60e.jpg",
+}
+
 const ENFA_VIETNAM_PROJECT_MEDIA: ProjectMedia = {
-  introLayout: "split-cover",
-  cover: ENFA_VIETNAM_VIDEOS[0],
-  cardCover: ENFA_VIETNAM_VIDEOS[0],
+  introLayout: "stacked-cover",
+  cover: ENFA_VIETNAM_CAMPAIGN_COVER,
+  cardCover: {
+    ...ENFA_VIETNAM_CAMPAIGN_COVER,
+    focalPoint: { x: 100, y: 50 },
+  },
+  cardCoverFit: "cover",
   videoCampaigns: [
     {
-      title: "Enfa Việt Nam",
-      description: "Every mother has her own way of telling her child’s story.",
+      title: "Campaign Khởi đầu A+\nMong con thật wow",
+      description: "Crafting TikTok scripts for Hot Moms under the “Khởi đầu A+ - Mong con thật wow” campaign, tailoring the “Em bé giỏi tính, giàu tình” message to each family, each little one’s unique story.",
+      videosLayout: "carousel",
       videos: ENFA_VIETNAM_VIDEOS,
     },
   ],

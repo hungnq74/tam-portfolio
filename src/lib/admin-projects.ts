@@ -45,6 +45,7 @@ export const projectMediaAssetSchema = z.object({
 const projectVideoCampaignSchema = z.object({
   title: z.string().min(1).max(140),
   description: z.string().min(1).max(300),
+  videosLayout: z.enum(["grid", "carousel"]).optional(),
   videos: z.array(projectMediaAssetSchema).min(1).max(8),
 })
 
@@ -83,7 +84,8 @@ const projectOutreachSectionSchema = z.object({
 export const projectMediaSchema = z.object({
   cover: projectMediaAssetSchema,
   cardCover: projectMediaAssetSchema.optional(),
-  introLayout: z.enum(["split-cover"]).optional(),
+  cardCoverFit: z.enum(["cover", "contain"]).optional(),
+  introLayout: z.enum(["split-cover", "stacked-cover"]).optional(),
   summary: projectMediaAssetSchema.optional(),
   websitePreview: projectMediaAssetSchema.optional(),
   proposalSlides: z

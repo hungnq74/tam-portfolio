@@ -583,8 +583,8 @@ const projectTemplateRoutes: CustomerRoute[] = [
     anchors: [
       { kind: "role", role: "heading", name: "Enfa Việt Nam", label: "Enfa heading" },
       { kind: "text", value: "For Enfa Vietnam, I developed TikTok video scripts", exact: false, label: "Enfa overview" },
-      { kind: "image", name: /Enfa Việt Nam TikTok video preview 1/, label: "Enfa cover" },
-      { kind: "role", role: "link", name: /Watch video: Enfa Việt Nam TikTok video preview 6/, label: "Enfa last video" },
+      { kind: "image", name: /Enfa Việt Nam — Khởi đầu A\+ - Mong con thật wow campaign banner/, label: "Enfa cover" },
+      { kind: "region", name: /Campaign Khởi đầu A\+\s+Mong con thật wow videos/, label: "Enfa video carousel" },
     ],
   },
   {
@@ -619,6 +619,65 @@ const customerRoutes = [
 ]
 
 test.describe("customer-facing mobile visual regression", () => {
+  test("Enfa video carousel pages through the ordered videos", async ({ page }, testInfo) => {
+    await openCustomerPage(page, "/work/enfa-vietnam", "en")
+    const carousel = page.getByRole("region", { name: /Campaign Khởi đầu A\+\s+Mong con thật wow videos/ })
+    const width = page.viewportSize()!.width
+    const perPage = width >= 1280 ? 3 : width >= 640 ? 2 : 1
+    const range = (start: number) => perPage === 1 ? `${start} / 6` : `${start}-${start + perPage - 1} / 6`
+    const videos = carousel.getByRole("link", { name: /Watch video:/ })
+    const expectedLinks = [
+      "https://vt.tiktok.com/ZSbk5YSQC/",
+      "https://vt.tiktok.com/ZSbkPKydB/",
+      "https://vt.tiktok.com/ZSbkPW9fo/",
+      "https://vt.tiktok.com/ZSbk5JAJ5/",
+      "https://vt.tiktok.com/ZSbkPnHs8/",
+      "https://vt.tiktok.com/ZSbkPW9Js/",
+    ]
+    for (let index = 0; index < expectedLinks.length; index++) {
+      await expect(videos.nth(index)).toHaveAttribute("href", expectedLinks[index])
+    }
+    const assertVisiblePage = async (start: number) => {
+      await expect(carousel.getByText(range(start), { exact: true })).toBeVisible()
+      // Verify actual card positions, not just the status label after navigation.
+      await expect.poll(async () => carousel.evaluate((region) => {
+        const track = region.querySelector(".snap-x")!
+        const bounds = track.getBoundingClientRect()
+        return Array.from(track.querySelectorAll("a")).flatMap((card, index) => {
+          const rect = card.getBoundingClientRect()
+          return rect.left >= bounds.left - 2 && rect.right <= bounds.right + 2 ? [index + 1] : []
+        })
+      })).toEqual(Array.from({ length: perPage }, (_, index) => start + index))
+    }
+
+    await assertVisiblePage(1)
+    await carousel.getByRole("button", { name: "Next slide" }).click()
+    await assertVisiblePage(1 + perPage)
+    await carousel.getByRole("button", { name: "Previous slide" }).click()
+    await assertVisiblePage(1)
+    await carousel.press("ArrowLeft")
+    await assertVisiblePage(7 - perPage)
+    await carousel.press("ArrowRight")
+    await assertVisiblePage(1)
+
+    if (width >= 1280) {
+      const campaign = page.getByRole("article", { name: /Campaign Khởi đầu A\+\s+Mong con thật wow/, exact: true })
+      await campaign.evaluate((element) => window.scrollTo({
+        top: window.scrollY + element.getBoundingClientRect().top - 100,
+        behavior: "auto",
+      }))
+      await campaign.screenshot({ path: testInfo.outputPath("enfa-videos-01-03.png") })
+      await carousel.getByRole("button", { name: "Next slide" }).click()
+      await assertVisiblePage(4)
+      await campaign.screenshot({ path: testInfo.outputPath("enfa-videos-04-06.png") })
+      await page.setViewportSize({ width: 390, height: 844 })
+      await expect(carousel.getByText("2 / 6", { exact: true })).toBeVisible()
+      await carousel.getByRole("button", { name: "Next slide" }).click()
+      await expect(carousel.getByText("3 / 6", { exact: true })).toBeVisible()
+      await assertVisualIntegrity(page, [{ kind: "region", name: /Campaign Khởi đầu A\+\s+Mong con thật wow videos/ }])
+    }
+  })
+
   test("Tesla content navigation keeps both carousels independent", async ({ page }) => {
     await openCustomerPage(page, "/work/tesla-education-always-on", "en")
     const alwaysOn = page.getByRole("region", { name: "Tesla Education content posts" })

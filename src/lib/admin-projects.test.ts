@@ -15,6 +15,7 @@ describe("portfolioProjectSchema", () => {
       )
       expect(enfa.year).toBe("")
       expect(enfa.results).toEqual([])
+      expect(enfa.media?.videoCampaigns?.[0].videosLayout).toBe("carousel")
 
       const tesla = portfolioProjectSchema.parse(
         PORTFOLIO_CONTENT[locale].projects.find((project) => project.id === "tesla-education-always-on"),
