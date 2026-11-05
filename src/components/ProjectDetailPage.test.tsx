@@ -206,6 +206,9 @@ describe("ProjectDetailPage", () => {
     expect(mysteryVideos.map((link) => link.getAttribute("href"))).toEqual([
       "https://www.facebook.com/reel/1023584327233995",
       "https://www.facebook.com/reel/1072560088892094",
+      "https://www.facebook.com/reel/997718560040699",
+      "https://www.facebook.com/reel/1045136365212274",
+      "https://www.facebook.com/reel/2293637304509772",
     ])
     mysteryVideos.forEach((link) => expect(link).toHaveAttribute("target", "_blank"))
     expect(screen.getByRole("heading", { name: "Brand Introduction Video" }).compareDocumentPosition(

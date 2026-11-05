@@ -1123,11 +1123,33 @@ const TESLA_EDUCATION_MYSTERY_BOX_VIDEOS: ProjectMediaAsset[] = [
     height: 2048,
     sourceUrl: "https://www.facebook.com/reel/1072560088892094",
   },
+  {
+    src: "/assets/projects/tesla-education/mystery-box-03.jpg",
+    alt: "Tesla Education IB Mystery Box video preview 3",
+    width: 1152,
+    height: 2048,
+    sourceUrl: "https://www.facebook.com/reel/997718560040699",
+  },
+  {
+    src: "/assets/projects/tesla-education/mystery-box-04.jpg",
+    alt: "Tesla Education IB Mystery Box video preview 4",
+    width: 1152,
+    height: 2048,
+    sourceUrl: "https://www.facebook.com/reel/1045136365212274",
+  },
+  {
+    src: "/assets/projects/tesla-education/mystery-box-05.jpg",
+    alt: "Tesla Education IB Mystery Box video preview 5",
+    width: 1152,
+    height: 2048,
+    sourceUrl: "https://www.facebook.com/reel/2293637304509772",
+  },
 ]
 
 const TESLA_EDUCATION_MYSTERY_BOX_CAMPAIGN: ProjectVideoCampaign = {
   title: "IB Mystery Box Series",
   description: "An educational Reel series that unpacks parents’ biggest IB questions, making the IB journey easier to understand - one mystery at a time.",
+  videosLayout: "carousel",
   videos: TESLA_EDUCATION_MYSTERY_BOX_VIDEOS,
 }
 
