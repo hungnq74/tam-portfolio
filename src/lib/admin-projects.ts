@@ -7,7 +7,7 @@ import {
   type ProjectMedia,
 } from "@/data/portfolio"
 
-export const ADMIN_PROJECT_PAGE_LIMIT = 50
+export const ADMIN_PROJECT_PAGE_LIMIT = 100
 export const ADMIN_PROJECT_PDF_SIZE_LIMIT = 150 * 1024 * 1024
 export const ADMIN_PROPOSAL_FIELD_ID = "social-planner" as const
 export const DEFAULT_PROPOSAL_CREDIT_NAMES = [
@@ -143,10 +143,14 @@ export const portfolioProjectSchema = z.object({
   proposalCta: projectProposalCtaSchema.optional(),
 })
 
+const projectIdSchema = z.string().regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/)
+
 export const portfolioManifestSchema = z.object({
   version: z.literal(1),
   updatedAt: z.string().datetime(),
   revision: z.string().min(1),
+  // Old project id -> current project id, kept so renamed project URLs keep working.
+  redirects: z.record(projectIdSchema, projectIdSchema).optional(),
   locales: z.object({
     en: z.object({
       projects: z.array(portfolioProjectSchema),
@@ -255,7 +259,6 @@ export function validateAdminProjectPayload(
   input: unknown,
   options: {
     requireMedia: boolean
-    routeProjectId?: string
   },
 ) {
   const parsed = adminProjectSaveSchema.safeParse(input)
@@ -269,10 +272,6 @@ export function validateAdminProjectPayload(
 
   const payload = parsed.data
   const errors: string[] = []
-
-  if (options.routeProjectId && payload.shared.id !== options.routeProjectId) {
-    errors.push("Project id cannot be changed after creation.")
-  }
 
   if (!hasProposalMedia(payload.shared.media)) {
     errors.push(

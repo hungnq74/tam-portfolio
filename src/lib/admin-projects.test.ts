@@ -159,15 +159,11 @@ describe("validateAdminProjectPayload", () => {
     )
   })
 
-  it("rejects invalid slugs, route id changes, and missing CTA/credit fields", () => {
+  it("rejects invalid slugs and missing CTA/credit fields", () => {
     const invalidSlug = validateAdminProjectPayload(
       createAdminPayload({ shared: { id: "Bad Project" } }),
       { requireMedia: false },
     )
-    const changedId = validateAdminProjectPayload(createAdminPayload(), {
-      requireMedia: false,
-      routeProjectId: "another-project",
-    })
     const missingCta = validateAdminProjectPayload(
       createAdminPayload({
         locales: {
@@ -179,10 +175,6 @@ describe("validateAdminProjectPayload", () => {
 
     expect(invalidSlug.success).toBe(false)
     expect(invalidSlug.errors).toContain("Project id must be a lowercase slug.")
-    expect(changedId.success).toBe(false)
-    expect(changedId.errors).toContain(
-      "Project id cannot be changed after creation.",
-    )
     expect(missingCta.success).toBe(false)
     expect(missingCta.errors?.length).toBeGreaterThan(0)
   })

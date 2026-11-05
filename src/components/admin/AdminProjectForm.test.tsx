@@ -293,6 +293,37 @@ describe("AdminProjectForm basics", () => {
     expect(router.refresh).toHaveBeenCalled()
   })
 
+  it("lets editors change the project id and moves to the renamed edit page", async () => {
+    const user = userEvent.setup()
+    const router = getMockRouter()
+    const fetch = vi.fn().mockResolvedValue(
+      jsonResponse({ ok: true, etag: "etag-2", projectId: "new-demo" }),
+    )
+    vi.stubGlobal("fetch", fetch)
+    renderForm()
+
+    const idInput = screen.getByLabelText("Project id")
+    expect(idInput).toBeEnabled()
+
+    await user.clear(idInput)
+    await user.type(idInput, "new-demo")
+
+    expect(
+      screen.getByText(/old link \/work\/demo-project will redirect/),
+    ).toBeInTheDocument()
+
+    await user.click(screen.getByRole("button", { name: /save project/i }))
+    await screen.findByText("Project saved.")
+
+    expect(fetch).toHaveBeenCalledWith(
+      "/admin/api/projects/demo-project",
+      expect.objectContaining({ method: "PUT" }),
+    )
+    expect(JSON.parse(fetch.mock.calls[0][1].body).shared.id).toBe("new-demo")
+    expect(router.replace).toHaveBeenCalledWith("/admin/projects/new-demo")
+    expect(router.refresh).not.toHaveBeenCalled()
+  })
+
   it("mirrors English fields into hidden Vietnamese payload when creating", async () => {
     const user = userEvent.setup()
     const router = getMockRouter()
@@ -403,7 +434,7 @@ describe("AdminProjectForm uploads", () => {
 
   it("rejects proposal PDFs above the page limit", async () => {
     const user = userEvent.setup()
-    createMockPdf(51)
+    createMockPdf(101)
     renderForm({
       mode: "edit",
       media: {
@@ -418,7 +449,7 @@ describe("AdminProjectForm uploads", () => {
     )
 
     expect(
-      await screen.findByText("PDF has 51 pages. The limit is 50."),
+      await screen.findByText("PDF has 101 pages. The limit is 100."),
     ).toBeInTheDocument()
     expect(mocks.upload).not.toHaveBeenCalled()
   })

@@ -5,6 +5,8 @@ import {
   addProjectToManifest,
   assertExpectedEtag,
   getOwnedBlobUrls,
+  getProjectIdHistory,
+  getProjectRedirectTarget,
   getUnusedOwnedBlobUrls,
   hydrateManifestProjectDefaults,
   ManifestConflictError,
@@ -463,10 +465,108 @@ describe("owned Blob URL helpers", () => {
 
     expect(
       getUnusedOwnedBlobUrls({
-        projectId: "demo",
+        projectIds: "demo",
         before: [before],
         after: [after],
       }),
     ).toEqual(["projects/demo/old/cover.png"])
+  })
+})
+
+describe("project rename redirects", () => {
+  function manifestWith(ids: string[], redirects?: Record<string, string>) {
+    return {
+      ...createManifestFromProjects({
+        en: ids.map((id) => createProject(id)),
+        vi: ids.map((id) => createProject(id)),
+      }),
+      redirects,
+    }
+  }
+
+  function renamed(id: string) {
+    return { en: createProject(id), vi: createProject(id) }
+  }
+
+  it("renames the project in both locales and records a redirect from the old id", () => {
+    const next = replaceProjectInManifest(
+      manifestWith(["demo", "other"]),
+      renamed("new-demo"),
+      "demo",
+    )
+
+    expect(next.locales.en.projects.map((project) => project.id)).toEqual([
+      "new-demo",
+      "other",
+    ])
+    expect(next.locales.vi.projects.map((project) => project.id)).toEqual([
+      "new-demo",
+      "other",
+    ])
+    expect(next.redirects).toEqual({ demo: "new-demo" })
+    expect(getProjectRedirectTarget(next, "demo")).toBe("new-demo")
+  })
+
+  it("points earlier redirects at the newest id and drops a redirect from the new id", () => {
+    const next = replaceProjectInManifest(
+      manifestWith(["second"], { first: "second", third: "unrelated" }),
+      renamed("third"),
+      "second",
+    )
+
+    expect(next.redirects).toEqual({ first: "third", second: "third" })
+    expect(getProjectIdHistory(next, "third")).toEqual(["third", "first", "second"])
+  })
+
+  it("leaves redirects untouched when the id does not change", () => {
+    const next = replaceProjectInManifest(
+      manifestWith(["demo"], { old: "demo" }),
+      renamed("demo"),
+    )
+
+    expect(next.redirects).toEqual({ old: "demo" })
+  })
+
+  it("drops redirects to a deleted project and from a reused id", () => {
+    const manifest = manifestWith(["demo"], { old: "demo", gone: "elsewhere" })
+
+    expect(removeProjectFromManifest(manifest, "demo").redirects).toEqual({
+      gone: "elsewhere",
+    })
+    expect(addProjectToManifest(manifest, renamed("old")).redirects).toEqual({
+      gone: "elsewhere",
+    })
+  })
+
+  it("treats uploads under any former id as owned by the renamed project", () => {
+    const project = createProject("new-demo", {
+      media: {
+        cover: {
+          src: "https://store.blob.vercel-storage.com/projects/demo/a/cover.png",
+          alt: "Cover",
+          width: 1600,
+          height: 900,
+        },
+        summary: {
+          src: "https://store.blob.vercel-storage.com/projects/new-demo/b/summary.png",
+          alt: "Main",
+          width: 1600,
+          height: 900,
+        },
+        proposalSlides: [
+          {
+            src: "https://store.blob.vercel-storage.com/projects/someone-else/c/proposal-01.png",
+            alt: "Slide",
+            width: 1600,
+            height: 900,
+          },
+        ],
+      },
+    })
+
+    expect(getOwnedBlobUrls(["new-demo", "demo"], [project])).toEqual([
+      "https://store.blob.vercel-storage.com/projects/demo/a/cover.png",
+      "https://store.blob.vercel-storage.com/projects/new-demo/b/summary.png",
+    ])
   })
 })

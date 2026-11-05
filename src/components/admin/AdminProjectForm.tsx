@@ -29,7 +29,7 @@ import {
   type ProjectMediaAsset,
 } from "@/data/portfolio"
 
-const PDF_PAGE_LIMIT = 50
+const PDF_PAGE_LIMIT = 100
 const PDF_SIZE_LIMIT = 150 * 1024 * 1024
 const PDF_RENDER_WIDTH = 1600
 const DEFAULT_CREDIT_NAMES = ["Minh Anh", "Hoàng Linh", "Bảo Trân"]
@@ -79,6 +79,13 @@ export function AdminProjectForm({
   const router = useRouter()
   const [expectedEtag, setExpectedEtag] = useState(manifestEtag)
   const [projectId, setProjectId] = useState(project?.en.id ?? "")
+  // The id currently stored on the server. In edit mode the field can be changed,
+  // but saving still targets the stored id until the rename is saved.
+  const [savedProjectId, setSavedProjectId] = useState(project?.en.id ?? "")
+  // Edit-mode uploads stay under the stored id's folder so a half-typed new id
+  // never ends up in Blob paths.
+  const uploadProjectId = mode === "edit" ? savedProjectId : projectId
+  const idChanged = mode === "edit" && projectId !== savedProjectId
   const [idTouched, setIdTouched] = useState(mode === "edit")
   const [media, setMedia] = useState<ProjectMedia | undefined>(
     () => project?.en.media ?? project?.vi.media,
@@ -145,7 +152,7 @@ export function AdminProjectForm({
     setError(null)
 
     try {
-      ensureUploadReady(projectId, blobConfigured)
+      ensureUploadReady(uploadProjectId, blobConfigured)
       if (!file.type.startsWith("image/")) {
         throw new Error("Cover must be an image file.")
       }
@@ -153,7 +160,7 @@ export function AdminProjectForm({
       const dimensions = await getImageDimensions(file)
       const extension = getImageExtension(file)
       const uploadId = globalThis.crypto.randomUUID()
-      const pathname = `projects/${projectId}/${uploadId}/cover.${extension}`
+      const pathname = `projects/${uploadProjectId}/${uploadId}/cover.${extension}`
       setCoverProgress({ label: "Uploading cover", percent: 0 })
 
       const blob = await upload(pathname, file, {
@@ -195,7 +202,7 @@ export function AdminProjectForm({
     setError(null)
 
     try {
-      ensureUploadReady(projectId, blobConfigured)
+      ensureUploadReady(uploadProjectId, blobConfigured)
       if (!media?.cover) {
         throw new Error("Upload a cover image before adding the main image.")
       }
@@ -206,7 +213,7 @@ export function AdminProjectForm({
       const dimensions = await getImageDimensions(file)
       const extension = getImageExtension(file)
       const uploadId = globalThis.crypto.randomUUID()
-      const pathname = `projects/${projectId}/${uploadId}/summary.${extension}`
+      const pathname = `projects/${uploadProjectId}/${uploadId}/summary.${extension}`
       setMainImageProgress({ label: "Uploading main image", percent: 0 })
 
       const blob = await upload(pathname, file, {
@@ -254,7 +261,7 @@ export function AdminProjectForm({
     setError(null)
 
     try {
-      ensureUploadReady(projectId, blobConfigured)
+      ensureUploadReady(uploadProjectId, blobConfigured)
       if (!media?.cover) {
         throw new Error("Upload a cover image before adding the proposal PDF.")
       }
@@ -267,7 +274,7 @@ export function AdminProjectForm({
       }
 
       const slides = await extractAndUploadPdf(file, {
-        projectId,
+        projectId: uploadProjectId,
         title: locales.en.title || projectId,
         onProgress: setPdfProgress,
       })
@@ -354,7 +361,7 @@ export function AdminProjectForm({
       const response = await fetch(
         mode === "create"
           ? "/admin/api/projects"
-          : `/admin/api/projects/${projectId}`,
+          : `/admin/api/projects/${savedProjectId}`,
         {
           method: mode === "create" ? "POST" : "PUT",
           headers: { "Content-Type": "application/json" },
@@ -383,6 +390,10 @@ export function AdminProjectForm({
 
       if (mode === "create") {
         router.push(`/admin/projects/${result?.projectId ?? projectId}?created=1`)
+      } else if (result?.projectId && result.projectId !== savedProjectId) {
+        // Renamed: the edit page lives under the new id now.
+        setSavedProjectId(result.projectId)
+        router.replace(`/admin/projects/${result.projectId}`)
       } else {
         router.refresh()
       }
@@ -427,11 +438,12 @@ export function AdminProjectForm({
                         slugify(event.target.value, { trimEdges: false }),
                       )
                     }}
-                    disabled={mode === "edit"}
                     className="admin-input"
                   />
                   <FieldHelp>
-                    Lowercase URL slug for the public project page.
+                    {idChanged && projectId
+                      ? `After saving, the public page moves to /work/${projectId}. The old link /work/${savedProjectId} will redirect there.`
+                      : "Lowercase URL slug for the public project page."}
                   </FieldHelp>
                 </label>
                 <LocaleContentFields

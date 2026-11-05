@@ -24,7 +24,9 @@ import {
   type PortfolioManifest,
 } from "@/lib/admin-projects"
 
-export const PORTFOLIO_MANIFEST_PATH = "portfolio/content.json"
+// Override only for isolated local testing against a separate manifest file.
+export const PORTFOLIO_MANIFEST_PATH =
+  process.env.PORTFOLIO_MANIFEST_PATH || "portfolio/content.json"
 export const BLOB_MANIFEST_CACHE_REFRESHING_MESSAGE =
   "Blob manifest cache is still refreshing. Please wait a few seconds and try again."
 
@@ -305,26 +307,32 @@ function mediaAssets(media?: ProjectMedia) {
   return assets
 }
 
-export function getOwnedBlobUrls(projectId: string, projects: Project[]) {
+function isOwnedBlobPath(src: string, projectIds: string[]) {
+  let pathname: string
+
+  try {
+    const url = new URL(src)
+    if (!url.hostname.endsWith(".blob.vercel-storage.com")) return false
+    pathname = url.pathname
+  } catch {
+    pathname = `/${src}`
+  }
+
+  return projectIds.some((projectId) => pathname.startsWith(`/projects/${projectId}/`))
+}
+
+/**
+ * Blob URLs uploaded by admin for this project. Pass every id the project has had
+ * (current id plus ids it was renamed from), because uploads keep their original path.
+ */
+export function getOwnedBlobUrls(projectIds: string | string[], projects: Project[]) {
+  const ids = Array.isArray(projectIds) ? projectIds : [projectIds]
   const owned = new Set<string>()
 
   projects.forEach((project) => {
     mediaAssets(project.media).forEach((asset) => {
-      if (!asset.src) return
-
-      try {
-        const url = new URL(asset.src)
-
-        if (
-          url.hostname.endsWith(".blob.vercel-storage.com") &&
-          url.pathname.startsWith(`/projects/${projectId}/`)
-        ) {
-          owned.add(asset.src)
-        }
-      } catch {
-        if (asset.src.startsWith(`projects/${projectId}/`)) {
-          owned.add(asset.src)
-        }
+      if (asset.src && isOwnedBlobPath(asset.src, ids)) {
+        owned.add(asset.src)
       }
     })
   })
@@ -333,18 +341,69 @@ export function getOwnedBlobUrls(projectId: string, projects: Project[]) {
 }
 
 export function getUnusedOwnedBlobUrls({
-  projectId,
+  projectIds,
   before,
   after,
 }: {
-  projectId: string
+  projectIds: string | string[]
   before: Project[]
   after: Project[]
 }) {
-  const beforeUrls = getOwnedBlobUrls(projectId, before)
-  const afterUrls = new Set(getOwnedBlobUrls(projectId, after))
+  const beforeUrls = getOwnedBlobUrls(projectIds, before)
+  const afterUrls = new Set(getOwnedBlobUrls(projectIds, after))
 
   return beforeUrls.filter((url) => !afterUrls.has(url))
+}
+
+/** Current project id for an old (renamed) project id, if one is recorded. */
+export function getProjectRedirectTarget(manifest: PortfolioManifest, projectId: string) {
+  return manifest.redirects?.[projectId]
+}
+
+/** Every id this project has had: the current one plus ids that redirect to it. */
+export function getProjectIdHistory(manifest: PortfolioManifest, projectId: string) {
+  const formerIds = Object.entries(manifest.redirects ?? {})
+    .filter(([, target]) => target === projectId)
+    .map(([from]) => from)
+
+  return [projectId, ...formerIds]
+}
+
+function renameRedirects(
+  redirects: PortfolioManifest["redirects"],
+  previousId: string,
+  nextId: string,
+) {
+  const next: Record<string, string> = {}
+
+  Object.entries(redirects ?? {}).forEach(([from, target]) => {
+    // The new id now belongs to a real project, so it must not redirect anywhere.
+    if (from === nextId) return
+    next[from] = target === previousId ? nextId : target
+  })
+
+  next[previousId] = nextId
+
+  return next
+}
+
+function withoutRedirectsFrom(redirects: PortfolioManifest["redirects"], projectId: string) {
+  if (!redirects?.[projectId]) return redirects
+
+  const next = { ...redirects }
+  delete next[projectId]
+
+  return Object.keys(next).length > 0 ? next : undefined
+}
+
+function withoutRedirectsTo(redirects: PortfolioManifest["redirects"], projectId: string) {
+  if (!redirects) return undefined
+
+  const next = Object.fromEntries(
+    Object.entries(redirects).filter(([from, target]) => target !== projectId && from !== projectId),
+  )
+
+  return Object.keys(next).length > 0 ? next : undefined
 }
 
 export async function deleteBlobUrls(urls: string[]) {
@@ -356,18 +415,24 @@ export async function deleteBlobUrls(urls: string[]) {
 export function replaceProjectInManifest(
   manifest: PortfolioManifest,
   projects: Record<Locale, Project>,
-) {
+  previousId: string = projects.en.id,
+): PortfolioManifest {
+  const renamed = previousId !== projects.en.id
+
   return {
     ...manifest,
+    ...(renamed
+      ? { redirects: renameRedirects(manifest.redirects, previousId, projects.en.id) }
+      : {}),
     locales: {
       en: {
         projects: manifest.locales.en.projects.map((project) =>
-          project.id === projects.en.id ? projects.en : project,
+          project.id === previousId ? projects.en : project,
         ),
       },
       vi: {
         projects: manifest.locales.vi.projects.map((project) =>
-          project.id === projects.vi.id ? projects.vi : project,
+          project.id === previousId ? projects.vi : project,
         ),
       },
     },
@@ -377,9 +442,11 @@ export function replaceProjectInManifest(
 export function addProjectToManifest(
   manifest: PortfolioManifest,
   projects: Record<Locale, Project>,
-) {
+): PortfolioManifest {
   return {
     ...manifest,
+    // A new project may reuse an old renamed id; the real project wins over the redirect.
+    redirects: withoutRedirectsFrom(manifest.redirects, projects.en.id),
     locales: {
       en: { projects: [...manifest.locales.en.projects, projects.en] },
       vi: { projects: [...manifest.locales.vi.projects, projects.vi] },
@@ -387,9 +454,13 @@ export function addProjectToManifest(
   }
 }
 
-export function removeProjectFromManifest(manifest: PortfolioManifest, projectId: string) {
+export function removeProjectFromManifest(
+  manifest: PortfolioManifest,
+  projectId: string,
+): PortfolioManifest {
   return {
     ...manifest,
+    redirects: withoutRedirectsTo(manifest.redirects, projectId),
     locales: {
       en: {
         projects: manifest.locales.en.projects.filter((project) => project.id !== projectId),

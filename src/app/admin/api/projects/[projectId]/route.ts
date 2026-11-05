@@ -12,6 +12,7 @@ import {
   deleteBlobUrls,
   getUnusedOwnedBlobUrls,
   getOwnedBlobUrls,
+  getProjectIdHistory,
   ManifestConflictError,
   readAdminPortfolioSnapshot,
   removeProjectFromManifest,
@@ -67,7 +68,6 @@ export async function PUT(request: NextRequest, context: RouteContext) {
   const input = await request.json().catch(() => null)
   const parsed = validateAdminProjectPayload(input, {
     requireMedia: false,
-    routeProjectId: projectId,
   })
 
   if (!parsed.success) {
@@ -96,16 +96,33 @@ export async function PUT(request: NextRequest, context: RouteContext) {
     throw error
   }
 
+  const nextProjectId = parsed.payload.shared.id
+  const renamed = nextProjectId !== projectId
+
+  if (renamed) {
+    const idTaken = (["en", "vi"] as const).some((locale) =>
+      snapshot.manifest.locales[locale].projects.some(
+        (project) => project.id === nextProjectId,
+      ),
+    )
+
+    if (idTaken) {
+      return jsonError("A project with this id already exists.", 409)
+    }
+  }
+
   try {
     const [existingEn, existingVi] = existingProjects
     const projects = createLocalizedProjects(parsed.payload, {
       en: existingEn,
       vi: existingVi,
     })
-    const nextManifest = replaceProjectInManifest(snapshot.manifest, projects)
+    const nextManifest = replaceProjectInManifest(snapshot.manifest, projects, projectId)
     const saved = await savePortfolioManifest(nextManifest, snapshot.etag)
     const unusedUrls = getUnusedOwnedBlobUrls({
-      projectId,
+      // Uploads keep the path of the id they were made under, so check every id
+      // this project has had, plus the new one.
+      projectIds: [...getProjectIdHistory(snapshot.manifest, projectId), nextProjectId],
       before: existingProjects,
       after: [projects.en, projects.vi],
     })
@@ -122,11 +139,12 @@ export async function PUT(request: NextRequest, context: RouteContext) {
 
     revalidatePath("/")
     revalidatePath(`/work/${projectId}`)
+    if (renamed) revalidatePath(`/work/${nextProjectId}`)
 
     return NextResponse.json({
       ok: true,
       etag: saved.etag,
-      projectId,
+      projectId: nextProjectId,
       warning,
     })
   } catch (error) {
@@ -179,7 +197,10 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
   try {
     const nextManifest = removeProjectFromManifest(snapshot.manifest, projectId)
     const saved = await savePortfolioManifest(nextManifest, snapshot.etag)
-    const urls = getOwnedBlobUrls(projectId, existingProjects)
+    const urls = getOwnedBlobUrls(
+      getProjectIdHistory(snapshot.manifest, projectId),
+      existingProjects,
+    )
     let warning: string | undefined
 
     try {

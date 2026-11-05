@@ -96,7 +96,12 @@ Rules:
 - Do not use accent marks.
 - Keep it short and stable.
 
-After a project is created, the project ID cannot be changed in admin.
+You can change the project ID later on the edit page. After saving:
+
+- The public page moves to `/work/new-id`.
+- The old link `/work/old-id` redirects to the new one, so links already shared keep working.
+- The ID must not already be used by another project.
+- Uploaded images and PDF pages stay where they are; nothing needs to be uploaded again.
 
 ### Title
 

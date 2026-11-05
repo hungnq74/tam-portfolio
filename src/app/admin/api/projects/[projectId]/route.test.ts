@@ -20,6 +20,7 @@ const mocks = vi.hoisted(() => {
     assertExpectedEtag: vi.fn(),
     deleteBlobUrls: vi.fn(),
     getOwnedBlobUrls: vi.fn(),
+    getProjectIdHistory: vi.fn(),
     getUnusedOwnedBlobUrls: vi.fn(),
     readAdminPortfolioSnapshot: vi.fn(),
     removeProjectFromManifest: vi.fn(),
@@ -36,6 +37,7 @@ vi.mock("@/lib/portfolio-manifest", () => ({
   assertExpectedEtag: mocks.assertExpectedEtag,
   deleteBlobUrls: mocks.deleteBlobUrls,
   getOwnedBlobUrls: mocks.getOwnedBlobUrls,
+  getProjectIdHistory: mocks.getProjectIdHistory,
   getUnusedOwnedBlobUrls: mocks.getUnusedOwnedBlobUrls,
   ManifestConflictError: mocks.ManifestConflictError,
   readAdminPortfolioSnapshot: mocks.readAdminPortfolioSnapshot,
@@ -75,6 +77,7 @@ describe("admin project update API", () => {
           .manifest,
     )
     mocks.getUnusedOwnedBlobUrls.mockReturnValue([])
+    mocks.getProjectIdHistory.mockImplementation((_manifest, id) => [id])
     mocks.savePortfolioManifest.mockResolvedValue({ etag: "etag-2" })
   })
 
@@ -89,16 +92,61 @@ describe("admin project update API", () => {
 
   it("rejects invalid update payloads", async () => {
     const response = await PUT(
-      request("PUT", createAdminPayload({ shared: { id: "other-project" } })),
+      request("PUT", createAdminPayload({ shared: { id: "Bad Project" } })),
       context,
     )
 
     expect(response.status).toBe(400)
     const body = await response.json()
     expect(body.error).toBe("Project validation failed.")
-    expect(body.details).toContain(
-      "Project id cannot be changed after creation.",
+    expect(body.details).toContain("Project id must be a lowercase slug.")
+  })
+
+  it("renames a project to a new id and revalidates both URLs", async () => {
+    mocks.getProjectIdHistory.mockReturnValue(["demo-project", "older-demo"])
+
+    const response = await PUT(
+      request("PUT", createAdminPayload({ shared: { id: "renamed-project" } })),
+      context,
     )
+
+    expect(response.status).toBe(200)
+    await expect(response.json()).resolves.toMatchObject({
+      ok: true,
+      projectId: "renamed-project",
+    })
+    const [, savedProjects, previousId] =
+      mocks.replaceProjectInManifest.mock.calls[0]
+    expect(savedProjects.en.id).toBe("renamed-project")
+    expect(savedProjects.vi.id).toBe("renamed-project")
+    expect(previousId).toBe("demo-project")
+    expect(mocks.getUnusedOwnedBlobUrls).toHaveBeenCalledWith(
+      expect.objectContaining({
+        projectIds: ["demo-project", "older-demo", "renamed-project"],
+      }),
+    )
+    expect(revalidatePath).toHaveBeenCalledWith("/work/demo-project")
+    expect(revalidatePath).toHaveBeenCalledWith("/work/renamed-project")
+  })
+
+  it("rejects renaming to an id another project already uses", async () => {
+    mocks.readAdminPortfolioSnapshot.mockResolvedValue(
+      createSnapshot({
+        projects: [createProject("demo-project"), createProject("taken-id")],
+        viProjects: [createProject("demo-project"), createProject("taken-id")],
+      }),
+    )
+
+    const response = await PUT(
+      request("PUT", createAdminPayload({ shared: { id: "taken-id" } })),
+      context,
+    )
+
+    expect(response.status).toBe(409)
+    await expect(response.json()).resolves.toEqual({
+      error: "A project with this id already exists.",
+    })
+    expect(mocks.savePortfolioManifest).not.toHaveBeenCalled()
   })
 
   it("rejects updates for non-proposal Writing projects", async () => {
