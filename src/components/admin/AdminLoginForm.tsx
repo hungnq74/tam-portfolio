@@ -41,7 +41,7 @@ export function AdminLoginForm() {
   return (
     <form onSubmit={onSubmit} className="space-y-5">
       <div className="flex items-start gap-3">
-        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[8px] border border-slate-200 bg-slate-50 text-slate-700">
+        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border border-admin-primary/15 bg-admin-primary/[0.07] text-admin-primary">
           <ShieldCheck className="h-5 w-5" />
         </span>
         <div>
@@ -55,7 +55,7 @@ export function AdminLoginForm() {
         </div>
       </div>
 
-      <div className="space-y-4 rounded-[8px] border border-slate-200 bg-slate-50 p-4">
+      <div className="space-y-4 rounded-[14px] border border-admin-line bg-admin-soft p-4">
         <label className="block">
           <span className="admin-label">Username</span>
           <input
@@ -77,7 +77,7 @@ export function AdminLoginForm() {
           />
         </label>
 
-        <p className="text-xs leading-5 text-slate-500">
+        <p className="text-xs leading-5 text-admin-muted">
           English-only editing is enabled. Existing Vietnamese data is preserved
           behind the scenes.
         </p>

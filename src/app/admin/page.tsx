@@ -66,8 +66,8 @@ export default async function AdminPage({ searchParams }: AdminPageProps = {}) {
         <AdminBanner message={snapshot.error} tone="error" />
       ) : null}
 
-      <div className="admin-card mb-5 flex flex-wrap items-center gap-3 px-4 py-3 text-sm text-slate-500">
-        <Settings className="h-4 w-4 text-slate-400" />
+      <div className="admin-card-soft mb-5 flex flex-wrap items-center gap-x-4 gap-y-1 px-4 py-2.5 text-xs text-admin-muted">
+        <Settings className="h-4 w-4 text-admin-faint" />
         <span>Revision: {snapshot.manifest.revision}</span>
         <span>
           Updated: {new Date(snapshot.manifest.updatedAt).toLocaleString()}
@@ -87,7 +87,7 @@ export default async function AdminPage({ searchParams }: AdminPageProps = {}) {
         ) : (
           <div className="admin-card p-8 text-center">
             <p className="admin-kicker">No proposal projects</p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-normal text-[rgb(var(--ink))]">
+            <h2 className="admin-display mt-2 text-2xl font-semibold text-[rgb(var(--ink))]">
               Start with a clean AXE-style case.
             </h2>
             <p className="admin-subtle mx-auto mt-2 max-w-md text-sm leading-6">
@@ -122,9 +122,9 @@ function AdminProjectCard({
   const cardCover = project.media?.cardCover ?? project.media?.cover
 
   return (
-    <article className="admin-card overflow-hidden">
+    <article className="admin-card overflow-hidden transition hover:-translate-y-0.5 hover:shadow-[0_1px_2px_rgb(64_44_24/0.05),0_18px_40px_-20px_rgb(64_44_24/0.32)]">
       <div className="grid gap-0 lg:grid-cols-[15rem_1fr]">
-        <div className="relative min-h-44 border-b border-slate-200 bg-slate-100 lg:border-b-0 lg:border-r">
+        <div className="relative min-h-44 border-b border-admin-line bg-admin-soft-2 lg:border-b-0 lg:border-r">
           {cardCover ? (
             <img
               src={cardCover.src}
@@ -162,7 +162,7 @@ function AdminProjectCard({
                 Updated {new Date(updatedAt).toLocaleDateString()}
               </span>
             </div>
-            <h2 className="truncate text-xl font-semibold tracking-normal text-[rgb(var(--ink))]">
+            <h2 className="admin-display truncate text-2xl font-semibold text-[rgb(var(--ink))]">
               {project.title}
             </h2>
             <p className="admin-subtle mt-2 line-clamp-2 text-sm leading-6">

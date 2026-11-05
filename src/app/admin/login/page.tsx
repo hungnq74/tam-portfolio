@@ -18,7 +18,7 @@ export default async function AdminLoginPage() {
   return (
     <AdminPageShell narrow>
       <div className="admin-card overflow-hidden">
-        <div className="border-b border-slate-200 bg-slate-50 px-5 py-4">
+        <div className="border-b border-admin-line bg-admin-soft px-5 py-4">
           <p className="admin-kicker">Private workspace</p>
           <p className="mt-1 text-sm font-semibold text-[rgb(var(--ink))]">
             Proposal content manager

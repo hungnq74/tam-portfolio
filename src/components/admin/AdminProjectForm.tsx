@@ -806,9 +806,9 @@ function SectionHeader({
   description?: string
 }) {
   return (
-    <div className="flex items-start gap-3 border-b border-slate-200 pb-4">
+    <div className="flex items-start gap-3 border-b border-admin-line pb-4">
       {icon ? (
-        <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[6px] border border-slate-200 bg-slate-50 text-slate-700">
+        <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] border border-admin-primary/15 bg-admin-primary/[0.07] text-admin-primary">
           {icon}
         </span>
       ) : null}
@@ -844,11 +844,11 @@ function UploadControl({
       className={`admin-upload ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
     >
       <span className="flex items-center justify-between gap-3">
-        <span className="inline-flex items-center gap-2 text-sm font-semibold text-slate-900">
+        <span className="inline-flex items-center gap-2 text-sm font-semibold text-admin-ink">
           {icon}
           {label}
         </span>
-        <span className="rounded-[6px] border border-slate-200 bg-white px-2.5 py-1 text-xs font-semibold text-slate-600">
+        <span className="rounded-[12px] border border-admin-line-strong/80 bg-admin-surface px-3 py-1.5 text-xs font-semibold text-admin-ink shadow-[0_1px_2px_rgb(64_44_24/0.06)]">
           Browse
         </span>
       </span>
@@ -866,13 +866,13 @@ function UploadControl({
       />
       {progress ? (
         <span className="mt-4 block">
-          <span className="mb-2 flex justify-between text-xs font-semibold text-slate-500">
+          <span className="mb-2 flex justify-between text-xs font-semibold text-admin-muted">
             <span>{progress.label}</span>
             <span>{Math.round(progress.percent)}%</span>
           </span>
-          <span className="block h-2 overflow-hidden rounded-full bg-slate-200">
+          <span className="block h-2 overflow-hidden rounded-full bg-admin-line">
             <span
-              className="block h-full rounded-full bg-slate-950"
+              className="block h-full rounded-full bg-admin-primary"
               style={{ width: `${progress.percent}%` }}
             />
           </span>
@@ -900,11 +900,11 @@ function CoverPositionControl({
   )
 
   return (
-    <section className="rounded-[8px] border border-slate-200 bg-slate-50 p-4">
+    <section className="rounded-[12px] border border-admin-line bg-admin-soft p-4">
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_260px]">
         <div className="space-y-4">
           <div>
-            <h3 className="text-sm font-semibold text-slate-950">
+            <h3 className="text-sm font-semibold text-admin-ink">
               Adjust cover crop
             </h3>
             <p className="admin-subtle mt-1 text-xs leading-5">
@@ -913,7 +913,7 @@ function CoverPositionControl({
             </p>
           </div>
           <div>
-            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-admin-muted">
               Quick position
             </p>
             <div className="flex flex-wrap gap-2">
@@ -923,7 +923,7 @@ function CoverPositionControl({
                   type="button"
                   aria-pressed={activePreset?.label === preset.label}
                   onClick={() => onPreset(preset.x, preset.y)}
-                  className="rounded-[6px] border border-slate-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-slate-400 hover:text-slate-950 aria-pressed:border-slate-950 aria-pressed:bg-slate-950 aria-pressed:text-white"
+                  className="rounded-[8px] border border-admin-line bg-admin-surface px-3 py-1.5 text-xs font-semibold text-admin-body transition hover:border-admin-line-strong hover:text-admin-ink aria-pressed:border-admin-primary aria-pressed:bg-admin-primary aria-pressed:text-white"
                 >
                   {preset.label}
                 </button>
@@ -946,13 +946,13 @@ function CoverPositionControl({
           </div>
         </div>
         <div>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.12em] text-admin-muted">
             Crop preview
           </p>
           <img
             src={cover.src}
             alt={cover.alt}
-            className="aspect-[16/9] w-full rounded-[6px] border border-slate-200 object-cover"
+            className="aspect-[16/9] w-full rounded-[8px] border border-admin-line object-cover"
             style={{
               objectPosition: `${focalPoint.x}% ${focalPoint.y}%`,
             }}
@@ -979,7 +979,7 @@ function RangeField({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 flex items-center justify-between text-xs font-semibold text-slate-600">
+      <span className="mb-2 flex items-center justify-between text-xs font-semibold text-admin-body">
         <span>{label}</span>
         <span>{valueLabel ?? value}</span>
       </span>
@@ -989,7 +989,7 @@ function RangeField({
         max={100}
         value={value}
         onChange={(event) => onChange(Number(event.target.value))}
-        className="w-full accent-slate-950"
+        className="w-full accent-[rgb(var(--admin-primary))]"
       />
     </label>
   )
@@ -1023,13 +1023,13 @@ function AdminReadinessPanel({
         {items.map((item) => (
           <div
             key={item.label}
-            className="flex gap-3 rounded-[8px] border border-slate-200 bg-white p-3"
+            className="flex gap-3 rounded-[12px] border border-admin-line bg-admin-surface p-3"
           >
             <span
               className={`mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full ${
                 item.ready
-                  ? "bg-slate-100 text-slate-700"
-                  : "bg-orange-50 text-orange-700"
+                  ? "bg-admin-primary/10 text-admin-primary"
+                  : "bg-admin-accent/10 text-admin-accent"
               }`}
             >
               {item.ready ? (
@@ -1055,7 +1055,7 @@ function AdminReadinessPanel({
 
 function AdminMediaPreviewPanel({ media }: { media?: ProjectMedia }) {
   return (
-    <section className="space-y-3 border-t border-slate-200 pt-4">
+    <section className="space-y-3 border-t border-admin-line pt-4">
       <div className="flex items-center justify-between gap-3">
         <div>
           <p className="admin-kicker">Preview</p>
@@ -1070,7 +1070,7 @@ function AdminMediaPreviewPanel({ media }: { media?: ProjectMedia }) {
           <img
             src={media.cover.src}
             alt={media.cover.alt}
-            className="aspect-[16/9] w-full rounded-[6px] object-cover"
+            className="aspect-[16/9] w-full rounded-[8px] object-cover"
             style={{
               objectPosition: `${media.cover.focalPoint?.x ?? 50}% ${media.cover.focalPoint?.y ?? 50}%`,
             }}
@@ -1082,13 +1082,13 @@ function AdminMediaPreviewPanel({ media }: { media?: ProjectMedia }) {
           <img
             src={media.summary.src}
             alt={media.summary.alt}
-            className="aspect-[16/9] w-full rounded-[6px] object-cover"
+            className="aspect-[16/9] w-full rounded-[8px] object-cover"
           />
         ) : (
           <PreviewPlaceholder>Main image preview</PreviewPlaceholder>
         )}
       </div>
-      <div className="grid gap-3 text-sm text-slate-600">
+      <div className="grid gap-3 text-sm text-admin-body">
         <PreviewStat label="Cover" value={media?.cover ? "Ready" : "Missing"} />
         <PreviewStat
           label="Main image"
@@ -1105,7 +1105,7 @@ function AdminMediaPreviewPanel({ media }: { media?: ProjectMedia }) {
 
 function PreviewPlaceholder({ children }: { children: ReactNode }) {
   return (
-    <div className="flex aspect-[16/9] items-center justify-center rounded-[6px] bg-white text-sm font-semibold text-slate-400 ring-1 ring-inset ring-slate-200">
+    <div className="flex aspect-[16/9] items-center justify-center rounded-[8px] bg-admin-surface text-sm font-semibold text-admin-faint ring-1 ring-inset ring-admin-line">
       {children}
     </div>
   )
@@ -1113,7 +1113,7 @@ function PreviewPlaceholder({ children }: { children: ReactNode }) {
 
 function PreviewStat({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-[6px] border border-slate-200 bg-white p-3">
+    <div className="rounded-[8px] border border-admin-line bg-admin-surface p-3">
       <p className="text-xs font-semibold text-[rgba(38,52,40,0.54)]">
         {label}
       </p>
@@ -1138,14 +1138,14 @@ function CreditPreview({
   return (
     <div className="admin-card-soft p-4">
       <p className="admin-kicker mb-3">Public-page bridge preview</p>
-      <div className="rounded-[8px] border border-slate-200 bg-white p-4 text-center">
+      <div className="rounded-[12px] border border-admin-line bg-admin-surface p-4 text-center">
         <span className="admin-button admin-button-secondary pointer-events-none">
           {ctaLabel || "View full portfolio"}
         </span>
         <p className="mx-auto mt-4 max-w-xl text-sm font-bold leading-6 text-[rgb(var(--ink))]">
           {credit || "Credit intro will appear after the proposal carousel."}
         </p>
-        <p className="mx-auto mt-2 max-w-xl text-sm font-medium leading-6 text-slate-600">
+        <p className="mx-auto mt-2 max-w-xl text-sm font-medium leading-6 text-admin-body">
           {creditNamesLine || "Add one name per line or comma-separated."}
         </p>
       </div>

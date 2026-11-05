@@ -28,7 +28,7 @@ export function AdminManifestRefreshNotice({
   return (
     <section className="admin-card p-6 sm:p-8">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-start">
-        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-slate-200 bg-slate-50 text-slate-700">
+        <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-admin-line bg-admin-soft text-admin-body">
           <RefreshCw className="h-5 w-5 animate-spin" aria-hidden="true" />
         </span>
         <div className="min-w-0">
@@ -50,11 +50,11 @@ export function AdminManifestRefreshNotice({
                 : "The admin manifest is refreshing. This page will retry automatically instead of showing a 404."}
           </p>
           {error ? (
-            <p className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium leading-5 text-slate-600">
+            <p className="mt-4 rounded-lg border border-admin-line bg-admin-soft px-3 py-2 text-xs font-medium leading-5 text-admin-body">
               {error}
             </p>
           ) : null}
-          <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
+          <p className="mt-4 text-xs font-semibold uppercase tracking-[0.16em] text-admin-faint">
             Retry {attempt}
           </p>
         </div>

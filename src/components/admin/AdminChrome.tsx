@@ -52,7 +52,7 @@ export function AdminPageHeader({
         {backHref ? (
           <Link
             href={backHref}
-            className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-slate-500 transition hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-slate-200"
+            className="mb-4 inline-flex items-center gap-2 text-sm font-semibold text-admin-muted transition hover:text-admin-ink focus:outline-none focus:ring-2 focus:ring-admin-line"
           >
             <ArrowLeft className="h-4 w-4" />
             {backLabel}
