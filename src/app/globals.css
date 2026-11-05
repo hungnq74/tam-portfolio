@@ -181,48 +181,45 @@
   }
 
   /* ---------- Admin (Proposal CMS) ----------
-     Warm paper canvas + moss primary + clay accent, echoing the public portfolio. */
+     Clean white/neutral tool UI. Colors live in these tokens. */
 
   .admin-app {
-    --admin-canvas: 245 240 231;
-    --admin-surface: 255 253 249;
-    --admin-soft: 250 246 239;
-    --admin-soft-2: 242 235 222;
-    --admin-line: 230 221 205;
-    --admin-line-strong: 207 193 170;
-    --admin-ink: 30 42 33;
-    --admin-body: 78 73 63;
-    --admin-muted: 119 110 96;
-    --admin-faint: 165 154 137;
-    --admin-primary: 36 73 50;
-    --admin-primary-hover: 27 57 39;
-    --admin-accent: 165 66 47;
+    --admin-canvas: 246 247 249;
+    --admin-surface: 255 255 255;
+    --admin-soft: 249 250 251;
+    --admin-soft-2: 243 244 246;
+    --admin-line: 229 231 235;
+    --admin-line-strong: 209 213 219;
+    --admin-ink: 17 24 39;
+    --admin-body: 75 85 99;
+    --admin-muted: 107 114 128;
+    --admin-faint: 156 163 175;
+    --admin-primary: 17 24 39;
+    --admin-primary-hover: 31 41 55;
+    /* Warning tone (needs-media chips, readiness alerts). */
+    --admin-accent: 194 65 12;
+    --admin-danger: 185 28 28;
+    --admin-success: 21 128 61;
 
     --ink: var(--admin-ink);
     --moss: var(--admin-primary);
     --paper: var(--admin-surface);
-    --gold: 176 108 51;
+    --gold: 75 85 99;
 
     min-height: 100vh;
     overflow-x: clip;
-    background:
-      radial-gradient(1200px 520px at 12% -10%, rgb(255 255 255 / 0.7), transparent 60%),
-      radial-gradient(900px 480px at 100% 0%, rgb(var(--admin-soft-2) / 0.9), transparent 55%),
-      rgb(var(--admin-canvas));
+    background: rgb(var(--admin-canvas));
     color: rgb(var(--admin-ink));
     font-family: var(--font-sans), system-ui, sans-serif;
     -webkit-font-smoothing: antialiased;
   }
 
   .admin-app h1 {
-    font-family: var(--font-serif), Georgia, serif;
-    font-weight: 600;
-    letter-spacing: -0.01em;
+    letter-spacing: -0.02em;
   }
 
   .admin-display {
-    font-family: var(--font-serif), Georgia, serif;
-    letter-spacing: -0.005em;
+    letter-spacing: -0.01em;
   }
 
   .admin-app ::selection {
@@ -277,8 +274,8 @@
     border-radius: 16px;
     background: rgb(var(--admin-surface));
     box-shadow:
-      0 1px 2px rgb(64 44 24 / 0.04),
-      0 10px 30px -18px rgb(64 44 24 / 0.18);
+      0 1px 2px rgb(17 24 39 / 0.04),
+      0 10px 30px -18px rgb(17 24 39 / 0.18);
   }
 
   .admin-card-soft {
@@ -314,27 +311,15 @@
     align-items: center;
     justify-content: center;
     border-radius: 12px;
-    background: linear-gradient(145deg, rgb(48 92 64), rgb(var(--admin-primary)) 55%, rgb(24 50 34));
-    color: rgb(250 241 222);
-    font-family: var(--font-serif), Georgia, serif;
-    font-size: 0.95rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
+    background: rgb(var(--admin-primary));
+    color: rgb(255 255 255);
+    font-family: var(--font-sans), system-ui, sans-serif;
+    font-size: 0.9rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.18),
-      0 6px 14px -6px rgb(var(--admin-primary) / 0.6);
-  }
-
-  .admin-brand-mark::after {
-    content: "";
-    position: absolute;
-    right: -3px;
-    bottom: -3px;
-    height: 0.6rem;
-    width: 0.6rem;
-    border-radius: 999px;
-    border: 2px solid rgb(var(--admin-canvas));
-    background: rgb(var(--admin-accent));
+      inset 0 1px 0 rgb(255 255 255 / 0.14),
+      0 4px 10px -4px rgb(var(--admin-primary) / 0.45);
   }
 
   .admin-kicker {
@@ -342,7 +327,7 @@
     font-weight: 750;
     letter-spacing: 0.14em;
     text-transform: uppercase;
-    color: rgb(var(--admin-accent));
+    color: rgb(var(--admin-muted));
   }
 
   .admin-subtle {
@@ -394,10 +379,10 @@
   .admin-button-primary {
     border: 1px solid rgb(var(--admin-primary-hover));
     background: rgb(var(--admin-primary));
-    color: rgb(252 248 239);
+    color: rgb(255 255 255);
     box-shadow:
-      inset 0 1px 0 rgb(255 255 255 / 0.12),
-      0 6px 16px -8px rgb(var(--admin-primary) / 0.7);
+      inset 0 1px 0 rgb(255 255 255 / 0.1),
+      0 4px 12px -6px rgb(var(--admin-primary) / 0.5);
   }
 
   .admin-button-primary:hover:not(:disabled) {
@@ -408,7 +393,7 @@
     border: 1px solid rgb(var(--admin-line-strong) / 0.9);
     background: rgb(var(--admin-surface));
     color: rgb(var(--admin-ink));
-    box-shadow: 0 1px 2px rgb(64 44 24 / 0.05);
+    box-shadow: 0 1px 2px rgb(17 24 39 / 0.05);
   }
 
   .admin-button-secondary:hover:not(:disabled) {
@@ -417,14 +402,14 @@
   }
 
   .admin-button-danger {
-    border: 1px solid rgb(var(--admin-accent) / 0.35);
+    border: 1px solid rgb(var(--admin-danger) / 0.3);
     background: rgb(var(--admin-surface));
-    color: rgb(var(--admin-accent));
+    color: rgb(var(--admin-danger));
   }
 
   .admin-button-danger:hover:not(:disabled) {
-    border-color: rgb(var(--admin-accent) / 0.7);
-    background: rgb(var(--admin-accent) / 0.06);
+    border-color: rgb(var(--admin-danger) / 0.6);
+    background: rgb(var(--admin-danger) / 0.05);
   }
 
   .admin-pill {
@@ -464,14 +449,14 @@
   }
 
   .admin-status-chip[data-tone="ready"] {
-    border-color: rgb(var(--admin-primary) / 0.22);
-    background: rgb(232 241 233 / 0.95);
-    color: rgb(var(--admin-primary));
+    border-color: rgb(var(--admin-success) / 0.22);
+    background: rgb(240 253 244 / 0.95);
+    color: rgb(var(--admin-success));
   }
 
   .admin-status-chip[data-tone="warn"] {
     border-color: rgb(var(--admin-accent) / 0.25);
-    background: rgb(251 238 231 / 0.95);
+    background: rgb(255 247 237 / 0.95);
     color: rgb(var(--admin-accent));
   }
 
@@ -485,21 +470,21 @@
   }
 
   .admin-notice-error {
-    border-color: rgb(var(--admin-accent) / 0.3);
-    background: rgb(251 238 233);
-    color: rgb(140 48 31);
+    border-color: rgb(252 165 165);
+    background: rgb(254 242 242);
+    color: rgb(153 27 27);
   }
 
   .admin-notice-success {
-    border-color: rgb(var(--admin-primary) / 0.25);
-    background: rgb(234 242 235);
-    color: rgb(var(--admin-primary));
+    border-color: rgb(187 247 208);
+    background: rgb(240 253 244);
+    color: rgb(22 101 52);
   }
 
   .admin-notice-warn {
-    border-color: rgb(var(--gold) / 0.35);
-    background: rgb(252 243 228);
-    color: rgb(128 74 28);
+    border-color: rgb(253 186 116);
+    background: rgb(255 247 237);
+    color: rgb(154 52 18);
   }
 
   .admin-tabs {
@@ -536,11 +521,10 @@
 
   .admin-tab-active {
     background: rgb(var(--admin-surface));
-    color: rgb(var(--admin-primary));
+    color: rgb(var(--admin-ink));
     box-shadow:
-      0 1px 2px rgb(64 44 24 / 0.08),
-      0 0 0 1px rgb(var(--admin-line)),
-      inset 0 -2px 0 rgb(var(--admin-accent));
+      0 1px 2px rgb(17 24 39 / 0.08),
+      0 0 0 1px rgb(var(--admin-line));
   }
 
   .admin-section-title {
@@ -583,8 +567,8 @@
     border: 1px solid rgb(var(--admin-line));
     background: rgb(var(--admin-surface));
     box-shadow:
-      0 1px 2px rgb(64 44 24 / 0.04),
-      0 10px 30px -18px rgb(64 44 24 / 0.18);
+      0 1px 2px rgb(17 24 39 / 0.04),
+      0 10px 30px -18px rgb(17 24 39 / 0.18);
   }
 
   .admin-save-bar {
@@ -599,8 +583,8 @@
     background: rgb(var(--admin-surface) / 0.9);
     padding: 0.75rem 0.75rem 0.75rem 1rem;
     box-shadow:
-      0 1px 2px rgb(64 44 24 / 0.06),
-      0 18px 44px -12px rgb(64 44 24 / 0.28);
+      0 1px 2px rgb(17 24 39 / 0.06),
+      0 18px 44px -12px rgb(17 24 39 / 0.28);
     backdrop-filter: blur(18px) saturate(1.2);
   }
 
